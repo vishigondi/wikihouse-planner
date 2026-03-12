@@ -1,0 +1,469 @@
+[
+  {
+    "id": "wall-ext",
+    "name": "Exterior Wall 4'",
+    "category": "wall",
+    "dimensions": {
+      "width": 4,
+      "height": 10,
+      "depth": 0.5
+    },
+    "geometry": "box",
+    "material": {
+      "color": "#1a1a2e",
+      "opacity": 1,
+      "metalness": 0.3,
+      "roughness": 0.8
+    },
+    "properties": {
+      "structural": true,
+      "insulated": true,
+      "exterior": true,
+      "panelType": "steel-sip"
+    },
+    "usedInHomes": [
+      "ascent-adu",
+      "modern-alpine-2025",
+      "outpost-plus",
+      "barnhouse-1-1",
+      "barnhouse-2-1",
+      "barnhouse-plus",
+      "modern-treehouse",
+      "barnhouse-2-2",
+      "eastern-farmhouse",
+      "l-barnhouse",
+      "barnhouse-3-3",
+      "a-frame-house-plus",
+      "outpost-medium",
+      "studio-house",
+      "barndo"
+    ]
+  },
+  {
+    "id": "wall-int",
+    "name": "Interior Wall 4'",
+    "category": "wall",
+    "dimensions": {
+      "width": 4,
+      "height": 9,
+      "depth": 0.33
+    },
+    "geometry": "box",
+    "material": {
+      "color": "#d4c5a9",
+      "opacity": 1,
+      "metalness": 0.05,
+      "roughness": 0.95
+    },
+    "properties": {
+      "structural": false,
+      "insulated": false,
+      "exterior": false,
+      "panelType": "drywall"
+    },
+    "usedInHomes": [
+      "ascent-adu",
+      "modern-alpine-2025",
+      "outpost-plus",
+      "barnhouse-1-1",
+      "barnhouse-2-1",
+      "barnhouse-plus",
+      "modern-treehouse",
+      "barnhouse-2-2",
+      "eastern-farmhouse",
+      "l-barnhouse",
+      "barnhouse-3-3",
+      "a-frame-house-plus",
+      "outpost-medium",
+      "studio-house",
+      "barndo"
+    ]
+  },
+  {
+    "id": "roof-gable",
+    "name": "Gable Roof 4'",
+    "category": "roof",
+    "dimensions": {
+      "width": 4,
+      "height": 0.33,
+      "depth": 14
+    },
+    "geometry": "box",
+    "pitchAngle": 25,
+    "material": {
+      "color": "#2d2d3d",
+      "opacity": 1,
+      "metalness": 0.5,
+      "roughness": 0.5
+    },
+    "properties": {
+      "structural": true,
+      "insulated": true,
+      "exterior": true,
+      "panelType": "metal-roof"
+    },
+    "usedInHomes": [
+      "barnhouse-1-1",
+      "barnhouse-2-1",
+      "barnhouse-plus",
+      "barnhouse-2-2",
+      "eastern-farmhouse",
+      "l-barnhouse",
+      "barnhouse-3-3",
+      "barndo"
+    ]
+  },
+  {
+    "id": "roof-steep",
+    "name": "Steep Roof 4'",
+    "category": "roof",
+    "dimensions": {
+      "width": 4,
+      "height": 0.33,
+      "depth": 14
+    },
+    "geometry": "box",
+    "pitchAngle": 45,
+    "material": {
+      "color": "#1a1a2e",
+      "opacity": 1,
+      "metalness": 0.5,
+      "roughness": 0.5
+    },
+    "properties": {
+      "structural": true,
+      "insulated": true,
+      "exterior": true,
+      "panelType": "metal-roof"
+    },
+    "usedInHomes": [
+      "modern-alpine-2025",
+      "outpost-plus",
+      "a-frame-house-plus",
+      "outpost-medium"
+    ]
+  },
+  {
+    "id": "roof-shed",
+    "name": "Shed Roof 4'",
+    "category": "roof",
+    "dimensions": {
+      "width": 4,
+      "height": 0.33,
+      "depth": 14
+    },
+    "geometry": "box",
+    "pitchAngle": 12,
+    "material": {
+      "color": "#2d2d3d",
+      "opacity": 1,
+      "metalness": 0.5,
+      "roughness": 0.5
+    },
+    "properties": {
+      "structural": true,
+      "insulated": true,
+      "exterior": true,
+      "panelType": "metal-roof"
+    },
+    "usedInHomes": [
+      "ascent-adu"
+    ]
+  },
+  {
+    "id": "roof-flat",
+    "name": "Flat Roof 4x4",
+    "category": "roof",
+    "dimensions": {
+      "width": 4,
+      "height": 0.33,
+      "depth": 4
+    },
+    "geometry": "box",
+    "pitchAngle": 0,
+    "material": {
+      "color": "#3d3d4d",
+      "opacity": 1,
+      "metalness": 0.4,
+      "roughness": 0.6
+    },
+    "properties": {
+      "structural": true,
+      "insulated": true,
+      "exterior": true,
+      "panelType": "membrane"
+    },
+    "usedInHomes": [
+      "modern-treehouse",
+      "studio-house"
+    ]
+  },
+  {
+    "id": "floor-std",
+    "name": "Floor Cassette 4x4",
+    "category": "floor",
+    "dimensions": {
+      "width": 4,
+      "height": 0.67,
+      "depth": 4
+    },
+    "geometry": "box",
+    "material": {
+      "color": "#8b7355",
+      "opacity": 1,
+      "metalness": 0.05,
+      "roughness": 0.9
+    },
+    "properties": {
+      "structural": true,
+      "insulated": true,
+      "exterior": false,
+      "panelType": "engineered-wood"
+    },
+    "usedInHomes": [
+      "ascent-adu",
+      "modern-alpine-2025",
+      "outpost-plus",
+      "barnhouse-1-1",
+      "barnhouse-2-1",
+      "barnhouse-plus",
+      "modern-treehouse",
+      "barnhouse-2-2",
+      "eastern-farmhouse",
+      "l-barnhouse",
+      "barnhouse-3-3",
+      "a-frame-house-plus",
+      "outpost-medium",
+      "studio-house",
+      "barndo"
+    ]
+  },
+  {
+    "id": "floor-deck",
+    "name": "Deck Panel 4x4",
+    "category": "floor",
+    "dimensions": {
+      "width": 4,
+      "height": 0.5,
+      "depth": 4
+    },
+    "geometry": "box",
+    "material": {
+      "color": "#6b4226",
+      "opacity": 1,
+      "metalness": 0.05,
+      "roughness": 0.95
+    },
+    "properties": {
+      "structural": true,
+      "insulated": false,
+      "exterior": true,
+      "panelType": "wood-deck"
+    },
+    "usedInHomes": [
+      "ascent-adu",
+      "barnhouse-plus",
+      "modern-treehouse",
+      "barnhouse-3-3",
+      "studio-house",
+      "barndo"
+    ]
+  },
+  {
+    "id": "door-ext",
+    "name": "Entry Door 4'",
+    "category": "opening",
+    "dimensions": {
+      "width": 4,
+      "height": 8,
+      "depth": 0.5
+    },
+    "geometry": "box",
+    "material": {
+      "color": "#4a3728",
+      "opacity": 1,
+      "metalness": 0.15,
+      "roughness": 0.8
+    },
+    "properties": {
+      "structural": false,
+      "insulated": true,
+      "exterior": true,
+      "panelType": "insulated-door"
+    },
+    "usedInHomes": [
+      "modern-alpine-2025",
+      "outpost-plus",
+      "barnhouse-1-1",
+      "barnhouse-2-1",
+      "barnhouse-plus",
+      "modern-treehouse",
+      "barnhouse-2-2",
+      "eastern-farmhouse",
+      "barnhouse-3-3",
+      "a-frame-house-plus",
+      "studio-house",
+      "barndo"
+    ]
+  },
+  {
+    "id": "door-sliding",
+    "name": "Sliding Glass Door 4'",
+    "category": "opening",
+    "dimensions": {
+      "width": 4,
+      "height": 8,
+      "depth": 0.5
+    },
+    "geometry": "box",
+    "material": {
+      "color": "#87ceeb",
+      "opacity": 0.4,
+      "metalness": 0.5,
+      "roughness": 0.15
+    },
+    "properties": {
+      "structural": false,
+      "insulated": false,
+      "exterior": true,
+      "panelType": "glass-sliding"
+    },
+    "usedInHomes": [
+      "ascent-adu",
+      "modern-alpine-2025",
+      "outpost-plus",
+      "barnhouse-1-1",
+      "barnhouse-2-1",
+      "barnhouse-plus",
+      "modern-treehouse",
+      "barnhouse-2-2",
+      "eastern-farmhouse",
+      "l-barnhouse",
+      "barnhouse-3-3",
+      "a-frame-house-plus",
+      "outpost-medium",
+      "studio-house",
+      "barndo"
+    ]
+  },
+  {
+    "id": "window-std",
+    "name": "Window 4'",
+    "category": "opening",
+    "dimensions": {
+      "width": 4,
+      "height": 4,
+      "depth": 0.5
+    },
+    "geometry": "box",
+    "material": {
+      "color": "#87ceeb",
+      "opacity": 0.35,
+      "metalness": 0.5,
+      "roughness": 0.15
+    },
+    "properties": {
+      "structural": false,
+      "insulated": false,
+      "exterior": true,
+      "panelType": "glass"
+    },
+    "usedInHomes": [
+      "ascent-adu",
+      "modern-alpine-2025",
+      "outpost-plus",
+      "barnhouse-1-1",
+      "barnhouse-2-1",
+      "barnhouse-plus",
+      "modern-treehouse",
+      "barnhouse-2-2",
+      "eastern-farmhouse",
+      "l-barnhouse",
+      "barnhouse-3-3",
+      "a-frame-house-plus",
+      "outpost-medium",
+      "studio-house",
+      "barndo"
+    ]
+  },
+  {
+    "id": "door-int",
+    "name": "Interior Door",
+    "category": "opening",
+    "dimensions": {
+      "width": 3,
+      "height": 7,
+      "depth": 0.33
+    },
+    "geometry": "box",
+    "material": {
+      "color": "#b8a080",
+      "opacity": 1,
+      "metalness": 0.05,
+      "roughness": 0.9
+    },
+    "properties": {
+      "structural": false,
+      "insulated": false,
+      "exterior": false,
+      "panelType": "wood-door"
+    },
+    "usedInHomes": [
+      "ascent-adu",
+      "modern-alpine-2025",
+      "outpost-plus",
+      "barnhouse-1-1",
+      "barnhouse-2-1",
+      "barnhouse-plus",
+      "modern-treehouse",
+      "barnhouse-2-2",
+      "eastern-farmhouse",
+      "l-barnhouse",
+      "barnhouse-3-3",
+      "a-frame-house-plus",
+      "outpost-medium",
+      "studio-house",
+      "barndo"
+    ]
+  },
+  {
+    "id": "foundation",
+    "name": "Foundation Sill 4'",
+    "category": "structural",
+    "dimensions": {
+      "width": 4,
+      "height": 0.5,
+      "depth": 0.67
+    },
+    "geometry": "box",
+    "material": {
+      "color": "#555555",
+      "opacity": 1,
+      "metalness": 0.3,
+      "roughness": 0.7
+    },
+    "properties": {
+      "structural": true,
+      "insulated": false,
+      "exterior": true,
+      "panelType": "concrete"
+    },
+    "usedInHomes": [
+      "ascent-adu",
+      "modern-alpine-2025",
+      "outpost-plus",
+      "barnhouse-1-1",
+      "barnhouse-2-1",
+      "barnhouse-plus",
+      "modern-treehouse",
+      "barnhouse-2-2",
+      "eastern-farmhouse",
+      "l-barnhouse",
+      "barnhouse-3-3",
+      "a-frame-house-plus",
+      "outpost-medium",
+      "studio-house",
+      "barndo"
+    ]
+  }
+]

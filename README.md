@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WikiHouse Planner
 
-## Getting Started
+3D parametric home planner for Den Outdoors modular homes. Browse 15 architecturally validated floor plans with real-time 3D visualization.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **NextJS 16** — App Router, static export
+- **React Three Fiber + drei** — 3D rendering (walls, floors, roofs, openings)
+- **Tailwind CSS 4** — UI styling
+- **Python generator** — `scripts/generate-data.py` produces all home/component JSON
+
+## Architecture
+
+```
+scripts/generate-data.py   →  public/data/  (15 home JSONs + components + library)
+                                    ↓
+lib/types.ts + data.ts     →  typed data loader
+                                    ↓
+components/three/          →  3D scene (Scene, HomeModel, ComponentMesh)
+components/ui/             →  selectors, catalogs, detail panels
+                                    ↓
+app/page.tsx               →  main page (split-panel: 3D left, UI right)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Data Generator
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`scripts/generate-data.py` (962 lines) encodes:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **22 room types** with IRC/NKBA/ADA/IECC constraints
+- **4ft grid system** — all dimensions snap to 4ft increments
+- **13 component types** — 2 walls, 4 roofs, 2 floors, 4 openings, 1 foundation
+- **8 architectural validators** — wet wall clustering, intimacy gradient, noise isolation, room proportions, storage/circulation budgets
+- **100% envelope tiling** — no void cells, explicit L-shape support
 
-## Learn More
+```bash
+python3 scripts/generate-data.py
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Development
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+python3 scripts/generate-data.py   # generate home data
+npm run dev                         # dev server at localhost:3000
+npm run build                       # static export to out/
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 15 Home Plans
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ascent ADU · Modern Alpine 2025 · Outpost Plus · Barnhouse 1.1 · Barnhouse 2.1 · Barnhouse Plus · Modern Treehouse · Barnhouse 2.2 · Eastern Farmhouse · L Barnhouse · Barnhouse 3.3 · A-Frame House Plus · Outpost Medium · Studio House · Barndo

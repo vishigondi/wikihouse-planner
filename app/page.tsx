@@ -1,65 +1,101 @@
-import Image from "next/image";
+'use client';
+
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
+import { components, homes } from '@/lib/data';
+import HomeSelector from '@/components/ui/HomeSelector';
+import ComponentCatalog from '@/components/ui/ComponentCatalog';
+import ComponentDetail from '@/components/ui/ComponentDetail';
+
+const Scene = dynamic(() => import('@/components/three/Scene'), { ssr: false });
 
 export default function Home() {
+  const [selectedHomeId, setSelectedHomeId] = useState(homes[0]?.id ?? '');
+  const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
+
+  const currentHome = homes.find(h => h.id === selectedHomeId) ?? null;
+  const currentComp = selectedComponent ? components.find(c => c.id === selectedComponent) ?? null : null;
+  const usedComponents = currentHome?.componentsUsed ?? [];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="h-screen flex flex-col">
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 py-2 border-b border-neutral-800 bg-neutral-950/90 backdrop-blur">
+        <div>
+          <h1 className="text-sm font-bold tracking-tight">Den Outdoors — Modular Component Planner</h1>
+          <span className="text-[10px] text-neutral-500">
+            {components.length} components — {homes.length} homes — 3D
+          </span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+        {currentHome && (
+          <div className="text-right">
+            <div className="text-xs text-neutral-400">{currentHome.model}</div>
+            <div className="text-[10px] text-neutral-500">
+              {currentHome.sqft} sqft — {currentHome.footprint.width}&apos;x{currentHome.footprint.depth}&apos; — {currentHome.bedBath}
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Home selector */}
+      <HomeSelector
+        homes={homes}
+        selectedHome={selectedHomeId}
+        onSelectHome={(id) => { setSelectedHomeId(id); setSelectedComponent(null); }}
+      />
+
+      {/* Main content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left sidebar: component catalog + detail */}
+        <div className="w-56 border-r border-neutral-800 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-hidden">
+            <ComponentCatalog
+              components={components}
+              selectedComponent={selectedComponent}
+              highlightedComponents={usedComponents}
+              onSelectComponent={setSelectedComponent}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+          <div className="border-t border-neutral-800 max-h-56 overflow-y-auto">
+            <ComponentDetail
+              component={currentComp}
+              currentHome={currentHome}
+              onSelectHome={(id) => { setSelectedHomeId(id); setSelectedComponent(null); }}
+            />
+          </div>
         </div>
-      </main>
+
+        {/* 3D viewport */}
+        <div className="flex-1 relative">
+          {currentHome && (
+            <Scene
+              home={currentHome}
+              components={components}
+              selectedComponent={selectedComponent}
+              onSelectComponent={setSelectedComponent}
+            />
+          )}
+
+          {/* Info overlay */}
+          {currentHome && (
+            <div className="absolute top-3 right-3 bg-neutral-950/80 backdrop-blur border border-neutral-800 rounded-lg px-3 py-2 text-[10px] space-y-1 pointer-events-none">
+              <div className="text-neutral-300 font-semibold text-xs">{currentHome.model}</div>
+              <div className="text-neutral-500">
+                {currentHome.footprint.width}&apos; x {currentHome.footprint.depth}&apos; — {currentHome.height}&apos; peak
+              </div>
+              <div className="text-neutral-500">{currentHome.roofStyle} roof</div>
+              <div className="text-neutral-500">
+                {currentHome.placements.length} pieces — {currentHome.componentsUsed.length} types
+              </div>
+            </div>
+          )}
+
+          {/* Controls hint */}
+          <div className="absolute bottom-3 left-3 text-[9px] text-neutral-600 pointer-events-none">
+            Drag to orbit — Scroll to zoom — Click component to select
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
