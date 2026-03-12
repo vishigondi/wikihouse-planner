@@ -1726,6 +1726,20 @@
       "zone": "walls"
     },
     {
+      "componentId": "wall-int",
+      "position": {
+        "x": 18.0,
+        "y": 5.5,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior"
+    },
+    {
       "componentId": "wall-ext",
       "position": {
         "x": 20.0,
@@ -1975,7 +1989,7 @@
       "position": {
         "x": -4.0,
         "y": 3.5,
-        "z": -6.0
+        "z": 2.0
       },
       "rotation": {
         "x": 0,
@@ -2299,37 +2313,41 @@
       "gw": 4,
       "gd": 4,
       "area": 256,
-      "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
-    },
-    {
-      "label": "Bedroom",
-      "type": "bedroom",
-      "gx": 4,
-      "gz": 0,
-      "gw": 3,
-      "gd": 2,
-      "area": 96,
-      "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+      "color": "#4ade80",
+      "constraints": "Combined living/dining. Open plan LDK heart"
     },
     {
       "label": "Kitchen",
       "type": "kitchen",
       "gx": 4,
+      "gz": 0,
+      "gw": 3,
+      "gd": 2,
+      "area": 96,
+      "color": "#f59e0b",
+      "constraints": "NKBA: work triangle 13-26ft. 48in aisle"
+    },
+    {
+      "label": "Bedroom",
+      "type": "bedroom",
+      "gx": 4,
       "gz": 2,
       "gw": 3,
       "gd": 2,
       "area": 96,
-      "constraints": "NKBA: work triangle 13-26ft total. 48in aisle (42in single cook)"
+      "color": "#6366f1",
+      "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
     },
     {
-      "label": "Loft Bedroom",
+      "label": "Loft Suite",
       "type": "loft_bed",
       "gx": 7,
       "gz": 0,
       "gw": 2,
       "gd": 2,
       "area": 64,
-      "constraints": "Loft sleeping area. Accessed by code-compliant stair (IRC R311.7)"
+      "color": "#a5b4fc",
+      "constraints": "Loft sleeping area. Code-compliant stair (IRC R311.7)"
     },
     {
       "label": "Bathroom",
@@ -2339,17 +2357,30 @@
       "gw": 2,
       "gd": 2,
       "area": 64,
-      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+      "color": "#06b6d4",
+      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
     },
     {
-      "label": "Entry/Stair",
+      "label": "Genkan",
       "type": "entry",
       "gx": 9,
       "gz": 0,
       "gw": 1,
-      "gd": 4,
-      "area": 64,
-      "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+      "gd": 2,
+      "area": 32,
+      "color": "#e879f9",
+      "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
+    },
+    {
+      "label": "Storage",
+      "type": "walk_in_closet",
+      "gx": 9,
+      "gz": 2,
+      "gw": 1,
+      "gd": 2,
+      "area": 32,
+      "color": "#78716c",
+      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
     }
   ]
 }

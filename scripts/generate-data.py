@@ -1,13 +1,26 @@
 #!/usr/bin/env python3
 """
-Parametric home generator — Den Outdoors modular homes.
+Parametric home generator — Den Outdoors retreat homes.
 
-Architectural standards baked in:
+Architectural standards:
   IRC (International Residential Code) — room minimums, egress, ceiling heights
   NKBA (National Kitchen & Bath Association) — kitchen/bath clearances
   ADA (Americans with Disabilities Act) — turning radius, door widths, corridor widths
   IECC — window-to-wall ratio guidance
   Structural — max 16ft clear span without intermediate bearing wall
+
+Japandi design principles (Japanese + Scandinavian fusion):
+  Silver ratio (1:√2 ≈ 1:1.414) preferred room proportions
+  Ma (negative space) — furniture ≤40% of floor area
+  Oku (depth) hierarchy — public→semi-public→semi-private→private gradient
+  Genkan/entry threshold — deliberate transition from outside
+  Engawa — covered outdoor transition (deck as engawa)
+  Wet wall clustering — back-to-back plumbing for efficiency
+  Storage ≥10% of indoor area — everything hidden (oshiire principle)
+  LDK heart — living/dining/kitchen = 25-35% of habitable area
+  Nature connection — every habitable room gets exterior wall
+  Cross-ventilation — habitable rooms on 2+ exterior faces preferred
+  Hyggekrog — cozy reading nooks (flex rooms serve this purpose)
 
 Design rules:
   - 4ft grid snapping (all dimensions multiples of 4ft)
@@ -34,13 +47,49 @@ MAX_CLEAR_SPAN_G = MAX_CLEAR_SPAN_FT // GRID  # 4 grid units
 NATURAL_LIGHT_PCT = 0.08  # IRC R303: glazing >= 8% of floor area
 MAX_WWR = 0.30            # IECC: window-to-wall ratio cap ~30%
 
+# Japandi spatial targets
+SILVER_RATIO = 1.414      # 1:√2 — preferred Japanese architectural proportion
+STORAGE_TARGET_PCT = 10   # ≥10% of indoor area (oshiire principle: everything hidden)
+CIRCULATION_MAX_PCT = 15  # corridors ≤15% of indoor area
+LDK_MIN_PCT = 25          # living/dining/kitchen ≥25% of habitable area
+LDK_MAX_PCT = 40          # cap at 40% — leave room for private zones
+MAX_ROOM_RATIO = 2.0      # silver ratio cap: no room wider than 1:2
+
+# Room type color mapping for 3D visualization (hex)
+ROOM_COLORS = {
+    "bedroom":       "#6366f1",  # indigo
+    "primary_bed":   "#818cf8",  # lighter indigo
+    "loft_bed":      "#a5b4fc",  # pale indigo
+    "bathroom_full": "#06b6d4",  # cyan
+    "bathroom_half": "#22d3ee",  # light cyan
+    "bathroom_ada":  "#67e8f9",  # pale cyan
+    "kitchen":       "#f59e0b",  # amber
+    "kitchen_open":  "#fbbf24",  # yellow
+    "living":        "#22c55e",  # green
+    "great_room":    "#4ade80",  # light green
+    "dining":        "#a3e635",  # lime
+    "utility":       "#94a3b8",  # slate
+    "entry":         "#e879f9",  # fuchsia
+    "mudroom":       "#c084fc",  # purple
+    "office":        "#fb923c",  # orange
+    "walk_in_closet":"#78716c",  # stone
+    "pantry":        "#a8a29e",  # warm gray
+    "corridor":      "#64748b",  # cool gray
+    "deck":          "#a16207",  # dark amber/wood
+    "garage":        "#57534e",  # warm dark gray
+    "flex":          "#f472b6",  # pink
+    "engawa":        "#92400e",  # deep wood
+    "meditation":    "#7c3aed",  # violet
+    "nook":          "#ec4899",  # hot pink
+}
+
 @dataclass(frozen=True)
 class RoomConstraint:
     min_gw: int            # min grid units wide
     min_gd: int            # min grid units deep
     min_area_sqft: int     # code minimum area
     needs_exterior: bool   # must touch exterior wall (for egress, light, entry)
-    needs_egress: bool     # IRC R310: bedroom egress window (min 5.7sqft opening, sill ≤44")
+    needs_egress: bool     # IRC R310: bedroom egress window
     needs_door: bool       # needs a door to corridor/adjacent room
     ada_turning: bool      # 60" wheelchair turning radius (ADA 304.3)
     needs_natural_light: bool  # IRC R303: 8% glazing requirement
@@ -48,69 +97,70 @@ class RoomConstraint:
 
 ROOM_RULES = {
     # ── Bedrooms ──
-    # IRC R304: min 70sqft, min 7ft dimension. IRC R310: egress window required.
-    # 4ft grid: 2×2=64sqft (relaxed from 70, accepted for modular), 2×3=96sqft preferred
     "bedroom":       RoomConstraint(2, 2, 64,  True, True, True, False, True,
-                     "IRC R304: ≥70sf (64 grid-relaxed). Queen 60×80 + 24in clearance 3 sides"),
+                     "IRC R304: ≥70sf (64 grid-relaxed). Queen 60×80 + 24in clearance"),
     "primary_bed":   RoomConstraint(3, 3, 144, True, True, True, False, True,
-                     "King 76×80 + 24in clearance + walk-in closet access. Typical 12×16ft"),
+                     "King 76×80 + 24in clearance + walk-in closet access"),
     "loft_bed":      RoomConstraint(2, 2, 64,  False, False, False, False, False,
-                     "Loft sleeping area. Accessed by code-compliant stair (IRC R311.7)"),
+                     "Loft sleeping area. Code-compliant stair (IRC R311.7)"),
 
     # ── Bathrooms ──
-    # IRC P2705. NKBA: 30in clearance from fixture to opposite wall.
-    # Full bath practical min 5×8=40sqft. ADA: 60in turning circle.
     "bathroom_full": RoomConstraint(2, 2, 64,  False, False, True, True, False,
-                     "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"),
+                     "NKBA: tub/shower + toilet + vanity. 30in clearance"),
     "bathroom_half": RoomConstraint(1, 1, 16,  False, False, True, False, False,
-                     "Powder room: toilet + pedestal sink. IRC min 30×30in shower n/a"),
+                     "Powder room: toilet + pedestal sink"),
     "bathroom_ada":  RoomConstraint(2, 2, 64,  False, False, True, True, False,
-                     "ADA: roll-in shower 36×36 + 60in turning + 48in toilet clearance + grab bars"),
+                     "ADA: roll-in shower + 60in turning + grab bars"),
 
     # ── Kitchen ──
-    # NKBA: work triangle legs 4-9ft, sum 13-26ft. 48in between counters.
-    # No IRC min sqft, but functional minimum ~100sqft for work triangle.
     "kitchen":       RoomConstraint(2, 2, 64,  False, False, False, False, True,
-                     "NKBA: work triangle 13-26ft total. 48in aisle (42in single cook)"),
+                     "NKBA: work triangle 13-26ft. 48in aisle"),
     "kitchen_open":  RoomConstraint(3, 3, 144, False, False, False, False, True,
-                     "NKBA: island + work triangle + dining. 48in around island. Typical 15×18ft"),
+                     "NKBA: island + work triangle + dining. 48in around island"),
 
     # ── Living ──
-    # No IRC minimum. Furniture-based: sofa 7ft + 8ft TV viewing + 3ft circulation.
     "living":        RoomConstraint(3, 3, 144, True, False, False, False, True,
-                     "Sofa 84in + coffee table + 8ft TV viewing distance + 36in circulation"),
+                     "Sofa + coffee table + 8ft TV viewing + 36in circulation"),
     "great_room":    RoomConstraint(4, 3, 192, True, False, False, False, True,
-                     "Combined living/dining. Open plan. Typical 20×16ft+"),
+                     "Combined living/dining. Open plan LDK heart"),
     "dining":        RoomConstraint(2, 2, 80,  False, False, False, False, True,
-                     "Table for 4-6 (60×36in) + 36in chair clearance all sides"),
+                     "Table for 4-6 + 36in chair clearance all sides"),
 
     # ── Utility/service ──
     "utility":       RoomConstraint(1, 1, 16,  False, False, True, False, False,
-                     "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"),
+                     "Washer + dryer side-by-side. 36in front clearance"),
     "entry":         RoomConstraint(1, 1, 16,  True, False, False, False, False,
-                     "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"),
+                     "Genkan: exterior door + shoe storage. Deliberate threshold"),
     "mudroom":       RoomConstraint(1, 2, 32,  True, False, False, False, False,
-                     "Bench 18in deep + hooks + shoe storage. Typical 6×6-7×9ft"),
+                     "Bench + hooks + shoe storage. Genkan-inspired transition"),
     "office":        RoomConstraint(2, 2, 64,  False, False, True, False, True,
-                     "Desk 60×30in + 32in chair clearance behind + bookshelf"),
+                     "Desk 60×30 + chair clearance + bookshelf"),
 
-    # ── Closet/storage ──
+    # ── Storage (oshiire principle: everything hidden) ──
     "walk_in_closet": RoomConstraint(1, 1, 16, False, False, False, False, False,
-                     "Walk-in: 24in rod depth + 36in clearance. Min 5×5ft practical"),
+                     "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"),
     "pantry":        RoomConstraint(1, 1, 16,  False, False, False, False, False,
-                     "Walk-in pantry: shelving + 36in aisle. Typical 4×6ft"),
+                     "Walk-in pantry: shelving + 36in aisle"),
 
-    # ── Corridors: IRC R311.6 = 36in min, ADA preferred 48in ──
+    # ── Corridors ──
     "corridor":      RoomConstraint(1, 1, 16,  False, False, False, False, False,
-                     "IRC R311.6: ≥36in. 4ft grid = 48in = ADA preferred width"),
+                     "IRC R311.6: ≥36in. 4ft grid = 48in = ADA preferred"),
 
     # ── Special ──
     "deck":          RoomConstraint(1, 1, 16,  True, False, False, False, False,
-                     "Exterior deck/porch. Typical 10×12ft+"),
+                     "Engawa/deck: covered outdoor transition. Nature connection"),
     "garage":        RoomConstraint(3, 5, 240, True, False, False, False, False,
-                     "Single car: 12×20ft min. Door 8-10ft wide × 7-8ft tall"),
+                     "Single car: 12×20ft min"),
     "flex":          RoomConstraint(2, 2, 64,  False, False, True, False, True,
-                     "Multi-purpose: bedroom, office, playroom. IRC habitable ≥70sf"),
+                     "Hyggekrog/meditation/guest. Multi-purpose nook"),
+
+    # ── Japandi-specific room types ──
+    "engawa":        RoomConstraint(1, 1, 16,  True, False, False, False, False,
+                     "Covered veranda/transition. 4-5ft wide. Indoor-outdoor threshold"),
+    "meditation":    RoomConstraint(1, 1, 16,  False, False, False, False, True,
+                     "Contemplation space. Tatami floor, minimal, garden view"),
+    "nook":          RoomConstraint(1, 1, 16,  False, False, False, False, False,
+                     "Hyggekrog reading nook. Cozy alcove with soft lighting"),
 }
 
 # ── Opening rules per room type ──
@@ -127,6 +177,7 @@ OPENING_RULES = {
     "entry":         [("door", "exterior")],
     "mudroom":       [("door", "exterior")],
     "deck":          [],
+    "engawa":        [],
     "garage":        [("door", "exterior")],
     "bathroom_full": [("window", "exterior")],
     "bathroom_half": [],
@@ -136,75 +187,77 @@ OPENING_RULES = {
     "flex":          [("window", "exterior")],
     "walk_in_closet": [],
     "pantry":        [],
+    "meditation":    [("window", "exterior")],
+    "nook":          [("window", "exterior")],
 }
 
 
 # ══════════════════════════════════════════════════════════════════════
-# COMPONENTS — minimal set (13 total), all 4ft grid-aligned
+# COMPONENTS — Japandi material palette (timber + dark steel + glass)
 # ══════════════════════════════════════════════════════════════════════
 
 COMPONENTS = [
-    # WALLS
+    # WALLS — charred timber (shou sugi ban) exterior, light timber interior
     {"id": "wall-ext", "name": "Exterior Wall 4'", "category": "wall",
      "dimensions": {"width": 4, "height": 10, "depth": 0.5},
-     "geometry": "box", "material": {"color": "#1a1a2e", "opacity": 1, "metalness": 0.3, "roughness": 0.8},
-     "properties": {"structural": True, "insulated": True, "exterior": True, "panelType": "steel-sip"}},
+     "geometry": "box", "material": {"color": "#2c2420", "opacity": 1, "metalness": 0.1, "roughness": 0.95},
+     "properties": {"structural": True, "insulated": True, "exterior": True, "panelType": "shou-sugi-ban"}},
     {"id": "wall-int", "name": "Interior Wall 4'", "category": "wall",
      "dimensions": {"width": 4, "height": 9, "depth": 0.33},
-     "geometry": "box", "material": {"color": "#d4c5a9", "opacity": 1, "metalness": 0.05, "roughness": 0.95},
-     "properties": {"structural": False, "insulated": False, "exterior": False, "panelType": "drywall"}},
+     "geometry": "box", "material": {"color": "#d4c5a9", "opacity": 1, "metalness": 0.02, "roughness": 0.98},
+     "properties": {"structural": False, "insulated": False, "exterior": False, "panelType": "hinoki-panel"}},
 
-    # ROOF — 4' modules
+    # ROOF — standing seam dark zinc
     {"id": "roof-gable", "name": "Gable Roof 4'", "category": "roof",
      "dimensions": {"width": 4, "height": 0.33, "depth": 14}, "geometry": "box", "pitchAngle": 25,
-     "material": {"color": "#2d2d3d", "opacity": 1, "metalness": 0.5, "roughness": 0.5},
-     "properties": {"structural": True, "insulated": True, "exterior": True, "panelType": "metal-roof"}},
+     "material": {"color": "#1a1a1a", "opacity": 1, "metalness": 0.6, "roughness": 0.4},
+     "properties": {"structural": True, "insulated": True, "exterior": True, "panelType": "zinc-standing-seam"}},
     {"id": "roof-steep", "name": "Steep Roof 4'", "category": "roof",
      "dimensions": {"width": 4, "height": 0.33, "depth": 14}, "geometry": "box", "pitchAngle": 45,
-     "material": {"color": "#1a1a2e", "opacity": 1, "metalness": 0.5, "roughness": 0.5},
-     "properties": {"structural": True, "insulated": True, "exterior": True, "panelType": "metal-roof"}},
+     "material": {"color": "#1a1a1a", "opacity": 1, "metalness": 0.6, "roughness": 0.4},
+     "properties": {"structural": True, "insulated": True, "exterior": True, "panelType": "zinc-standing-seam"}},
     {"id": "roof-shed", "name": "Shed Roof 4'", "category": "roof",
      "dimensions": {"width": 4, "height": 0.33, "depth": 14}, "geometry": "box", "pitchAngle": 12,
-     "material": {"color": "#2d2d3d", "opacity": 1, "metalness": 0.5, "roughness": 0.5},
-     "properties": {"structural": True, "insulated": True, "exterior": True, "panelType": "metal-roof"}},
+     "material": {"color": "#1a1a1a", "opacity": 1, "metalness": 0.6, "roughness": 0.4},
+     "properties": {"structural": True, "insulated": True, "exterior": True, "panelType": "zinc-standing-seam"}},
     {"id": "roof-flat", "name": "Flat Roof 4x4", "category": "roof",
      "dimensions": {"width": 4, "height": 0.33, "depth": 4}, "geometry": "box", "pitchAngle": 0,
-     "material": {"color": "#3d3d4d", "opacity": 1, "metalness": 0.4, "roughness": 0.6},
-     "properties": {"structural": True, "insulated": True, "exterior": True, "panelType": "membrane"}},
+     "material": {"color": "#262626", "opacity": 1, "metalness": 0.5, "roughness": 0.5},
+     "properties": {"structural": True, "insulated": True, "exterior": True, "panelType": "green-roof-membrane"}},
 
-    # FLOOR — 4×4 cassettes
+    # FLOOR — engineered hinoki (light) + cedar deck
     {"id": "floor-std", "name": "Floor Cassette 4x4", "category": "floor",
      "dimensions": {"width": 4, "height": 0.67, "depth": 4}, "geometry": "box",
-     "material": {"color": "#8b7355", "opacity": 1, "metalness": 0.05, "roughness": 0.9},
-     "properties": {"structural": True, "insulated": True, "exterior": False, "panelType": "engineered-wood"}},
+     "material": {"color": "#c4a882", "opacity": 1, "metalness": 0.02, "roughness": 0.92},
+     "properties": {"structural": True, "insulated": True, "exterior": False, "panelType": "engineered-hinoki"}},
     {"id": "floor-deck", "name": "Deck Panel 4x4", "category": "floor",
      "dimensions": {"width": 4, "height": 0.5, "depth": 4}, "geometry": "box",
-     "material": {"color": "#6b4226", "opacity": 1, "metalness": 0.05, "roughness": 0.95},
-     "properties": {"structural": True, "insulated": False, "exterior": True, "panelType": "wood-deck"}},
+     "material": {"color": "#8b6914", "opacity": 1, "metalness": 0.02, "roughness": 0.95},
+     "properties": {"structural": True, "insulated": False, "exterior": True, "panelType": "cedar-deck"}},
 
-    # OPENINGS
+    # OPENINGS — black steel frames + clear/frosted glass
     {"id": "door-ext", "name": "Entry Door 4'", "category": "opening",
      "dimensions": {"width": 4, "height": 8, "depth": 0.5}, "geometry": "box",
-     "material": {"color": "#4a3728", "opacity": 1, "metalness": 0.15, "roughness": 0.8},
-     "properties": {"structural": False, "insulated": True, "exterior": True, "panelType": "insulated-door"}},
+     "material": {"color": "#3d2b1f", "opacity": 1, "metalness": 0.1, "roughness": 0.85},
+     "properties": {"structural": False, "insulated": True, "exterior": True, "panelType": "solid-timber-door"}},
     {"id": "door-sliding", "name": "Sliding Glass Door 4'", "category": "opening",
      "dimensions": {"width": 4, "height": 8, "depth": 0.5}, "geometry": "box",
-     "material": {"color": "#87ceeb", "opacity": 0.4, "metalness": 0.5, "roughness": 0.15},
-     "properties": {"structural": False, "insulated": False, "exterior": True, "panelType": "glass-sliding"}},
+     "material": {"color": "#b8d4e3", "opacity": 0.35, "metalness": 0.4, "roughness": 0.1},
+     "properties": {"structural": False, "insulated": False, "exterior": True, "panelType": "shoji-glass-sliding"}},
     {"id": "window-std", "name": "Window 4'", "category": "opening",
      "dimensions": {"width": 4, "height": 4, "depth": 0.5}, "geometry": "box",
-     "material": {"color": "#87ceeb", "opacity": 0.35, "metalness": 0.5, "roughness": 0.15},
-     "properties": {"structural": False, "insulated": False, "exterior": True, "panelType": "glass"}},
+     "material": {"color": "#b8d4e3", "opacity": 0.3, "metalness": 0.4, "roughness": 0.1},
+     "properties": {"structural": False, "insulated": False, "exterior": True, "panelType": "triple-glaze-timber"}},
     {"id": "door-int", "name": "Interior Door", "category": "opening",
      "dimensions": {"width": 3, "height": 7, "depth": 0.33}, "geometry": "box",
-     "material": {"color": "#b8a080", "opacity": 1, "metalness": 0.05, "roughness": 0.9},
-     "properties": {"structural": False, "insulated": False, "exterior": False, "panelType": "wood-door"}},
+     "material": {"color": "#c4a882", "opacity": 1, "metalness": 0.02, "roughness": 0.92},
+     "properties": {"structural": False, "insulated": False, "exterior": False, "panelType": "shoji-panel"}},
 
-    # STRUCTURAL
+    # STRUCTURAL — concrete pier foundation
     {"id": "foundation", "name": "Foundation Sill 4'", "category": "structural",
      "dimensions": {"width": 4, "height": 0.5, "depth": 0.67}, "geometry": "box",
      "material": {"color": "#555555", "opacity": 1, "metalness": 0.3, "roughness": 0.7},
-     "properties": {"structural": True, "insulated": False, "exterior": True, "panelType": "concrete"}},
+     "properties": {"structural": True, "insulated": False, "exterior": True, "panelType": "concrete-pier"}},
 ]
 COMP_MAP = {c["id"]: c for c in COMPONENTS}
 
@@ -257,7 +310,6 @@ class Home:
         self.rooms: list[Room] = []
         self._occupied: set[tuple[int, int]] = set()
 
-        # Building envelope = full grid minus explicit voids (for L-shapes)
         all_cells = {(x, z) for x in range(grid_w) for z in range(grid_d)}
         self._void = set(void or [])
         self.envelope = all_cells - self._void
@@ -270,7 +322,6 @@ class Home:
         c = ROOM_RULES[room_type]
         label = label or room_type.replace("_", " ").title()
 
-        # ── Dimensional constraints (IRC/NKBA) ──
         if gw < c.min_gw:
             raise ValueError(f"{label}: width {gw*GRID}ft < min {c.min_gw*GRID}ft for {room_type}")
         if gd < c.min_gd:
@@ -279,21 +330,17 @@ class Home:
         if area < c.min_area_sqft:
             raise ValueError(f"{label}: area {area}sqft < min {c.min_area_sqft}sqft ({c.furniture_note})")
 
-        # ── Bounds check ──
         if gx < 0 or gz < 0 or gx + gw > self.grid_w or gz + gd > self.grid_d:
             raise ValueError(f"{label}: ({gx},{gz})+({gw}x{gd}) exceeds grid ({self.grid_w}x{self.grid_d})")
 
-        # ── Room must be within building envelope ──
         new_cells = {(gx + dx, gz + dz) for dx in range(gw) for dz in range(gd)}
         if new_cells & self._void:
             raise ValueError(f"{label}: room overlaps void cells {new_cells & self._void}")
 
-        # ── Overlap check ──
         overlap = new_cells & self._occupied
         if overlap:
             raise ValueError(f"{label}: overlaps existing room at {overlap}")
 
-        # ── Exterior adjacency check ──
         if c.needs_exterior:
             touches = any(
                 neighbor not in self.envelope
@@ -303,11 +350,10 @@ class Home:
             if not touches:
                 raise ValueError(f"{label}: {room_type} requires exterior wall but is fully interior")
 
-        # ── Structural span check ──
-        if room_type not in ("corridor", "deck", "garage"):
+        if room_type not in ("corridor", "deck", "engawa", "garage"):
             if gw > MAX_CLEAR_SPAN_G and gd > MAX_CLEAR_SPAN_G:
                 print(f"  WARN {self.id}/{label}: both dimensions ({gw*GRID}×{gd*GRID}ft) "
-                      f"exceed {MAX_CLEAR_SPAN_FT}ft clear span — needs intermediate bearing wall or beam")
+                      f"exceed {MAX_CLEAR_SPAN_FT}ft clear span")
 
         room = Room(room_type, label, gx, gz, gw, gd)
         self.rooms.append(room)
@@ -315,15 +361,15 @@ class Home:
         return self
 
     def validate(self):
-        """Final validation of the complete home."""
-        # ── 100% envelope coverage (no gaps) ──
+        """Final validation — IRC + Japandi principles."""
+        # ── 100% envelope coverage ──
         uncovered = self.envelope - self._occupied
         if uncovered:
             raise ValueError(
-                f"{self.id}: {len(uncovered)} uncovered cells in envelope: "
+                f"{self.id}: {len(uncovered)} uncovered cells: "
                 f"{sorted(uncovered)[:10]}{'...' if len(uncovered) > 10 else ''}")
 
-        # ── Bed/bath count check ──
+        # ── Bed/bath count ──
         beds = sum(1 for r in self.rooms if r.type in ("bedroom", "primary_bed", "loft_bed"))
         full_baths = sum(1 for r in self.rooms if r.type in ("bathroom_full", "bathroom_ada"))
         half_baths = sum(1 for r in self.rooms if r.type == "bathroom_half")
@@ -331,8 +377,7 @@ class Home:
         if f"{beds}/{bath_str}" != self.bed_bath:
             print(f"  WARN {self.id}: declared {self.bed_bath} but rooms give {beds}/{bath_str}")
 
-        # ── Natural light check (IRC R303) ──
-        cell_room = {c: r for r in self.rooms for c in r.cells}
+        # ── Natural light (IRC R303) ──
         for room in self.rooms:
             if not ROOM_RULES[room.type].needs_natural_light:
                 continue
@@ -342,22 +387,9 @@ class Home:
                     if (nx, nz) not in self.envelope:
                         ext_edges += 1
             if ext_edges == 0:
-                print(f"  WARN {self.id}/{room.label}: needs natural light (IRC R303) "
-                      f"but has no exterior edges for windows")
+                print(f"  WARN {self.id}/{room.label}: needs natural light but no exterior edges")
 
-        # ── Cross-ventilation check (soft) ──
-        for room in self.rooms:
-            if room.type in ("bedroom", "primary_bed", "living", "great_room"):
-                dirs = set()
-                for (x, z) in room.cells:
-                    if (x-1, z) not in self.envelope: dirs.add("west")
-                    if (x+1, z) not in self.envelope: dirs.add("east")
-                    if (x, z-1) not in self.envelope: dirs.add("south")
-                    if (x, z+1) not in self.envelope: dirs.add("north")
-                if len(dirs) < 2 and dirs:
-                    pass  # Single-side exposure OK for modular — skip warning
-
-        # ── Helper: check if two rooms share a wall (adjacent cells) ──
+        # ── Helper ──
         def _adjacent(r1, r2):
             for c1 in r1.cells:
                 for c2 in r2.cells:
@@ -365,94 +397,98 @@ class Home:
                         return True
             return False
 
-        # ── Wet wall clustering (P8.1: back-to-back plumbing) ──
+        # ── Wet wall clustering (Japandi: efficient, minimal plumbing runs) ──
         wet_rooms = [r for r in self.rooms if r.type in
                      ("bathroom_full", "bathroom_half", "bathroom_ada", "kitchen", "kitchen_open", "utility")]
         if len(wet_rooms) >= 2:
             wet_adj = sum(1 for i, r1 in enumerate(wet_rooms)
                           for r2 in wet_rooms[i+1:] if _adjacent(r1, r2))
             if wet_adj == 0:
-                print(f"  WARN {self.id}: no wet rooms share walls — plumbing inefficient (P8.1)")
+                print(f"  WARN {self.id}: no wet rooms share walls — plumbing inefficient")
 
-        # ── Intimacy gradient: entry must NOT be adjacent to bedrooms (P2.2/P5.3) ──
+        # ── Oku gradient: entry NOT adjacent to bedrooms ──
         entries = [r for r in self.rooms if r.type in ("entry", "mudroom")]
-        bed_types = ("bedroom", "primary_bed", "loft_bed")
-        bedrooms = [r for r in self.rooms if r.type in bed_types]
+        bedrooms = [r for r in self.rooms if r.type in ("bedroom", "primary_bed", "loft_bed")]
         for entry in entries:
             for bed in bedrooms:
+                if bed.type == "loft_bed":
+                    continue
                 if _adjacent(entry, bed):
                     print(f"  WARN {self.id}: entry '{entry.label}' adjacent to bedroom "
-                          f"'{bed.label}' — violates intimacy gradient (P2.2)")
+                          f"'{bed.label}' — violates oku gradient")
 
-        # ── Noise isolation: bedrooms should NOT share wall with kitchen or garage (P4.3) ──
-        # Loft beds exempt — they're above the kitchen zone in steep-gable/A-frame designs.
+        # ── Noise isolation: bedrooms NOT adjacent to kitchen/garage ──
         noisy = [r for r in self.rooms if r.type in ("kitchen", "kitchen_open", "garage")]
         for bed in bedrooms:
             if bed.type == "loft_bed":
-                continue  # lofts are vertically separated, not plan-adjacent
+                continue
             for n in noisy:
                 if _adjacent(bed, n):
                     print(f"  WARN {self.id}: bedroom '{bed.label}' shares wall with "
-                          f"'{n.label}' ({n.type}) — noise isolation concern (P4.3)")
+                          f"'{n.label}' — noise concern")
 
-        # ── Master bath adjacency: primary_bed must adjoin a bathroom (P4.1) ──
+        # ── Primary bed must adjoin bathroom ──
         for room in self.rooms:
             if room.type == "primary_bed":
                 baths = [r for r in self.rooms if r.type in
                          ("bathroom_full", "bathroom_half", "bathroom_ada")]
                 if not any(_adjacent(room, b) for b in baths):
-                    print(f"  WARN {self.id}: primary bed '{room.label}' not adjacent to "
-                          f"any bathroom — master bath should be directly connected (P4.1)")
+                    print(f"  WARN {self.id}: primary bed not adjacent to bathroom")
 
-        # ── Deck/porch should adjoin living or great_room (P10.1) ──
-        decks = [r for r in self.rooms if r.type == "deck"]
+        # ── Deck/engawa should adjoin living or great_room ──
+        outdoor = [r for r in self.rooms if r.type in ("deck", "engawa")]
         living = [r for r in self.rooms if r.type in ("living", "great_room")]
-        for d in decks:
+        for d in outdoor:
             if living and not any(_adjacent(d, lv) for lv in living):
-                print(f"  WARN {self.id}: deck '{d.label}' not adjacent to living area — "
-                      f"outdoor space should connect to social zone (P10.1)")
+                print(f"  WARN {self.id}: '{d.label}' not adjacent to living area")
 
-        # ── Room proportions: flag rooms narrower than 1:2.5 ratio (P12.3) ──
-        # Entry/mudroom exempt — transition spaces are naturally narrow.
-        exempt_proportion = ("corridor", "deck", "walk_in_closet", "pantry", "entry", "mudroom")
+        # ── Room proportions: silver ratio cap at 1:2 ──
+        exempt = ("corridor", "deck", "engawa", "walk_in_closet", "pantry", "entry", "mudroom", "nook")
         for room in self.rooms:
-            if room.type in exempt_proportion:
+            if room.type in exempt:
                 continue
             ratio = max(room.gw, room.gd) / max(min(room.gw, room.gd), 1)
-            if ratio > 2.5:
-                print(f"  WARN {self.id}/{room.label}: proportion {room.gw}:{room.gd} "
-                      f"(ratio {ratio:.1f}:1) — rooms should be 1:1 to 1:2.5 (P12.3)")
+            if ratio > MAX_ROOM_RATIO:
+                print(f"  WARN {self.id}/{room.label}: ratio {room.gw}:{room.gd} = {ratio:.1f}:1 "
+                      f"(target ≤{MAX_ROOM_RATIO}:1 silver ratio)")
 
-        # ── Storage budget: closets+pantry should be ≥8% of indoor area (P9.2) ──
-        indoor_cells = sum(len(r.cells) for r in self.rooms if r.type != "deck")
+        # ── Storage ≥10% (oshiire principle) ──
+        indoor_cells = sum(len(r.cells) for r in self.rooms
+                          if r.type not in ("deck", "engawa"))
         storage_cells = sum(len(r.cells) for r in self.rooms
                            if r.type in ("walk_in_closet", "pantry"))
         if indoor_cells > 0:
             pct = storage_cells * 100 / indoor_cells
-            if pct < 3 and indoor_cells > 20:  # only warn for homes >320sqft
-                print(f"  WARN {self.id}: storage {pct:.0f}% of indoor area — "
-                      f"target ≥8% (P9.2: closets, pantry, linen)")
+            if pct < 5 and indoor_cells > 20:
+                print(f"  WARN {self.id}: storage {pct:.0f}% — target ≥{STORAGE_TARGET_PCT}%")
 
-        # ── Circulation budget: corridor >15% of indoor area (P1.1) ──
+        # ── Circulation ≤15% ──
         corr_cells = sum(len(r.cells) for r in self.rooms if r.type == "corridor")
         if indoor_cells > 0:
             corr_pct = corr_cells * 100 / indoor_cells
-            if corr_pct > 15:
-                print(f"  WARN {self.id}: corridor {corr_pct:.0f}% of indoor area — "
-                      f"target ≤15% (P1.1)")
+            if corr_pct > CIRCULATION_MAX_PCT:
+                print(f"  WARN {self.id}: corridor {corr_pct:.0f}% — target ≤{CIRCULATION_MAX_PCT}%")
+
+        # ── LDK heart ≥25% of habitable ──
+        ldk_types = ("living", "great_room", "kitchen", "kitchen_open", "dining")
+        ldk_cells = sum(len(r.cells) for r in self.rooms if r.type in ldk_types)
+        if indoor_cells > 0:
+            ldk_pct = ldk_cells * 100 / indoor_cells
+            if ldk_pct < LDK_MIN_PCT and indoor_cells > 20:
+                print(f"  WARN {self.id}: LDK {ldk_pct:.0f}% — target ≥{LDK_MIN_PCT}%")
 
         return self
 
     @property
     def sqft(self):
-        return sum(r.area_sqft for r in self.rooms if r.type != "deck")
+        return sum(r.area_sqft for r in self.rooms if r.type not in ("deck", "engawa"))
 
     @property
     def footprint(self):
         return {"width": self.grid_w * GRID, "depth": self.grid_d * GRID}
 
     # ────────────────────────────────────────────────────────────────
-    # GENERATION — auto-create walls, openings, floors, roof
+    # GENERATION
     # ────────────────────────────────────────────────────────────────
 
     def generate(self):
@@ -472,14 +508,14 @@ class Home:
             cx = (gx + 0.5) * GRID - w / 2
             cz = (gz + 0.5) * GRID - d / 2
             room = cell_room.get(cell)
-            is_deck = room and room.type == "deck"
+            is_outdoor = room and room.type in ("deck", "engawa")
 
             placements.append(_p("foundation", cx, 0.25, cz))
             placements.append(_p(
-                "floor-deck" if is_deck else "floor-std",
+                "floor-deck" if is_outdoor else "floor-std",
                 cx, 0.5 + 0.33, cz, zone="floor"))
 
-        # ── Walls (use envelope for exterior detection) ──
+        # ── Walls ──
         ext_edges = []
         int_edges = []
 
@@ -496,7 +532,6 @@ class Home:
                 ("east",  (gx + 1, gz), (cx + GRID / 2, wall_h / 2 + 0.5, cz), 90),
             ]:
                 if neighbor not in self.envelope:
-                    # EXTERIOR edge — neighbor is void or out of bounds
                     p = _p("wall-ext", pos[0], pos[1], pos[2], ry=rot_y, zone="walls")
                     p["_edge_cell"] = cell
                     p["_edge_dir"] = direction
@@ -504,7 +539,6 @@ class Home:
                     ext_edges.append(p)
                     placements.append(p)
                 elif neighbor in self._occupied:
-                    # INTERIOR edge — wall between different rooms
                     neighbor_room = cell_room.get(neighbor)
                     if room and neighbor_room and room.label != neighbor_room.label:
                         if cell < neighbor:
@@ -520,7 +554,7 @@ class Home:
         # ── Roof ──
         self._place_roof(placements, w, d, wall_h)
 
-        # ── Room metadata ──
+        # ── Room metadata (with colors for visualization) ──
         room_layouts = []
         for room in self.rooms:
             room_layouts.append({
@@ -529,6 +563,7 @@ class Home:
                 "gx": room.gx, "gz": room.gz,
                 "gw": room.gw, "gd": room.gd,
                 "area": room.area_sqft,
+                "color": ROOM_COLORS.get(room.type, "#94a3b8"),
                 "constraints": ROOM_RULES[room.type].furniture_note,
             })
 
@@ -693,234 +728,254 @@ def _p(comp_id, x, y, z, rx=0, ry=0, rz=0, zone="", sx=1, sy=1, sz=1):
 
 
 # ══════════════════════════════════════════════════════════════════════
-# HOME DEFINITIONS — real Den Outdoors specs, 100% grid coverage
+# HOME DEFINITIONS — Japandi retreat homes, 100% grid coverage
 # ══════════════════════════════════════════════════════════════════════
 
 def _void_rect(x0, z0, x1, z1):
-    """Generate void cells for a rectangular region (inclusive)."""
     return {(x, z) for x in range(x0, x1+1) for z in range(z0, z1+1)}
 
 
 def define_homes():
     homes = []
 
-    # ── Ascent ADU ── (33×14ft → 8×4 grid, 460sf real, shed roof 19ft)
-    # Deck adjacent to living (P10.1), entry→living flow.
+    # ── 1. Ascent ADU ── (32×16ft → 8×4 grid, ~400sf, shed roof)
+    # Compact retreat. Genkan entry → open LDK → private bedroom.
+    # Oku gradient: entry(east) → living(center) → bed(west)
     h = Home("ascent-adu", "Ascent ADU", 8, 4, 19, "1/1", "shed")
-    h.add_room("deck", 0, 0, 1, 4, "Deck")                        # west edge, adjacent to living ✓
-    h.add_room("great_room", 1, 0, 5, 4, "Living/Kitchen")        # open plan
-    h.add_room("bedroom", 6, 0, 2, 2, "Bedroom")                  # east edge, private end
-    h.add_room("bathroom_full", 6, 2, 2, 2, "Bathroom")           # east edge, wet wall
+    h.add_room("entry", 7, 0, 1, 2, "Genkan")
+    h.add_room("great_room", 2, 0, 5, 4, "Living/Kitchen")
+    h.add_room("bedroom", 0, 0, 2, 2, "Bedroom")
+    h.add_room("bathroom_full", 0, 2, 2, 2, "Bathroom")
+    h.add_room("walk_in_closet", 7, 2, 1, 2, "Storage")
     homes.append(h.validate())
 
-    # ── Modern Alpine 2025 ── (40×16ft → 10×4 grid, 880sf, steep roof 21ft)
+    # ── 2. Modern Alpine 2025 ── (40×16ft → 10×4 grid, steep roof)
+    # Mountain retreat. Floor-to-ceiling gable glass → loft above.
+    # Oku: entry(east) → kitchen(mid) → great room(west, views)
     h = Home("modern-alpine-2025", "Modern Alpine 2025", 10, 4, 21, "2/1", "steep-gable", has_loft=True)
-    h.add_room("great_room", 0, 0, 4, 4, "Great Room")            # floor-to-ceiling glass gable
-    h.add_room("bedroom", 4, 0, 3, 2, "Bedroom")
-    h.add_room("kitchen", 4, 2, 3, 2, "Kitchen")
-    h.add_room("loft_bed", 7, 0, 2, 2, "Loft Bedroom")
+    h.add_room("great_room", 0, 0, 4, 4, "Great Room")
+    h.add_room("kitchen", 4, 0, 3, 2, "Kitchen")
+    h.add_room("bedroom", 4, 2, 3, 2, "Bedroom")
+    h.add_room("loft_bed", 7, 0, 2, 2, "Loft Suite")
     h.add_room("bathroom_full", 7, 2, 2, 2, "Bathroom")
-    h.add_room("entry", 9, 0, 1, 4, "Entry/Stair")
+    h.add_room("entry", 9, 0, 1, 2, "Genkan")
+    h.add_room("walk_in_closet", 9, 2, 1, 2, "Storage")
     homes.append(h.validate())
 
-    # ── Outpost Plus ── (25×25ft → 7×7 grid, 925sf, steep roof 25ft)
+    # ── 3. Outpost Plus ── (28×28ft → 7×7 grid, steep roof)
+    # Square cabin with central hearth. Intimate proportions.
+    # Oku: entry(SE) → kitchen(NE) → great room(W, views) → bed(E, private)
     h = Home("outpost-plus", "Outpost Plus", 7, 7, 25, "2/1", "steep-gable", has_loft=True)
-    h.add_room("great_room", 0, 0, 4, 5, "Great Room")            # central stove
+    h.add_room("great_room", 0, 0, 4, 5, "Great Room")
     h.add_room("kitchen", 0, 5, 4, 2, "Kitchen")
     h.add_room("bedroom", 4, 0, 3, 3, "Ground Suite")
-    h.add_room("loft_bed", 4, 3, 3, 2, "Loft Bedroom")
+    h.add_room("loft_bed", 4, 3, 2, 2, "Loft Nook")
+    h.add_room("walk_in_closet", 6, 3, 1, 2, "Closet")
     h.add_room("bathroom_full", 4, 5, 2, 2, "Bathroom")
-    h.add_room("entry", 6, 5, 1, 2, "Entry")
+    h.add_room("entry", 6, 5, 1, 2, "Genkan")
     homes.append(h.validate())
 
-    # ── Barnhouse 1.1 ── (36×26ft → 9×7 grid, 1000sf, gable 20ft)
-    # Fix #8: add walk-in closet for primary suite (every bedroom needs closet).
+    # ── 4. Barnhouse 1.1 ── (36×28ft → 9×7 grid, gable)
+    # Classic barn form. Open LDK + private suite.
+    # Wet wall: bathroom backs kitchen. Storage closet for primary.
     h = Home("barnhouse-1-1", "Barnhouse 1.1", 9, 7, 20, "1/1", "gable")
-    h.add_room("great_room", 0, 0, 5, 4, "Living/Dining")        # vaulted ceiling
+    h.add_room("great_room", 0, 0, 5, 4, "Living/Dining")
     h.add_room("kitchen", 0, 4, 5, 3, "Kitchen")
-    h.add_room("primary_bed", 5, 0, 3, 3, "Primary Bedroom")     # shrunk: 4×3→3×3
-    h.add_room("walk_in_closet", 8, 0, 1, 3, "Walk-in Closet")   # new: east edge
-    h.add_room("bathroom_full", 5, 3, 2, 2, "Bathroom")           # wet wall w/ kitchen
-    h.add_room("office", 7, 3, 2, 2, "Office")
-    h.add_room("utility", 5, 5, 2, 2, "Utility/Laundry")
-    h.add_room("entry", 7, 5, 2, 2, "Entry")
+    h.add_room("primary_bed", 5, 0, 3, 3, "Primary Suite")
+    h.add_room("walk_in_closet", 8, 0, 1, 3, "Walk-in Closet")
+    h.add_room("bathroom_full", 5, 3, 2, 2, "Bathroom")
+    h.add_room("office", 7, 3, 2, 2, "Office/Nook")
+    h.add_room("utility", 5, 5, 2, 2, "Utility")
+    h.add_room("entry", 7, 5, 2, 2, "Genkan")
     homes.append(h.validate())
 
-    # ── Barnhouse 2.1 ── (36×26ft → 9×7 grid, 1000sf, gable 20ft)
-    # Entry + corridor spine as noise buffer between kitchen and bedrooms (P4.3).
+    # ── 5. Barnhouse 2.1 ── (36×28ft → 9×7 grid, gable)
+    # 2-bed with corridor spine as sound buffer.
+    # Oku: entry(E)→corridor→kitchen/living(W)→bedrooms(E, beyond corridor)
     h = Home("barnhouse-2-1", "Barnhouse 2.1", 9, 7, 20, "2/1", "gable")
     h.add_room("great_room", 0, 0, 5, 4, "Living/Dining")
     h.add_room("kitchen", 0, 4, 5, 3, "Kitchen")
-    h.add_room("corridor", 5, 0, 1, 7, "Central Hall")            # spine: noise buffer
-    h.add_room("primary_bed", 6, 0, 3, 3, "Primary Bed")          # private end
-    h.add_room("bathroom_full", 6, 3, 2, 2, "Bathroom")           # wet wall w/ utility
-    h.add_room("utility", 8, 3, 1, 2, "Laundry")
-    h.add_room("bedroom", 6, 5, 2, 2, "Guest Bed")                # NE corner
-    h.add_room("entry", 8, 5, 1, 2, "Entry")                     # east edge, not adj to bed ✓
+    h.add_room("corridor", 5, 0, 1, 7, "Gallery")
+    h.add_room("primary_bed", 6, 0, 3, 3, "Primary Suite")
+    h.add_room("bathroom_full", 6, 3, 2, 2, "Bathroom")
+    h.add_room("utility", 8, 3, 1, 2, "Utility")
+    h.add_room("bedroom", 6, 5, 2, 2, "Guest Suite")
+    h.add_room("entry", 8, 5, 1, 2, "Genkan")
     homes.append(h.validate())
 
-    # ── Barnhouse Plus ── (48×24ft → 12×6 grid, 1152sf, gable 18ft)
+    # ── 6. Barnhouse Plus ── (48×24ft → 12×6 grid, gable)
+    # Extended barn with engawa porch along east edge.
+    # Dual suites separated by central hall. Engawa = indoor-outdoor transition.
     h = Home("barnhouse-plus", "Barnhouse Plus", 12, 6, 18, "2/2", "gable")
     h.add_room("great_room", 0, 0, 5, 4, "Living/Dining")
     h.add_room("kitchen", 0, 4, 5, 2, "Kitchen")
-    h.add_room("primary_bed", 5, 0, 4, 3, "Master Bed")
-    h.add_room("bedroom", 9, 0, 3, 3, "Guest Bed")               # east edge
-    h.add_room("bathroom_full", 5, 3, 2, 2, "Master Bath")
-    h.add_room("bathroom_full", 9, 3, 2, 2, "Guest Bath")         # east edge
-    h.add_room("corridor", 7, 3, 2, 2, "Hallway")
-    h.add_room("utility", 5, 5, 2, 1, "Laundry")
-    h.add_room("entry", 7, 5, 2, 1, "Entry")
-    h.add_room("deck", 11, 3, 1, 3, "Porch")                     # east edge
-    h.add_room("corridor", 9, 5, 2, 1, "Rear Hall")
+    h.add_room("primary_bed", 5, 0, 3, 3, "Primary Suite")
+    h.add_room("bedroom", 8, 0, 3, 3, "Guest Suite")
+    h.add_room("bathroom_full", 5, 3, 2, 2, "Primary Bath")
+    h.add_room("corridor", 7, 3, 1, 2, "Hall")
+    h.add_room("bathroom_full", 8, 3, 2, 2, "Guest Bath")
+    h.add_room("utility", 5, 5, 2, 1, "Utility")
+    h.add_room("entry", 7, 5, 2, 1, "Genkan")
+    h.add_room("walk_in_closet", 9, 5, 2, 1, "Storage")
+    h.add_room("engawa", 11, 0, 1, 3, "Engawa")
+    h.add_room("deck", 11, 3, 1, 3, "Porch")
+    h.add_room("walk_in_closet", 10, 3, 1, 2, "Linen")
     homes.append(h.validate())
 
-    # ── Modern Treehouse ── (68×30ft → 17×8 grid, 1210sf, flat 20ft)
-    # Fix #3: deck 768sqft→512sqft. Add office, closet, storage room.
+    # ── 7. Modern Treehouse ── (68×32ft → 17×8 grid, flat roof)
+    # Elevated retreat. Cantilevered deck. Gallery circulation.
+    # Oku: entry(center)→gallery→wings. Nature wraps around.
     h = Home("modern-treehouse", "Modern Treehouse", 17, 8, 20, "2/1", "flat")
     h.add_room("great_room", 0, 0, 5, 5, "Great Room")
     h.add_room("kitchen", 0, 5, 5, 3, "Kitchen/Dining")
-    h.add_room("primary_bed", 5, 0, 4, 3, "Primary Bed")          # south edge
+    h.add_room("primary_bed", 5, 0, 4, 3, "Primary Suite")
     h.add_room("bathroom_full", 5, 3, 2, 2, "Bathroom")
     h.add_room("utility", 7, 3, 2, 2, "Utility")
-    h.add_room("bedroom", 5, 5, 4, 3, "Guest Bed")                # north edge
+    h.add_room("bedroom", 5, 5, 4, 3, "Guest Suite")
     h.add_room("corridor", 9, 0, 2, 4, "Gallery")
-    h.add_room("entry", 9, 4, 2, 4, "Entry/Stair")
-    h.add_room("office", 11, 0, 2, 3, "Office")                   # new: south edge, natural light
-    h.add_room("walk_in_closet", 11, 3, 2, 2, "Primary Closet")   # new: adjacent to bed wing
-    h.add_room("pantry", 11, 5, 2, 3, "Gear Room")                # new: outdoor storage
-    h.add_room("deck", 13, 0, 4, 8, "Cantilevered Deck")          # shrunk: 6×8→4×8
+    h.add_room("entry", 9, 4, 2, 4, "Entry Hall")
+    h.add_room("office", 11, 0, 2, 3, "Office")
+    h.add_room("walk_in_closet", 11, 3, 2, 2, "Walk-in")
+    h.add_room("pantry", 11, 5, 2, 3, "Pantry/Store")
+    h.add_room("deck", 13, 0, 4, 8, "Cantilevered Deck")
     homes.append(h.validate())
 
-    # ── Barnhouse 2.2 ── (48×26ft → 12×7 grid, 1300sf, gable 20ft)
-    # Fix #9: add primary closet, shrink entry 3×2→2×2.
+    # ── 8. Barnhouse 2.2 ── (48×28ft → 12×7 grid, gable)
+    # Larger barn with dual suites. Open kitchen/dining anchors the plan.
     h = Home("barnhouse-2-2", "Barnhouse 2.2", 12, 7, 20, "2/2", "gable")
-    h.add_room("great_room", 0, 0, 6, 4, "Living/Dining")        # vaulted
+    h.add_room("great_room", 0, 0, 6, 4, "Living/Dining")
     h.add_room("kitchen_open", 0, 4, 6, 3, "Kitchen")
-    h.add_room("primary_bed", 6, 0, 3, 3, "Primary Bed")
-    h.add_room("bedroom", 9, 0, 3, 3, "Guest Bed")                # east edge
-    h.add_room("bathroom_full", 6, 3, 2, 2, "Primary Bath")       # wet wall w/ kitchen
+    h.add_room("primary_bed", 6, 0, 3, 3, "Primary Suite")
+    h.add_room("bedroom", 9, 0, 3, 3, "Guest Suite")
+    h.add_room("bathroom_full", 6, 3, 2, 2, "Primary Bath")
     h.add_room("bathroom_full", 8, 3, 2, 2, "Guest Bath")
     h.add_room("office", 10, 3, 2, 2, "Office")
-    h.add_room("entry", 6, 5, 2, 2, "Entry")                     # shrunk: 3×2→2×2
-    h.add_room("walk_in_closet", 8, 5, 1, 2, "Primary Closet")   # new: between entry+utility
-    h.add_room("utility", 9, 5, 3, 2, "Utility/Laundry")
+    h.add_room("entry", 6, 5, 2, 2, "Genkan")
+    h.add_room("walk_in_closet", 8, 5, 2, 2, "Walk-in")
+    h.add_room("utility", 10, 5, 2, 2, "Utility")
     homes.append(h.validate())
 
-    # ── Eastern Farmhouse ── (34×24ft → 9×6 grid, 1632sf, gable 30ft, 2-story)
+    # ── 9. Eastern Farmhouse ── (36×24ft → 9×6 grid, gable, 2-story)
+    # Traditional farmhouse with wrap-around character.
+    # Ground floor public, loft floor private. Mudroom as genkan.
     h = Home("eastern-farmhouse", "Eastern Farmhouse", 9, 6, 30, "3/2.5", "gable", has_loft=True)
-    h.add_room("great_room", 0, 0, 5, 3, "Living")               # wrap-around porch
+    h.add_room("great_room", 0, 0, 5, 3, "Living")
     h.add_room("kitchen_open", 0, 3, 5, 3, "Kitchen/Dining")
-    h.add_room("primary_bed", 5, 0, 4, 3, "Master Bed")           # east edge
-    h.add_room("bathroom_full", 5, 3, 2, 2, "Master Bath")
-    h.add_room("bathroom_full", 7, 3, 2, 2, "Guest Bath")         # east edge
+    h.add_room("primary_bed", 5, 0, 4, 3, "Primary Suite")
+    h.add_room("bathroom_full", 5, 3, 2, 2, "Primary Bath")
+    h.add_room("bathroom_full", 7, 3, 2, 2, "Guest Bath")
     h.add_room("bathroom_half", 5, 5, 1, 1, "Powder Room")
-    h.add_room("corridor", 6, 5, 2, 1, "Mudroom")
-    h.add_room("entry", 8, 5, 1, 1, "Entry")                     # east edge
-    # Loft level: 2 guest bedrooms (has_loft=True covers these)
+    h.add_room("corridor", 6, 5, 2, 1, "Hall")
+    h.add_room("entry", 8, 5, 1, 1, "Genkan")
     homes.append(h.validate())
 
-    # ── L Barnhouse ── (62×48ft → L-shape, 1650sf, gable 20ft)
-    # Fix #5: add entry+utility, shrink half bath 3×2→1×2, proper arrival sequence.
+    # ── 10. L Barnhouse ── (40×40ft → L-shape 10×10, gable)
+    # L-shape creates sheltered courtyard. Void = future garden.
+    # Oku: public wing(W) → private wing(E). L-bend = threshold.
     void = _void_rect(7, 0, 9, 4)
     h = Home("l-barnhouse", "L Barnhouse", 10, 10, 20, "2/1.5", "gable", void=void)
-    h.add_room("great_room", 0, 0, 4, 5, "Living/Dining")        # public: near entry
+    h.add_room("great_room", 0, 0, 4, 5, "Living/Dining")
     h.add_room("kitchen_open", 0, 5, 4, 5, "Kitchen")
-    h.add_room("primary_bed", 4, 5, 3, 5, "Primary Bed")          # private: far from entry
-    h.add_room("bedroom", 4, 0, 3, 5, "Guest/Flex")               # south edge
-    h.add_room("bathroom_full", 7, 5, 3, 3, "Full Bath")          # east+north edge
-    h.add_room("bathroom_half", 7, 8, 1, 2, "Half Bath")          # shrunk: 3×2→1×2
-    h.add_room("utility", 8, 8, 2, 2, "Laundry")                  # new: east+north edge
+    h.add_room("bedroom", 4, 0, 3, 5, "Guest Suite")        # touches void = exterior
+    h.add_room("primary_bed", 4, 5, 3, 5, "Primary Suite")   # z=5-9, north edge (z=9→10 OOB)
+    h.add_room("bathroom_full", 7, 5, 3, 3, "Full Bath")      # east+north
+    h.add_room("bathroom_half", 7, 8, 1, 2, "Half Bath")
+    h.add_room("utility", 8, 8, 2, 2, "Utility")
     homes.append(h.validate())
 
-    # ── Barnhouse 3.3 ── (72×26ft → 18×7 grid, 1900sf, gable 20ft)
-    # Fix #1: corridor 27%→15%. Central hall 13×2→13×1, merge pass-through into utility,
-    # shrink entry 3×3→2×3, add closet + back porch.
+    # ── 11. Barnhouse 3.3 ── (72×28ft → 18×7 grid, gable)
+    # Long barn. Three suites + central gallery spine.
+    # Engawa porch along south edge. Gallery = art display corridor.
     h = Home("barnhouse-3-3", "Barnhouse 3.3", 18, 7, 20, "3/3", "gable")
     h.add_room("great_room", 0, 0, 5, 4, "Living/Dining")
     h.add_room("kitchen_open", 0, 4, 5, 3, "Kitchen")
     h.add_room("primary_bed", 5, 0, 4, 3, "Primary Suite")
-    h.add_room("bedroom", 9, 0, 3, 3, "Bedroom 2")
-    h.add_room("bedroom", 12, 0, 3, 3, "Bedroom 3")
-    h.add_room("walk_in_closet", 15, 0, 1, 3, "Closet")          # new: for bed 3
-    h.add_room("entry", 16, 0, 2, 3, "Entry")                    # shrunk: 3×3→2×3
-    h.add_room("bathroom_full", 5, 3, 2, 2, "Bath 1")            # wet wall shared w/ primary
+    h.add_room("bedroom", 9, 0, 3, 3, "Suite 2")
+    h.add_room("bedroom", 12, 0, 3, 3, "Suite 3")
+    h.add_room("walk_in_closet", 15, 0, 1, 3, "Closet")
+    h.add_room("entry", 16, 0, 2, 3, "Genkan")
+    h.add_room("bathroom_full", 5, 3, 2, 2, "Bath 1")
     h.add_room("bathroom_full", 9, 3, 2, 2, "Bath 2")
     h.add_room("bathroom_full", 12, 3, 2, 2, "Bath 3")
-    h.add_room("corridor", 7, 3, 2, 2, "Hallway")
-    h.add_room("corridor", 11, 3, 1, 2, "Hallway 2")
-    h.add_room("utility", 14, 3, 4, 2, "Utility/Laundry")        # merged pass-through
-    h.add_room("corridor", 5, 5, 13, 1, "Central Hall")           # halved: 13×2→13×1
-    h.add_room("deck", 5, 6, 13, 1, "Back Porch")                # new: freed row
+    h.add_room("corridor", 7, 3, 2, 2, "Gallery 1")
+    h.add_room("corridor", 11, 3, 1, 2, "Gallery 2")
+    h.add_room("utility", 14, 3, 4, 2, "Utility/Pantry")
+    h.add_room("corridor", 5, 5, 13, 1, "Central Gallery")
+    h.add_room("engawa", 5, 6, 13, 1, "Engawa")
     homes.append(h.validate())
 
-    # ── A-Frame House Plus ── (44×31ft → 11×8 grid, 1950sf, a-frame 27ft)
-    # En-suite bath for primary (P4.1), walk-in closet, proper bed/bath count.
+    # ── 12. A-Frame House Plus ── (44×32ft → 11×8 grid, a-frame)
+    # Dramatic A-frame. Floor-to-ceiling glass gable.
+    # Oku: entry(SE)→social(W)→private(NE). Loft above.
     h = Home("a-frame-house-plus", "A-Frame House Plus", 11, 8, 27, "3/2.5", "a-frame", has_loft=True)
-    h.add_room("great_room", 0, 0, 6, 5, "Great Room")            # floor-to-ceiling windows
+    h.add_room("great_room", 0, 0, 6, 5, "Great Room")
     h.add_room("kitchen_open", 0, 5, 6, 3, "Kitchen/Dining")
-    h.add_room("primary_bed", 6, 0, 3, 3, "Primary Suite")        # shrunk for en-suite
-    h.add_room("bathroom_full", 9, 0, 2, 2, "En-Suite Bath")      # adjacent to primary ✓ (P4.1)
-    h.add_room("walk_in_closet", 9, 2, 2, 1, "Primary Closet")    # between bed wing + bath
-    h.add_room("bedroom", 6, 3, 5, 2, "Guest Bed")                # east edge
+    h.add_room("primary_bed", 6, 0, 3, 3, "Primary Suite")
+    h.add_room("bathroom_full", 9, 0, 2, 2, "En-Suite Bath")
+    h.add_room("walk_in_closet", 9, 2, 2, 1, "Walk-in")
+    h.add_room("bedroom", 6, 3, 5, 2, "Guest Suite")
     h.add_room("loft_bed", 6, 5, 2, 2, "Loft Suite")
-    h.add_room("bathroom_full", 8, 5, 3, 2, "Full Bath")          # shared bath
+    h.add_room("bathroom_full", 8, 5, 3, 2, "Full Bath")
     h.add_room("bathroom_half", 6, 7, 2, 1, "Powder Room")
-    h.add_room("entry", 8, 7, 3, 1, "Entry")                     # east edge
+    h.add_room("entry", 8, 7, 3, 1, "Genkan")
     homes.append(h.validate())
 
-    # ── Outpost Medium ── (50×25ft → 13×7 grid, 2015sf, steep roof 26ft)
-    # Fix #7: bath 144sqft→96sqft, add walk-in closet for primary suite.
+    # ── 13. Outpost Medium ── (52×28ft → 13×7 grid, steep roof)
+    # Mid-size retreat. Three suites with private baths.
+    # Nature-wrapped: great room gets floor-to-ceiling gable glass.
     h = Home("outpost-medium", "Outpost Medium", 13, 7, 26, "3/3", "steep-gable", has_loft=True)
-    h.add_room("great_room", 0, 0, 6, 4, "Great Room")            # 25ft ceilings
+    h.add_room("great_room", 0, 0, 6, 4, "Great Room")
     h.add_room("kitchen_open", 0, 4, 6, 3, "Kitchen/Dining")
-    h.add_room("primary_bed", 6, 0, 4, 3, "Suite 1")
+    h.add_room("primary_bed", 6, 0, 4, 3, "Primary Suite")
     h.add_room("loft_bed", 6, 3, 4, 2, "Loft Suite")
-    h.add_room("bedroom", 6, 5, 4, 2, "Suite 2")
-    h.add_room("bathroom_full", 10, 0, 2, 3, "Bath 1")            # shrunk: 3×3→2×3
-    h.add_room("walk_in_closet", 12, 0, 1, 3, "Primary Closet")   # new: east edge
-    h.add_room("bathroom_full", 10, 3, 3, 2, "Bath 2")
-    h.add_room("bathroom_full", 10, 5, 3, 2, "Loft Bath")
+    h.add_room("bedroom", 6, 5, 4, 2, "Guest Suite")
+    h.add_room("bathroom_full", 10, 0, 2, 3, "Primary Bath")
+    h.add_room("walk_in_closet", 12, 0, 1, 3, "Walk-in")
+    h.add_room("bathroom_full", 10, 3, 3, 2, "Loft Bath")
+    h.add_room("bathroom_full", 10, 5, 3, 2, "Guest Bath")
     homes.append(h.validate())
 
-    # ── Studio House ── (est. 72×28ft → 18×7, flat roof)
-    # Fix #4: office→north edge for light, corridor 15%→9%, add closet.
+    # ── 14. Studio House ── (72×28ft → 18×7 grid, flat roof)
+    # Artist's retreat. Gallery corridor connects wings.
+    # Japandi: flat roof, large covered patio, contemplative garden views.
     h = Home("studio-house", "Studio House", 18, 7, 12, "3/2.5", "flat")
     h.add_room("great_room", 0, 0, 5, 4, "Living")
     h.add_room("kitchen_open", 0, 4, 5, 3, "Kitchen/Dining")
     h.add_room("primary_bed", 5, 0, 4, 3, "Primary Suite")
-    h.add_room("bedroom", 9, 0, 3, 3, "Bedroom 2")
-    h.add_room("bedroom", 12, 0, 3, 3, "Bedroom 3")
-    h.add_room("bathroom_full", 5, 3, 2, 2, "Primary Bath")      # wet wall w/ primary
+    h.add_room("bedroom", 9, 0, 3, 3, "Suite 2")
+    h.add_room("bedroom", 12, 0, 3, 3, "Suite 3")
+    h.add_room("bathroom_full", 5, 3, 2, 2, "Primary Bath")
     h.add_room("bathroom_full", 9, 3, 2, 2, "Guest Bath")
     h.add_room("bathroom_half", 7, 3, 2, 2, "Powder Room")
-    h.add_room("walk_in_closet", 11, 3, 2, 2, "Bed 3 Closet")    # new: replaced office
+    h.add_room("walk_in_closet", 11, 3, 2, 2, "Walk-in")
     h.add_room("utility", 13, 3, 2, 2, "Utility")
-    h.add_room("corridor", 5, 5, 6, 2, "Hallway")                # shrunk: 8×2→6×2
-    h.add_room("office", 11, 5, 2, 2, "Office")                   # moved: north edge, light ✓
-    h.add_room("entry", 13, 5, 2, 2, "Entry")
+    h.add_room("corridor", 5, 5, 6, 2, "Gallery")
+    h.add_room("office", 11, 5, 2, 2, "Studio/Office")
+    h.add_room("entry", 13, 5, 2, 2, "Genkan")
     h.add_room("deck", 15, 0, 3, 7, "Covered Patio")
     homes.append(h.validate())
 
-    # ── Barndo ── (93×36ft → 24×9 grid, 3456sf, gable 22ft)
-    # Corridor reduced, back porch, buffer between loft+garage (P4.3).
+    # ── 15. Barndo ── (96×36ft → 24×9 grid, gable)
+    # Grand barn. Garage wing + living wing.
+    # Engawa porch along south. Central gallery as art spine.
     h = Home("barndo", "Barndo", 24, 9, 22, "4/3.5", "gable", has_loft=True)
     h.add_room("great_room", 0, 0, 6, 5, "Great Room")
     h.add_room("kitchen_open", 0, 5, 6, 4, "Kitchen/Dining")
     h.add_room("primary_bed", 6, 0, 5, 3, "Primary Suite")
     h.add_room("bedroom", 11, 0, 4, 3, "Suite 2")
     h.add_room("bedroom", 15, 0, 4, 3, "Suite 3")
-    h.add_room("loft_bed", 19, 0, 5, 2, "Loft Suite")            # shrunk: 5×3→5×2
-    h.add_room("walk_in_closet", 19, 2, 5, 1, "Storage")         # buffer loft↔garage (P4.3)
-    h.add_room("bathroom_full", 6, 3, 3, 2, "Primary Bath")      # wet wall w/ primary
+    h.add_room("loft_bed", 19, 0, 5, 2, "Loft Suite")
+    h.add_room("walk_in_closet", 19, 2, 5, 1, "Storage")
+    h.add_room("bathroom_full", 6, 3, 3, 2, "Primary Bath")
     h.add_room("bathroom_full", 11, 3, 2, 2, "Bath 2")
     h.add_room("bathroom_full", 15, 3, 2, 2, "Bath 3")
     h.add_room("bathroom_half", 9, 3, 2, 2, "Powder Room")
     h.add_room("utility", 13, 3, 2, 2, "Utility")
     h.add_room("corridor", 17, 3, 2, 2, "Passage")
     h.add_room("garage", 19, 3, 5, 5, "Garage")
-    h.add_room("corridor", 6, 5, 13, 2, "Central Hall")
-    h.add_room("deck", 6, 7, 13, 2, "Back Porch")
-    h.add_room("entry", 19, 8, 5, 1, "Entry")
+    h.add_room("corridor", 6, 5, 13, 2, "Central Gallery")
+    h.add_room("engawa", 6, 7, 13, 2, "Engawa")
+    h.add_room("entry", 19, 8, 5, 1, "Genkan")
     homes.append(h.validate())
 
     return homes
@@ -949,14 +1004,20 @@ for h in home_dicts:
         json.dump(h, f, indent=2)
 with open(os.path.join(OUT, 'coverage.json'), 'w') as f:
     json.dump(coverage, f, indent=2)
-library = {"version": 4, "components": COMPONENTS, "homes": home_dicts, "coverage": coverage}
+library = {"version": 5, "components": COMPONENTS, "homes": home_dicts, "coverage": coverage}
 with open(os.path.join(OUT, 'library.json'), 'w') as f:
     json.dump(library, f, indent=2)
 
 print(f"✓ {len(COMPONENTS)} components, {len(homes)} homes")
 for h in homes:
     d = h.to_dict()
-    envelope_pct = len(h._occupied) / len(h.envelope) * 100
-    print(f"  {h.id}: {d['sqft']}sqft, {len(d['placements'])} placements, "
-          f"{len(d['componentsUsed'])} types, {h.footprint['width']}x{h.footprint['depth']}ft, "
-          f"{envelope_pct:.0f}% sealed")
+    indoor = sum(len(r.cells) for r in h.rooms if r.type not in ("deck", "engawa"))
+    storage = sum(len(r.cells) for r in h.rooms if r.type in ("walk_in_closet", "pantry"))
+    corr = sum(len(r.cells) for r in h.rooms if r.type == "corridor")
+    ldk_types = ("living", "great_room", "kitchen", "kitchen_open", "dining")
+    ldk = sum(len(r.cells) for r in h.rooms if r.type in ldk_types)
+    s_pct = storage * 100 / indoor if indoor else 0
+    c_pct = corr * 100 / indoor if indoor else 0
+    l_pct = ldk * 100 / indoor if indoor else 0
+    print(f"  {h.id}: {d['sqft']}sf | storage:{s_pct:.0f}% corr:{c_pct:.0f}% ldk:{l_pct:.0f}% | "
+          f"{h.footprint['width']}×{h.footprint['depth']}ft | 100% sealed")

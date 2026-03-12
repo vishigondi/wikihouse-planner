@@ -2841,7 +2841,8 @@
       "gw": 5,
       "gd": 3,
       "area": 240,
-      "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+      "color": "#4ade80",
+      "constraints": "Combined living/dining. Open plan LDK heart"
     },
     {
       "label": "Kitchen/Dining",
@@ -2851,27 +2852,30 @@
       "gw": 5,
       "gd": 3,
       "area": 240,
-      "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+      "color": "#fbbf24",
+      "constraints": "NKBA: island + work triangle + dining. 48in around island"
     },
     {
-      "label": "Master Bed",
+      "label": "Primary Suite",
       "type": "primary_bed",
       "gx": 5,
       "gz": 0,
       "gw": 4,
       "gd": 3,
       "area": 192,
-      "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+      "color": "#818cf8",
+      "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
     },
     {
-      "label": "Master Bath",
+      "label": "Primary Bath",
       "type": "bathroom_full",
       "gx": 5,
       "gz": 3,
       "gw": 2,
       "gd": 2,
       "area": 64,
-      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+      "color": "#06b6d4",
+      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
     },
     {
       "label": "Guest Bath",
@@ -2881,7 +2885,8 @@
       "gw": 2,
       "gd": 2,
       "area": 64,
-      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+      "color": "#06b6d4",
+      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
     },
     {
       "label": "Powder Room",
@@ -2891,27 +2896,30 @@
       "gw": 1,
       "gd": 1,
       "area": 16,
-      "constraints": "Powder room: toilet + pedestal sink. IRC min 30\u00d730in shower n/a"
+      "color": "#22d3ee",
+      "constraints": "Powder room: toilet + pedestal sink"
     },
     {
-      "label": "Mudroom",
+      "label": "Hall",
       "type": "corridor",
       "gx": 6,
       "gz": 5,
       "gw": 2,
       "gd": 1,
       "area": 32,
-      "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+      "color": "#64748b",
+      "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
     },
     {
-      "label": "Entry",
+      "label": "Genkan",
       "type": "entry",
       "gx": 8,
       "gz": 5,
       "gw": 1,
       "gd": 1,
       "area": 16,
-      "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+      "color": "#e879f9",
+      "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
     }
   ]
 }

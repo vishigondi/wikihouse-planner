@@ -31,6 +31,18 @@ export interface ComponentPlacement {
   zone?: string;
 }
 
+export interface RoomLayout {
+  label: string;
+  type: string;
+  gx: number;
+  gz: number;
+  gw: number;
+  gd: number;
+  area: number;
+  color: string;
+  constraints: string;
+}
+
 export interface DenHome {
   id: string;
   model: string;
@@ -42,7 +54,7 @@ export interface DenHome {
   hasLoft: boolean;
   placements: ComponentPlacement[];
   componentsUsed: string[];
-  rooms: { type: string; label: string; area: number }[];
+  rooms: RoomLayout[];
 }
 
 export interface ComponentLibrary {

@@ -9409,7 +9409,8 @@
       "gw": 6,
       "gd": 5,
       "area": 480,
-      "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+      "color": "#4ade80",
+      "constraints": "Combined living/dining. Open plan LDK heart"
     },
     {
       "label": "Kitchen/Dining",
@@ -9419,7 +9420,8 @@
       "gw": 6,
       "gd": 4,
       "area": 384,
-      "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+      "color": "#fbbf24",
+      "constraints": "NKBA: island + work triangle + dining. 48in around island"
     },
     {
       "label": "Primary Suite",
@@ -9429,7 +9431,8 @@
       "gw": 5,
       "gd": 3,
       "area": 240,
-      "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+      "color": "#818cf8",
+      "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
     },
     {
       "label": "Suite 2",
@@ -9439,7 +9442,8 @@
       "gw": 4,
       "gd": 3,
       "area": 192,
-      "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+      "color": "#6366f1",
+      "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
     },
     {
       "label": "Suite 3",
@@ -9449,7 +9453,8 @@
       "gw": 4,
       "gd": 3,
       "area": 192,
-      "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+      "color": "#6366f1",
+      "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
     },
     {
       "label": "Loft Suite",
@@ -9459,7 +9464,8 @@
       "gw": 5,
       "gd": 2,
       "area": 160,
-      "constraints": "Loft sleeping area. Accessed by code-compliant stair (IRC R311.7)"
+      "color": "#a5b4fc",
+      "constraints": "Loft sleeping area. Code-compliant stair (IRC R311.7)"
     },
     {
       "label": "Storage",
@@ -9469,7 +9475,8 @@
       "gw": 5,
       "gd": 1,
       "area": 80,
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Min 5\u00d75ft practical"
+      "color": "#78716c",
+      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
     },
     {
       "label": "Primary Bath",
@@ -9479,7 +9486,8 @@
       "gw": 3,
       "gd": 2,
       "area": 96,
-      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+      "color": "#06b6d4",
+      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
     },
     {
       "label": "Bath 2",
@@ -9489,7 +9497,8 @@
       "gw": 2,
       "gd": 2,
       "area": 64,
-      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+      "color": "#06b6d4",
+      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
     },
     {
       "label": "Bath 3",
@@ -9499,7 +9508,8 @@
       "gw": 2,
       "gd": 2,
       "area": 64,
-      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+      "color": "#06b6d4",
+      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
     },
     {
       "label": "Powder Room",
@@ -9509,7 +9519,8 @@
       "gw": 2,
       "gd": 2,
       "area": 64,
-      "constraints": "Powder room: toilet + pedestal sink. IRC min 30\u00d730in shower n/a"
+      "color": "#22d3ee",
+      "constraints": "Powder room: toilet + pedestal sink"
     },
     {
       "label": "Utility",
@@ -9519,7 +9530,8 @@
       "gw": 2,
       "gd": 2,
       "area": 64,
-      "constraints": "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"
+      "color": "#94a3b8",
+      "constraints": "Washer + dryer side-by-side. 36in front clearance"
     },
     {
       "label": "Passage",
@@ -9529,7 +9541,8 @@
       "gw": 2,
       "gd": 2,
       "area": 64,
-      "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+      "color": "#64748b",
+      "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
     },
     {
       "label": "Garage",
@@ -9539,37 +9552,41 @@
       "gw": 5,
       "gd": 5,
       "area": 400,
-      "constraints": "Single car: 12\u00d720ft min. Door 8-10ft wide \u00d7 7-8ft tall"
+      "color": "#57534e",
+      "constraints": "Single car: 12\u00d720ft min"
     },
     {
-      "label": "Central Hall",
+      "label": "Central Gallery",
       "type": "corridor",
       "gx": 6,
       "gz": 5,
       "gw": 13,
       "gd": 2,
       "area": 416,
-      "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+      "color": "#64748b",
+      "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
     },
     {
-      "label": "Back Porch",
-      "type": "deck",
+      "label": "Engawa",
+      "type": "engawa",
       "gx": 6,
       "gz": 7,
       "gw": 13,
       "gd": 2,
       "area": 416,
-      "constraints": "Exterior deck/porch. Typical 10\u00d712ft+"
+      "color": "#92400e",
+      "constraints": "Covered veranda/transition. 4-5ft wide. Indoor-outdoor threshold"
     },
     {
-      "label": "Entry",
+      "label": "Genkan",
       "type": "entry",
       "gx": 19,
       "gz": 8,
       "gw": 5,
       "gd": 1,
       "area": 80,
-      "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+      "color": "#e879f9",
+      "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
     }
   ]
 }

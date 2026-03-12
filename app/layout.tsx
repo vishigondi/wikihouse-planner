@@ -8,8 +8,8 @@ const mono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Den Outdoors — Modular Component Planner",
-  description: "3D modular building components for Den Outdoors homes",
+  title: "Den Outdoors — Retreat Planner",
+  description: "3D parametric retreat home planner with Japandi design principles",
 };
 
 export default function RootLayout({
@@ -18,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${mono.variable} font-mono antialiased bg-neutral-950 text-neutral-100`}>
+    <html lang="en">
+      <body className={`${mono.variable} font-mono antialiased bg-[#faf8f5] text-stone-800`}>
         {children}
       </body>
     </html>

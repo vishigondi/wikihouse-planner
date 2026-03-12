@@ -20,7 +20,7 @@ export default function ComponentCatalog({ components, selectedComponent, highli
 
   return (
     <div className="h-full overflow-y-auto p-2 space-y-3">
-      <h2 className="text-xs font-bold text-neutral-300 uppercase tracking-wider px-1">
+      <h2 className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider px-1">
         Components ({components.length})
       </h2>
       {CATEGORY_ORDER.map(cat => {
@@ -31,8 +31,8 @@ export default function ComponentCatalog({ components, selectedComponent, highli
           <div key={cat}>
             <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-1 px-1 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-              <span style={{ color }}>{cat}</span>
-              <span className="text-neutral-600">({items.length})</span>
+              <span className="text-stone-500">{cat}</span>
+              <span className="text-stone-300">({items.length})</span>
             </h3>
             <div className="space-y-0.5">
               {items.map(c => {
@@ -44,19 +44,19 @@ export default function ComponentCatalog({ components, selectedComponent, highli
                     onClick={() => onSelectComponent(isActive ? null : c.id)}
                     className={`w-full text-left px-2 py-1 rounded text-[10px] transition-all flex items-center gap-2 ${
                       isActive
-                        ? 'bg-blue-500/20 border border-blue-500 text-blue-300'
+                        ? 'bg-stone-800 text-white'
                         : isUsed
-                        ? 'bg-neutral-900 border border-neutral-700 text-neutral-300 hover:border-neutral-500'
-                        : 'bg-transparent border border-transparent text-neutral-600 hover:bg-neutral-900/50'
+                        ? 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                        : 'bg-transparent text-stone-300 hover:bg-stone-50'
                     }`}
                   >
                     <span
                       className="w-1.5 h-1.5 rounded-full shrink-0"
-                      style={{ background: isUsed ? color : '#334155' }}
+                      style={{ background: isUsed ? color : '#d4d4d4' }}
                     />
                     <span className="truncate">{c.name}</span>
-                    <span className="ml-auto text-neutral-600 shrink-0">
-                      {c.dimensions.width}x{c.dimensions.height}&apos;
+                    <span className="ml-auto text-stone-400 shrink-0 font-mono">
+                      {c.dimensions.width}×{c.dimensions.height}&apos;
                     </span>
                   </button>
                 );

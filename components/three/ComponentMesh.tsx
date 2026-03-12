@@ -10,9 +10,13 @@ interface Props {
   selected: boolean;
   highlighted: boolean;
   onClick: () => void;
+  wallOpacity: number;
+  roofVisible: boolean;
 }
 
-export default function ComponentMesh({ component, placement, selected, highlighted, onClick }: Props) {
+export default function ComponentMesh({
+  component, placement, selected, highlighted, onClick, wallOpacity, roofVisible
+}: Props) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
@@ -21,11 +25,30 @@ export default function ComponentMesh({ component, placement, selected, highligh
   const { width: w, height: h, depth: d } = component.dimensions;
   const scale = placement.scale || { x: 1, y: 1, z: 1 };
   const mat = component.material;
+  const zone = placement.zone || '';
+
+  // Hide roof when toggled off
+  if (zone === 'roof' && !roofVisible) return null;
+
+  const isWall = zone === 'walls' || zone === 'interior';
+  const isFloor = zone === 'floor';
+  const isOpening = zone === 'openings';
+
+  // Compute opacity based on wall transparency slider
+  let opacity = mat.opacity;
+  if (isWall) {
+    opacity = mat.opacity * wallOpacity;
+  } else if (!highlighted && !isFloor) {
+    opacity = mat.opacity * 0.4;
+  }
 
   const baseColor = new THREE.Color(mat.color);
-  const emissive = selected ? new THREE.Color('#3b82f6') : hovered ? new THREE.Color('#334155') : new THREE.Color('#000000');
-  const emissiveIntensity = selected ? 0.3 : hovered ? 0.15 : 0;
-  const opacity = highlighted ? mat.opacity : mat.opacity * 0.4;
+  const emissive = selected
+    ? new THREE.Color('#4f46e5')
+    : hovered
+    ? new THREE.Color('#312e81')
+    : new THREE.Color('#000000');
+  const emissiveIntensity = selected ? 0.25 : hovered ? 0.1 : 0;
 
   return (
     <group
@@ -42,13 +65,13 @@ export default function ComponentMesh({ component, placement, selected, highligh
         onClick={(e) => { e.stopPropagation(); onClick(); }}
         onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }}
         onPointerOut={() => { setHovered(false); document.body.style.cursor = 'default'; }}
-        castShadow
+        castShadow={!isFloor}
         receiveShadow
       >
         <boxGeometry args={[w, h, d]} />
         <meshStandardMaterial
           color={baseColor}
-          transparent={opacity < 1}
+          transparent={opacity < 1 || isOpening}
           opacity={opacity}
           metalness={mat.metalness}
           roughness={mat.roughness}
@@ -57,6 +80,14 @@ export default function ComponentMesh({ component, placement, selected, highligh
           side={THREE.DoubleSide}
         />
       </mesh>
+
+      {/* Edge lines for architectural look */}
+      {(isWall || isOpening) && (
+        <lineSegments>
+          <edgesGeometry args={[new THREE.BoxGeometry(w, h, d)]} />
+          <lineBasicMaterial color="#000000" transparent opacity={0.15} />
+        </lineSegments>
+      )}
     </group>
   );
 }

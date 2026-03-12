@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "components": [
     {
       "id": "wall-ext",
@@ -12,16 +12,16 @@
       },
       "geometry": "box",
       "material": {
-        "color": "#1a1a2e",
+        "color": "#2c2420",
         "opacity": 1,
-        "metalness": 0.3,
-        "roughness": 0.8
+        "metalness": 0.1,
+        "roughness": 0.95
       },
       "properties": {
         "structural": true,
         "insulated": true,
         "exterior": true,
-        "panelType": "steel-sip"
+        "panelType": "shou-sugi-ban"
       },
       "usedInHomes": [
         "ascent-adu",
@@ -54,14 +54,14 @@
       "material": {
         "color": "#d4c5a9",
         "opacity": 1,
-        "metalness": 0.05,
-        "roughness": 0.95
+        "metalness": 0.02,
+        "roughness": 0.98
       },
       "properties": {
         "structural": false,
         "insulated": false,
         "exterior": false,
-        "panelType": "drywall"
+        "panelType": "hinoki-panel"
       },
       "usedInHomes": [
         "ascent-adu",
@@ -93,16 +93,16 @@
       "geometry": "box",
       "pitchAngle": 25,
       "material": {
-        "color": "#2d2d3d",
+        "color": "#1a1a1a",
         "opacity": 1,
-        "metalness": 0.5,
-        "roughness": 0.5
+        "metalness": 0.6,
+        "roughness": 0.4
       },
       "properties": {
         "structural": true,
         "insulated": true,
         "exterior": true,
-        "panelType": "metal-roof"
+        "panelType": "zinc-standing-seam"
       },
       "usedInHomes": [
         "barnhouse-1-1",
@@ -127,16 +127,16 @@
       "geometry": "box",
       "pitchAngle": 45,
       "material": {
-        "color": "#1a1a2e",
+        "color": "#1a1a1a",
         "opacity": 1,
-        "metalness": 0.5,
-        "roughness": 0.5
+        "metalness": 0.6,
+        "roughness": 0.4
       },
       "properties": {
         "structural": true,
         "insulated": true,
         "exterior": true,
-        "panelType": "metal-roof"
+        "panelType": "zinc-standing-seam"
       },
       "usedInHomes": [
         "modern-alpine-2025",
@@ -157,16 +157,16 @@
       "geometry": "box",
       "pitchAngle": 12,
       "material": {
-        "color": "#2d2d3d",
+        "color": "#1a1a1a",
         "opacity": 1,
-        "metalness": 0.5,
-        "roughness": 0.5
+        "metalness": 0.6,
+        "roughness": 0.4
       },
       "properties": {
         "structural": true,
         "insulated": true,
         "exterior": true,
-        "panelType": "metal-roof"
+        "panelType": "zinc-standing-seam"
       },
       "usedInHomes": [
         "ascent-adu"
@@ -184,16 +184,16 @@
       "geometry": "box",
       "pitchAngle": 0,
       "material": {
-        "color": "#3d3d4d",
+        "color": "#262626",
         "opacity": 1,
-        "metalness": 0.4,
-        "roughness": 0.6
+        "metalness": 0.5,
+        "roughness": 0.5
       },
       "properties": {
         "structural": true,
         "insulated": true,
         "exterior": true,
-        "panelType": "membrane"
+        "panelType": "green-roof-membrane"
       },
       "usedInHomes": [
         "modern-treehouse",
@@ -211,16 +211,16 @@
       },
       "geometry": "box",
       "material": {
-        "color": "#8b7355",
+        "color": "#c4a882",
         "opacity": 1,
-        "metalness": 0.05,
-        "roughness": 0.9
+        "metalness": 0.02,
+        "roughness": 0.92
       },
       "properties": {
         "structural": true,
         "insulated": true,
         "exterior": false,
-        "panelType": "engineered-wood"
+        "panelType": "engineered-hinoki"
       },
       "usedInHomes": [
         "ascent-adu",
@@ -251,19 +251,18 @@
       },
       "geometry": "box",
       "material": {
-        "color": "#6b4226",
+        "color": "#8b6914",
         "opacity": 1,
-        "metalness": 0.05,
+        "metalness": 0.02,
         "roughness": 0.95
       },
       "properties": {
         "structural": true,
         "insulated": false,
         "exterior": true,
-        "panelType": "wood-deck"
+        "panelType": "cedar-deck"
       },
       "usedInHomes": [
-        "ascent-adu",
         "barnhouse-plus",
         "modern-treehouse",
         "barnhouse-3-3",
@@ -282,18 +281,19 @@
       },
       "geometry": "box",
       "material": {
-        "color": "#4a3728",
+        "color": "#3d2b1f",
         "opacity": 1,
-        "metalness": 0.15,
-        "roughness": 0.8
+        "metalness": 0.1,
+        "roughness": 0.85
       },
       "properties": {
         "structural": false,
         "insulated": true,
         "exterior": true,
-        "panelType": "insulated-door"
+        "panelType": "solid-timber-door"
       },
       "usedInHomes": [
+        "ascent-adu",
         "modern-alpine-2025",
         "outpost-plus",
         "barnhouse-1-1",
@@ -319,16 +319,16 @@
       },
       "geometry": "box",
       "material": {
-        "color": "#87ceeb",
-        "opacity": 0.4,
-        "metalness": 0.5,
-        "roughness": 0.15
+        "color": "#b8d4e3",
+        "opacity": 0.35,
+        "metalness": 0.4,
+        "roughness": 0.1
       },
       "properties": {
         "structural": false,
         "insulated": false,
         "exterior": true,
-        "panelType": "glass-sliding"
+        "panelType": "shoji-glass-sliding"
       },
       "usedInHomes": [
         "ascent-adu",
@@ -359,16 +359,16 @@
       },
       "geometry": "box",
       "material": {
-        "color": "#87ceeb",
-        "opacity": 0.35,
-        "metalness": 0.5,
-        "roughness": 0.15
+        "color": "#b8d4e3",
+        "opacity": 0.3,
+        "metalness": 0.4,
+        "roughness": 0.1
       },
       "properties": {
         "structural": false,
         "insulated": false,
         "exterior": true,
-        "panelType": "glass"
+        "panelType": "triple-glaze-timber"
       },
       "usedInHomes": [
         "ascent-adu",
@@ -399,16 +399,16 @@
       },
       "geometry": "box",
       "material": {
-        "color": "#b8a080",
+        "color": "#c4a882",
         "opacity": 1,
-        "metalness": 0.05,
-        "roughness": 0.9
+        "metalness": 0.02,
+        "roughness": 0.92
       },
       "properties": {
         "structural": false,
         "insulated": false,
         "exterior": false,
-        "panelType": "wood-door"
+        "panelType": "shoji-panel"
       },
       "usedInHomes": [
         "ascent-adu",
@@ -448,7 +448,7 @@
         "structural": true,
         "insulated": false,
         "exterior": true,
-        "panelType": "concrete"
+        "panelType": "concrete-pier"
       },
       "usedInHomes": [
         "ascent-adu",
@@ -473,7 +473,7 @@
     {
       "id": "ascent-adu",
       "model": "Ascent ADU",
-      "sqft": 448,
+      "sqft": 512,
       "footprint": {
         "width": 32,
         "depth": 16
@@ -498,7 +498,7 @@
           "zone": ""
         },
         {
-          "componentId": "floor-deck",
+          "componentId": "floor-std",
           "position": {
             "x": -14.0,
             "y": 0.83,
@@ -526,7 +526,7 @@
           "zone": ""
         },
         {
-          "componentId": "floor-deck",
+          "componentId": "floor-std",
           "position": {
             "x": -14.0,
             "y": 0.83,
@@ -554,7 +554,7 @@
           "zone": ""
         },
         {
-          "componentId": "floor-deck",
+          "componentId": "floor-std",
           "position": {
             "x": -14.0,
             "y": 0.83,
@@ -582,7 +582,7 @@
           "zone": ""
         },
         {
-          "componentId": "floor-deck",
+          "componentId": "floor-std",
           "position": {
             "x": -14.0,
             "y": 0.83,
@@ -1383,347 +1383,6 @@
           "componentId": "wall-ext",
           "position": {
             "x": -14.0,
-            "y": 5.5,
-            "z": -8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": -16.0,
-            "y": 5.5,
-            "z": -6.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": -12.0,
-            "y": 5.5,
-            "z": -6.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": -16.0,
-            "y": 5.5,
-            "z": -2.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": -12.0,
-            "y": 5.5,
-            "z": -2.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": -16.0,
-            "y": 5.5,
-            "z": 2.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": -12.0,
-            "y": 5.5,
-            "z": 2.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": -14.0,
-            "y": 5.5,
-            "z": 8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": -16.0,
-            "y": 5.5,
-            "z": 6.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": -12.0,
-            "y": 5.5,
-            "z": 6.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": -10.0,
-            "y": 5.5,
-            "z": -8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "door-sliding",
-          "position": {
-            "x": -10.0,
-            "y": 4.5,
-            "z": 8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "openings"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": -6.0,
-            "y": 5.5,
-            "z": -8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "door-sliding",
-          "position": {
-            "x": -6.0,
-            "y": 4.5,
-            "z": 8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "openings"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": -2.0,
-            "y": 5.5,
-            "z": -8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": -2.0,
-            "y": 2,
-            "z": 8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls",
-          "scale": {
-            "x": 1,
-            "y": 0.3,
-            "z": 1
-          }
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": 2.0,
-            "y": 5.5,
-            "z": -8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": 2.0,
-            "y": 5.5,
-            "z": 8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": 6.0,
-            "y": 5.5,
-            "z": -8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 8.0,
-            "y": 5.5,
-            "z": -6.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 8.0,
-            "y": 5.5,
-            "z": -2.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 8.0,
-            "y": 5.5,
-            "z": 2.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": 6.0,
-            "y": 5.5,
-            "z": 8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 8.0,
-            "y": 5.5,
-            "z": 6.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": 10.0,
             "y": 2,
             "z": -8.0
           },
@@ -1740,9 +1399,23 @@
           }
         },
         {
+          "componentId": "wall-ext",
+          "position": {
+            "x": -16.0,
+            "y": 5.5,
+            "z": -6.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
           "componentId": "wall-int",
           "position": {
-            "x": 10.0,
+            "x": -14.0,
             "y": 5.5,
             "z": 0.0
           },
@@ -1756,7 +1429,236 @@
         {
           "componentId": "wall-ext",
           "position": {
-            "x": 10.0,
+            "x": -16.0,
+            "y": 5.5,
+            "z": -2.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": -16.0,
+            "y": 2,
+            "z": 2.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "walls",
+          "scale": {
+            "x": 1,
+            "y": 0.3,
+            "z": 1
+          }
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": -14.0,
+            "y": 5.5,
+            "z": 8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": -16.0,
+            "y": 5.5,
+            "z": 6.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": -10.0,
+            "y": 5.5,
+            "z": -8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": -8.0,
+            "y": 5.5,
+            "z": -6.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": -10.0,
+            "y": 5.5,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": -8.0,
+            "y": 5.5,
+            "z": -2.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": -8.0,
+            "y": 5.5,
+            "z": 2.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": -10.0,
+            "y": 5.5,
+            "z": 8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": -8.0,
+            "y": 5.5,
+            "z": 6.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": -6.0,
+            "y": 5.5,
+            "z": -8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "door-sliding",
+          "position": {
+            "x": -6.0,
+            "y": 4.5,
+            "z": 8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "openings"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": -2.0,
+            "y": 5.5,
+            "z": -8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "door-sliding",
+          "position": {
+            "x": -2.0,
+            "y": 4.5,
+            "z": 8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "openings"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": 2.0,
+            "y": 5.5,
+            "z": -8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": 2.0,
             "y": 2,
             "z": 8.0
           },
@@ -1775,7 +1677,7 @@
         {
           "componentId": "wall-ext",
           "position": {
-            "x": 14.0,
+            "x": 6.0,
             "y": 5.5,
             "z": -8.0
           },
@@ -1785,6 +1687,118 @@
             "z": 0
           },
           "zone": "walls"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": 6.0,
+            "y": 5.5,
+            "z": 8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": 10.0,
+            "y": 5.5,
+            "z": -8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 12.0,
+            "y": 5.5,
+            "z": -6.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 12.0,
+            "y": 5.5,
+            "z": -2.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 12.0,
+            "y": 5.5,
+            "z": 2.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": 10.0,
+            "y": 5.5,
+            "z": 8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 12.0,
+            "y": 5.5,
+            "z": 6.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "door-ext",
+          "position": {
+            "x": 14.0,
+            "y": 4.5,
+            "z": -8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "openings"
         },
         {
           "componentId": "wall-ext",
@@ -1873,9 +1887,9 @@
         {
           "componentId": "wall-ext",
           "position": {
-            "x": -10.0,
+            "x": 14.0,
             "y": 9.5,
-            "z": 8.0
+            "z": -8.0
           },
           "rotation": {
             "x": 0,
@@ -1909,9 +1923,28 @@
           }
         },
         {
-          "componentId": "window-std",
+          "componentId": "wall-ext",
           "position": {
             "x": -2.0,
+            "y": 9.5,
+            "z": 8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls",
+          "scale": {
+            "x": 1,
+            "y": 0.2,
+            "z": 1
+          }
+        },
+        {
+          "componentId": "window-std",
+          "position": {
+            "x": 2.0,
             "y": 5.5,
             "z": 8.0
           },
@@ -1925,7 +1958,7 @@
         {
           "componentId": "wall-ext",
           "position": {
-            "x": -2.0,
+            "x": 2.0,
             "y": 9,
             "z": 8.0
           },
@@ -1944,7 +1977,7 @@
         {
           "componentId": "window-std",
           "position": {
-            "x": 10.0,
+            "x": -14.0,
             "y": 5.5,
             "z": -8.0
           },
@@ -1958,7 +1991,7 @@
         {
           "componentId": "wall-ext",
           "position": {
-            "x": 10.0,
+            "x": -14.0,
             "y": 9,
             "z": -8.0
           },
@@ -1977,60 +2010,46 @@
         {
           "componentId": "window-std",
           "position": {
-            "x": 10.0,
+            "x": -16.0,
             "y": 5.5,
-            "z": 8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "openings"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": 10.0,
-            "y": 9,
-            "z": 8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls",
-          "scale": {
-            "x": 1,
-            "y": 0.3,
-            "z": 1
-          }
-        },
-        {
-          "componentId": "door-int",
-          "position": {
-            "x": 8.0,
-            "y": 3.5,
-            "z": -6.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "openings"
-        },
-        {
-          "componentId": "door-int",
-          "position": {
-            "x": 8.0,
-            "y": 3.5,
             "z": 2.0
           },
           "rotation": {
             "x": 0,
             "y": 90,
+            "z": 0
+          },
+          "zone": "openings"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": -16.0,
+            "y": 9,
+            "z": 2.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "walls",
+          "scale": {
+            "x": 1,
+            "y": 0.3,
+            "z": 1
+          }
+        },
+        {
+          "componentId": "door-int",
+          "position": {
+            "x": -14.0,
+            "y": 3.5,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
             "z": 0
           },
           "zone": "openings"
@@ -2149,9 +2168,9 @@
         }
       ],
       "componentsUsed": [
+        "door-ext",
         "door-int",
         "door-sliding",
-        "floor-deck",
         "floor-std",
         "foundation",
         "roof-shed",
@@ -2161,44 +2180,59 @@
       ],
       "rooms": [
         {
-          "label": "Deck",
-          "type": "deck",
-          "gx": 0,
+          "label": "Genkan",
+          "type": "entry",
+          "gx": 7,
           "gz": 0,
           "gw": 1,
-          "gd": 4,
-          "area": 64,
-          "constraints": "Exterior deck/porch. Typical 10\u00d712ft+"
+          "gd": 2,
+          "area": 32,
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
         },
         {
           "label": "Living/Kitchen",
           "type": "great_room",
-          "gx": 1,
+          "gx": 2,
           "gz": 0,
           "gw": 5,
           "gd": 4,
           "area": 320,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Bedroom",
           "type": "bedroom",
-          "gx": 6,
+          "gx": 0,
           "gz": 0,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
           "label": "Bathroom",
           "type": "bathroom_full",
-          "gx": 6,
+          "gx": 0,
           "gz": 2,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
+        },
+        {
+          "label": "Storage",
+          "type": "walk_in_closet",
+          "gx": 7,
+          "gz": 2,
+          "gw": 1,
+          "gd": 2,
+          "area": 32,
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         }
       ]
     },
@@ -3930,6 +3964,20 @@
           "zone": "walls"
         },
         {
+          "componentId": "wall-int",
+          "position": {
+            "x": 18.0,
+            "y": 5.5,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
           "componentId": "wall-ext",
           "position": {
             "x": 20.0,
@@ -4179,7 +4227,7 @@
           "position": {
             "x": -4.0,
             "y": 3.5,
-            "z": -6.0
+            "z": 2.0
           },
           "rotation": {
             "x": 0,
@@ -4503,37 +4551,41 @@
           "gw": 4,
           "gd": 4,
           "area": 256,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
-        },
-        {
-          "label": "Bedroom",
-          "type": "bedroom",
-          "gx": 4,
-          "gz": 0,
-          "gw": 3,
-          "gd": 2,
-          "area": 96,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen",
           "type": "kitchen",
           "gx": 4,
+          "gz": 0,
+          "gw": 3,
+          "gd": 2,
+          "area": 96,
+          "color": "#f59e0b",
+          "constraints": "NKBA: work triangle 13-26ft. 48in aisle"
+        },
+        {
+          "label": "Bedroom",
+          "type": "bedroom",
+          "gx": 4,
           "gz": 2,
           "gw": 3,
           "gd": 2,
           "area": 96,
-          "constraints": "NKBA: work triangle 13-26ft total. 48in aisle (42in single cook)"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
-          "label": "Loft Bedroom",
+          "label": "Loft Suite",
           "type": "loft_bed",
           "gx": 7,
           "gz": 0,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Loft sleeping area. Accessed by code-compliant stair (IRC R311.7)"
+          "color": "#a5b4fc",
+          "constraints": "Loft sleeping area. Code-compliant stair (IRC R311.7)"
         },
         {
           "label": "Bathroom",
@@ -4543,17 +4595,30 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
-          "label": "Entry/Stair",
+          "label": "Genkan",
           "type": "entry",
           "gx": 9,
           "gz": 0,
           "gw": 1,
-          "gd": 4,
-          "area": 64,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "gd": 2,
+          "area": 32,
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
+        },
+        {
+          "label": "Storage",
+          "type": "walk_in_closet",
+          "gx": 9,
+          "gz": 2,
+          "gw": 1,
+          "gd": 2,
+          "area": 32,
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         }
       ]
     },
@@ -6413,6 +6478,20 @@
         {
           "componentId": "wall-int",
           "position": {
+            "x": 10.0,
+            "y": 5.5,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
             "x": 8.0,
             "y": 5.5,
             "z": 6.0
@@ -6420,6 +6499,20 @@
           "rotation": {
             "x": 0,
             "y": 0,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 10.0,
+            "y": 5.5,
+            "z": 4.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
             "z": 0
           },
           "zone": "interior"
@@ -7054,7 +7147,8 @@
           "gw": 4,
           "gd": 5,
           "area": 320,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen",
@@ -7064,7 +7158,8 @@
           "gw": 4,
           "gd": 2,
           "area": 128,
-          "constraints": "NKBA: work triangle 13-26ft total. 48in aisle (42in single cook)"
+          "color": "#f59e0b",
+          "constraints": "NKBA: work triangle 13-26ft. 48in aisle"
         },
         {
           "label": "Ground Suite",
@@ -7074,17 +7169,30 @@
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
-          "label": "Loft Bedroom",
+          "label": "Loft Nook",
           "type": "loft_bed",
           "gx": 4,
           "gz": 3,
-          "gw": 3,
+          "gw": 2,
           "gd": 2,
-          "area": 96,
-          "constraints": "Loft sleeping area. Accessed by code-compliant stair (IRC R311.7)"
+          "area": 64,
+          "color": "#a5b4fc",
+          "constraints": "Loft sleeping area. Code-compliant stair (IRC R311.7)"
+        },
+        {
+          "label": "Closet",
+          "type": "walk_in_closet",
+          "gx": 6,
+          "gz": 3,
+          "gw": 1,
+          "gd": 2,
+          "area": 32,
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         },
         {
           "label": "Bathroom",
@@ -7094,17 +7202,19 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
-          "label": "Entry",
+          "label": "Genkan",
           "type": "entry",
           "gx": 6,
           "gz": 5,
           "gw": 1,
           "gd": 2,
           "area": 32,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
         }
       ]
     },
@@ -10287,7 +10397,8 @@
           "gw": 5,
           "gd": 4,
           "area": 320,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen",
@@ -10297,17 +10408,19 @@
           "gw": 5,
           "gd": 3,
           "area": 240,
-          "constraints": "NKBA: work triangle 13-26ft total. 48in aisle (42in single cook)"
+          "color": "#f59e0b",
+          "constraints": "NKBA: work triangle 13-26ft. 48in aisle"
         },
         {
-          "label": "Primary Bedroom",
+          "label": "Primary Suite",
           "type": "primary_bed",
           "gx": 5,
           "gz": 0,
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
           "label": "Walk-in Closet",
@@ -10317,7 +10430,8 @@
           "gw": 1,
           "gd": 3,
           "area": 48,
-          "constraints": "Walk-in: 24in rod depth + 36in clearance. Min 5\u00d75ft practical"
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         },
         {
           "label": "Bathroom",
@@ -10327,37 +10441,41 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
-          "label": "Office",
+          "label": "Office/Nook",
           "type": "office",
           "gx": 7,
           "gz": 3,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Desk 60\u00d730in + 32in chair clearance behind + bookshelf"
+          "color": "#fb923c",
+          "constraints": "Desk 60\u00d730 + chair clearance + bookshelf"
         },
         {
-          "label": "Utility/Laundry",
+          "label": "Utility",
           "type": "utility",
           "gx": 5,
           "gz": 5,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"
+          "color": "#94a3b8",
+          "constraints": "Washer + dryer side-by-side. 36in front clearance"
         },
         {
-          "label": "Entry",
+          "label": "Genkan",
           "type": "entry",
           "gx": 7,
           "gz": 5,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
         }
       ]
     },
@@ -13568,7 +13686,8 @@
           "gw": 5,
           "gd": 4,
           "area": 320,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen",
@@ -13578,27 +13697,30 @@
           "gw": 5,
           "gd": 3,
           "area": 240,
-          "constraints": "NKBA: work triangle 13-26ft total. 48in aisle (42in single cook)"
+          "color": "#f59e0b",
+          "constraints": "NKBA: work triangle 13-26ft. 48in aisle"
         },
         {
-          "label": "Central Hall",
+          "label": "Gallery",
           "type": "corridor",
           "gx": 5,
           "gz": 0,
           "gw": 1,
           "gd": 7,
           "area": 112,
-          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+          "color": "#64748b",
+          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
         },
         {
-          "label": "Primary Bed",
+          "label": "Primary Suite",
           "type": "primary_bed",
           "gx": 6,
           "gz": 0,
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
           "label": "Bathroom",
@@ -13608,44 +13730,48 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
-          "label": "Laundry",
+          "label": "Utility",
           "type": "utility",
           "gx": 8,
           "gz": 3,
           "gw": 1,
           "gd": 2,
           "area": 32,
-          "constraints": "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"
+          "color": "#94a3b8",
+          "constraints": "Washer + dryer side-by-side. 36in front clearance"
         },
         {
-          "label": "Guest Bed",
+          "label": "Guest Suite",
           "type": "bedroom",
           "gx": 6,
           "gz": 5,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
-          "label": "Entry",
+          "label": "Genkan",
           "type": "entry",
           "gx": 8,
           "gz": 5,
           "gw": 1,
           "gd": 2,
           "area": 32,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
         }
       ]
     },
     {
       "id": "barnhouse-plus",
       "model": "Barnhouse Plus",
-      "sqft": 1104,
+      "sqft": 1056,
       "footprint": {
         "width": 48,
         "depth": 24
@@ -15518,7 +15644,7 @@
           "zone": ""
         },
         {
-          "componentId": "floor-std",
+          "componentId": "floor-deck",
           "position": {
             "x": 22.0,
             "y": 0.83,
@@ -15546,7 +15672,7 @@
           "zone": ""
         },
         {
-          "componentId": "floor-std",
+          "componentId": "floor-deck",
           "position": {
             "x": 22.0,
             "y": 0.83,
@@ -15574,7 +15700,7 @@
           "zone": ""
         },
         {
-          "componentId": "floor-std",
+          "componentId": "floor-deck",
           "position": {
             "x": 22.0,
             "y": 0.83,
@@ -16240,6 +16366,34 @@
         {
           "componentId": "wall-int",
           "position": {
+            "x": 8.0,
+            "y": 5.5,
+            "z": -10.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 8.0,
+            "y": 5.5,
+            "z": -6.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
             "x": 6.0,
             "y": 5.5,
             "z": 0.0
@@ -16254,6 +16408,34 @@
         {
           "componentId": "wall-int",
           "position": {
+            "x": 8.0,
+            "y": 5.5,
+            "z": -2.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 8.0,
+            "y": 5.5,
+            "z": 2.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
             "x": 6.0,
             "y": 5.5,
             "z": 8.0
@@ -16261,6 +16443,20 @@
           "rotation": {
             "x": 0,
             "y": 0,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 8.0,
+            "y": 5.5,
+            "z": 6.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
             "z": 0
           },
           "zone": "interior"
@@ -16283,146 +16479,6 @@
           "componentId": "wall-ext",
           "position": {
             "x": 10.0,
-            "y": 5.5,
-            "z": -12.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 12.0,
-            "y": 5.5,
-            "z": -10.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 12.0,
-            "y": 5.5,
-            "z": -6.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 10.0,
-            "y": 5.5,
-            "z": 0.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 12.0,
-            "y": 5.5,
-            "z": -2.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 12.0,
-            "y": 5.5,
-            "z": 2.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 10.0,
-            "y": 5.5,
-            "z": 8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 12.0,
-            "y": 5.5,
-            "z": 6.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": 10.0,
-            "y": 5.5,
-            "z": 12.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 12.0,
-            "y": 5.5,
-            "z": 10.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": 14.0,
             "y": 2,
             "z": -12.0
           },
@@ -16441,6 +16497,76 @@
         {
           "componentId": "wall-int",
           "position": {
+            "x": 10.0,
+            "y": 5.5,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 10.0,
+            "y": 5.5,
+            "z": 8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": 10.0,
+            "y": 5.5,
+            "z": 12.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 12.0,
+            "y": 5.5,
+            "z": 10.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": 14.0,
+            "y": 5.5,
+            "z": -12.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
             "x": 14.0,
             "y": 5.5,
             "z": 0.0
@@ -16455,6 +16581,20 @@
         {
           "componentId": "wall-int",
           "position": {
+            "x": 16.0,
+            "y": 5.5,
+            "z": 2.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
             "x": 14.0,
             "y": 5.5,
             "z": 8.0
@@ -16462,6 +16602,20 @@
           "rotation": {
             "x": 0,
             "y": 0,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 16.0,
+            "y": 5.5,
+            "z": 6.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
             "z": 0
           },
           "zone": "interior"
@@ -16497,6 +16651,34 @@
         {
           "componentId": "wall-int",
           "position": {
+            "x": 20.0,
+            "y": 5.5,
+            "z": -10.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 20.0,
+            "y": 5.5,
+            "z": -6.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
             "x": 18.0,
             "y": 5.5,
             "z": 0.0
@@ -16504,6 +16686,20 @@
           "rotation": {
             "x": 0,
             "y": 0,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 20.0,
+            "y": 5.5,
+            "z": -2.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
             "z": 0
           },
           "zone": "interior"
@@ -16877,7 +17073,7 @@
         {
           "componentId": "window-std",
           "position": {
-            "x": 14.0,
+            "x": 10.0,
             "y": 5.5,
             "z": -12.0
           },
@@ -16891,7 +17087,7 @@
         {
           "componentId": "wall-ext",
           "position": {
-            "x": 14.0,
+            "x": 10.0,
             "y": 9,
             "z": -12.0
           },
@@ -16971,7 +17167,7 @@
         {
           "componentId": "door-int",
           "position": {
-            "x": 12.0,
+            "x": 8.0,
             "y": 3.5,
             "z": -10.0
           },
@@ -16985,7 +17181,7 @@
         {
           "componentId": "door-int",
           "position": {
-            "x": 12.0,
+            "x": 8.0,
             "y": 3.5,
             "z": 2.0
           },
@@ -17354,7 +17550,8 @@
           "gw": 5,
           "gd": 4,
           "area": 320,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen",
@@ -17364,77 +17561,107 @@
           "gw": 5,
           "gd": 2,
           "area": 160,
-          "constraints": "NKBA: work triangle 13-26ft total. 48in aisle (42in single cook)"
+          "color": "#f59e0b",
+          "constraints": "NKBA: work triangle 13-26ft. 48in aisle"
         },
         {
-          "label": "Master Bed",
+          "label": "Primary Suite",
           "type": "primary_bed",
           "gx": 5,
-          "gz": 0,
-          "gw": 4,
-          "gd": 3,
-          "area": 192,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
-        },
-        {
-          "label": "Guest Bed",
-          "type": "bedroom",
-          "gx": 9,
           "gz": 0,
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
-          "label": "Master Bath",
+          "label": "Guest Suite",
+          "type": "bedroom",
+          "gx": 8,
+          "gz": 0,
+          "gw": 3,
+          "gd": 3,
+          "area": 144,
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
+        },
+        {
+          "label": "Primary Bath",
           "type": "bathroom_full",
           "gx": 5,
           "gz": 3,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
+        },
+        {
+          "label": "Hall",
+          "type": "corridor",
+          "gx": 7,
+          "gz": 3,
+          "gw": 1,
+          "gd": 2,
+          "area": 32,
+          "color": "#64748b",
+          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
         },
         {
           "label": "Guest Bath",
           "type": "bathroom_full",
-          "gx": 9,
+          "gx": 8,
           "gz": 3,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
-          "label": "Hallway",
-          "type": "corridor",
-          "gx": 7,
-          "gz": 3,
-          "gw": 2,
-          "gd": 2,
-          "area": 64,
-          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
-        },
-        {
-          "label": "Laundry",
+          "label": "Utility",
           "type": "utility",
           "gx": 5,
           "gz": 5,
           "gw": 2,
           "gd": 1,
           "area": 32,
-          "constraints": "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"
+          "color": "#94a3b8",
+          "constraints": "Washer + dryer side-by-side. 36in front clearance"
         },
         {
-          "label": "Entry",
+          "label": "Genkan",
           "type": "entry",
           "gx": 7,
           "gz": 5,
           "gw": 2,
           "gd": 1,
           "area": 32,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
+        },
+        {
+          "label": "Storage",
+          "type": "walk_in_closet",
+          "gx": 9,
+          "gz": 5,
+          "gw": 2,
+          "gd": 1,
+          "area": 32,
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
+        },
+        {
+          "label": "Engawa",
+          "type": "engawa",
+          "gx": 11,
+          "gz": 0,
+          "gw": 1,
+          "gd": 3,
+          "area": 48,
+          "color": "#92400e",
+          "constraints": "Covered veranda/transition. 4-5ft wide. Indoor-outdoor threshold"
         },
         {
           "label": "Porch",
@@ -17444,17 +17671,19 @@
           "gw": 1,
           "gd": 3,
           "area": 48,
-          "constraints": "Exterior deck/porch. Typical 10\u00d712ft+"
+          "color": "#a16207",
+          "constraints": "Engawa/deck: covered outdoor transition. Nature connection"
         },
         {
-          "label": "Rear Hall",
-          "type": "corridor",
-          "gx": 9,
-          "gz": 5,
-          "gw": 2,
-          "gd": 1,
+          "label": "Linen",
+          "type": "walk_in_closet",
+          "gx": 10,
+          "gz": 3,
+          "gw": 1,
+          "gd": 2,
           "area": 32,
-          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         }
       ]
     },
@@ -25002,7 +25231,8 @@
           "gw": 5,
           "gd": 5,
           "area": 400,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen/Dining",
@@ -25012,17 +25242,19 @@
           "gw": 5,
           "gd": 3,
           "area": 240,
-          "constraints": "NKBA: work triangle 13-26ft total. 48in aisle (42in single cook)"
+          "color": "#f59e0b",
+          "constraints": "NKBA: work triangle 13-26ft. 48in aisle"
         },
         {
-          "label": "Primary Bed",
+          "label": "Primary Suite",
           "type": "primary_bed",
           "gx": 5,
           "gz": 0,
           "gw": 4,
           "gd": 3,
           "area": 192,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
           "label": "Bathroom",
@@ -25032,7 +25264,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Utility",
@@ -25042,17 +25275,19 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"
+          "color": "#94a3b8",
+          "constraints": "Washer + dryer side-by-side. 36in front clearance"
         },
         {
-          "label": "Guest Bed",
+          "label": "Guest Suite",
           "type": "bedroom",
           "gx": 5,
           "gz": 5,
           "gw": 4,
           "gd": 3,
           "area": 192,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
           "label": "Gallery",
@@ -25062,17 +25297,19 @@
           "gw": 2,
           "gd": 4,
           "area": 128,
-          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+          "color": "#64748b",
+          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
         },
         {
-          "label": "Entry/Stair",
+          "label": "Entry Hall",
           "type": "entry",
           "gx": 9,
           "gz": 4,
           "gw": 2,
           "gd": 4,
           "area": 128,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
         },
         {
           "label": "Office",
@@ -25082,27 +25319,30 @@
           "gw": 2,
           "gd": 3,
           "area": 96,
-          "constraints": "Desk 60\u00d730in + 32in chair clearance behind + bookshelf"
+          "color": "#fb923c",
+          "constraints": "Desk 60\u00d730 + chair clearance + bookshelf"
         },
         {
-          "label": "Primary Closet",
+          "label": "Walk-in",
           "type": "walk_in_closet",
           "gx": 11,
           "gz": 3,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Walk-in: 24in rod depth + 36in clearance. Min 5\u00d75ft practical"
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         },
         {
-          "label": "Gear Room",
+          "label": "Pantry/Store",
           "type": "pantry",
           "gx": 11,
           "gz": 5,
           "gw": 2,
           "gd": 3,
           "area": 96,
-          "constraints": "Walk-in pantry: shelving + 36in aisle. Typical 4\u00d76ft"
+          "color": "#a8a29e",
+          "constraints": "Walk-in pantry: shelving + 36in aisle"
         },
         {
           "label": "Cantilevered Deck",
@@ -25112,7 +25352,8 @@
           "gw": 4,
           "gd": 8,
           "area": 512,
-          "constraints": "Exterior deck/porch. Typical 10\u00d712ft+"
+          "color": "#a16207",
+          "constraints": "Engawa/deck: covered outdoor transition. Nature connection"
         }
       ]
     },
@@ -28202,20 +28443,6 @@
           "zone": "interior"
         },
         {
-          "componentId": "wall-int",
-          "position": {
-            "x": 12.0,
-            "y": 5.5,
-            "z": 8.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
-        },
-        {
           "componentId": "wall-ext",
           "position": {
             "x": 10.0,
@@ -28228,20 +28455,6 @@
             "z": 0
           },
           "zone": "walls"
-        },
-        {
-          "componentId": "wall-int",
-          "position": {
-            "x": 12.0,
-            "y": 5.5,
-            "z": 12.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 90,
-            "z": 0
-          },
-          "zone": "interior"
         },
         {
           "componentId": "wall-ext",
@@ -28319,6 +28532,20 @@
           "zone": "interior"
         },
         {
+          "componentId": "wall-int",
+          "position": {
+            "x": 16.0,
+            "y": 5.5,
+            "z": 8.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
+        },
+        {
           "componentId": "wall-ext",
           "position": {
             "x": 14.0,
@@ -28331,6 +28558,20 @@
             "z": 0
           },
           "zone": "walls"
+        },
+        {
+          "componentId": "wall-int",
+          "position": {
+            "x": 16.0,
+            "y": 5.5,
+            "z": 12.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 90,
+            "z": 0
+          },
+          "zone": "interior"
         },
         {
           "componentId": "wall-ext",
@@ -28861,9 +29102,9 @@
         {
           "componentId": "door-int",
           "position": {
-            "x": 12.0,
+            "x": 16.0,
             "y": 3.5,
-            "z": 8.0
+            "z": 0.0
           },
           "rotation": {
             "x": 0,
@@ -28877,7 +29118,7 @@
           "position": {
             "x": 16.0,
             "y": 3.5,
-            "z": 0.0
+            "z": 8.0
           },
           "rotation": {
             "x": 0,
@@ -29243,7 +29484,8 @@
           "gw": 6,
           "gd": 4,
           "area": 384,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen",
@@ -29253,27 +29495,30 @@
           "gw": 6,
           "gd": 3,
           "area": 288,
-          "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+          "color": "#fbbf24",
+          "constraints": "NKBA: island + work triangle + dining. 48in around island"
         },
         {
-          "label": "Primary Bed",
+          "label": "Primary Suite",
           "type": "primary_bed",
           "gx": 6,
           "gz": 0,
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
-          "label": "Guest Bed",
+          "label": "Guest Suite",
           "type": "bedroom",
           "gx": 9,
           "gz": 0,
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
           "label": "Primary Bath",
@@ -29283,7 +29528,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Guest Bath",
@@ -29293,7 +29539,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Office",
@@ -29303,37 +29550,41 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Desk 60\u00d730in + 32in chair clearance behind + bookshelf"
+          "color": "#fb923c",
+          "constraints": "Desk 60\u00d730 + chair clearance + bookshelf"
         },
         {
-          "label": "Entry",
+          "label": "Genkan",
           "type": "entry",
           "gx": 6,
           "gz": 5,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
         },
         {
-          "label": "Primary Closet",
+          "label": "Walk-in",
           "type": "walk_in_closet",
           "gx": 8,
           "gz": 5,
-          "gw": 1,
+          "gw": 2,
           "gd": 2,
-          "area": 32,
-          "constraints": "Walk-in: 24in rod depth + 36in clearance. Min 5\u00d75ft practical"
+          "area": 64,
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         },
         {
-          "label": "Utility/Laundry",
+          "label": "Utility",
           "type": "utility",
-          "gx": 9,
+          "gx": 10,
           "gz": 5,
-          "gw": 3,
+          "gw": 2,
           "gd": 2,
-          "area": 96,
-          "constraints": "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"
+          "area": 64,
+          "color": "#94a3b8",
+          "constraints": "Washer + dryer side-by-side. 36in front clearance"
         }
       ]
     },
@@ -32180,7 +32431,8 @@
           "gw": 5,
           "gd": 3,
           "area": 240,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen/Dining",
@@ -32190,27 +32442,30 @@
           "gw": 5,
           "gd": 3,
           "area": 240,
-          "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+          "color": "#fbbf24",
+          "constraints": "NKBA: island + work triangle + dining. 48in around island"
         },
         {
-          "label": "Master Bed",
+          "label": "Primary Suite",
           "type": "primary_bed",
           "gx": 5,
           "gz": 0,
           "gw": 4,
           "gd": 3,
           "area": 192,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
-          "label": "Master Bath",
+          "label": "Primary Bath",
           "type": "bathroom_full",
           "gx": 5,
           "gz": 3,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Guest Bath",
@@ -32220,7 +32475,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Powder Room",
@@ -32230,27 +32486,30 @@
           "gw": 1,
           "gd": 1,
           "area": 16,
-          "constraints": "Powder room: toilet + pedestal sink. IRC min 30\u00d730in shower n/a"
+          "color": "#22d3ee",
+          "constraints": "Powder room: toilet + pedestal sink"
         },
         {
-          "label": "Mudroom",
+          "label": "Hall",
           "type": "corridor",
           "gx": 6,
           "gz": 5,
           "gw": 2,
           "gd": 1,
           "area": 32,
-          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+          "color": "#64748b",
+          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
         },
         {
-          "label": "Entry",
+          "label": "Genkan",
           "type": "entry",
           "gx": 8,
           "gz": 5,
           "gw": 1,
           "gd": 1,
           "area": 16,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
         }
       ]
     },
@@ -35724,6 +35983,39 @@
           "position": {
             "x": -2.0,
             "y": 5.5,
+            "z": -20.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "openings"
+        },
+        {
+          "componentId": "wall-ext",
+          "position": {
+            "x": -2.0,
+            "y": 9,
+            "z": -20.0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "zone": "walls",
+          "scale": {
+            "x": 1,
+            "y": 0.3,
+            "z": 1
+          }
+        },
+        {
+          "componentId": "window-std",
+          "position": {
+            "x": -2.0,
+            "y": 5.5,
             "z": 20.0
           },
           "rotation": {
@@ -35772,39 +36064,6 @@
             "x": 2.0,
             "y": 9,
             "z": 20.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "walls",
-          "scale": {
-            "x": 1,
-            "y": 0.3,
-            "z": 1
-          }
-        },
-        {
-          "componentId": "window-std",
-          "position": {
-            "x": -2.0,
-            "y": 5.5,
-            "z": -20.0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "zone": "openings"
-        },
-        {
-          "componentId": "wall-ext",
-          "position": {
-            "x": -2.0,
-            "y": 9,
-            "z": -20.0
           },
           "rotation": {
             "x": 0,
@@ -36221,7 +36480,8 @@
           "gw": 4,
           "gd": 5,
           "area": 320,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen",
@@ -36231,27 +36491,30 @@
           "gw": 4,
           "gd": 5,
           "area": 320,
-          "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+          "color": "#fbbf24",
+          "constraints": "NKBA: island + work triangle + dining. 48in around island"
         },
         {
-          "label": "Primary Bed",
-          "type": "primary_bed",
-          "gx": 4,
-          "gz": 5,
-          "gw": 3,
-          "gd": 5,
-          "area": 240,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
-        },
-        {
-          "label": "Guest/Flex",
+          "label": "Guest Suite",
           "type": "bedroom",
           "gx": 4,
           "gz": 0,
           "gw": 3,
           "gd": 5,
           "area": 240,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
+        },
+        {
+          "label": "Primary Suite",
+          "type": "primary_bed",
+          "gx": 4,
+          "gz": 5,
+          "gw": 3,
+          "gd": 5,
+          "area": 240,
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
           "label": "Full Bath",
@@ -36261,7 +36524,8 @@
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Half Bath",
@@ -36271,17 +36535,19 @@
           "gw": 1,
           "gd": 2,
           "area": 32,
-          "constraints": "Powder room: toilet + pedestal sink. IRC min 30\u00d730in shower n/a"
+          "color": "#22d3ee",
+          "constraints": "Powder room: toilet + pedestal sink"
         },
         {
-          "label": "Laundry",
+          "label": "Utility",
           "type": "utility",
           "gx": 8,
           "gz": 8,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"
+          "color": "#94a3b8",
+          "constraints": "Washer + dryer side-by-side. 36in front clearance"
         }
       ]
     },
@@ -42457,7 +42723,8 @@
           "gw": 5,
           "gd": 4,
           "area": 320,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen",
@@ -42467,7 +42734,8 @@
           "gw": 5,
           "gd": 3,
           "area": 240,
-          "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+          "color": "#fbbf24",
+          "constraints": "NKBA: island + work triangle + dining. 48in around island"
         },
         {
           "label": "Primary Suite",
@@ -42477,27 +42745,30 @@
           "gw": 4,
           "gd": 3,
           "area": 192,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
-          "label": "Bedroom 2",
+          "label": "Suite 2",
           "type": "bedroom",
           "gx": 9,
           "gz": 0,
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
-          "label": "Bedroom 3",
+          "label": "Suite 3",
           "type": "bedroom",
           "gx": 12,
           "gz": 0,
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
           "label": "Closet",
@@ -42507,17 +42778,19 @@
           "gw": 1,
           "gd": 3,
           "area": 48,
-          "constraints": "Walk-in: 24in rod depth + 36in clearance. Min 5\u00d75ft practical"
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         },
         {
-          "label": "Entry",
+          "label": "Genkan",
           "type": "entry",
           "gx": 16,
           "gz": 0,
           "gw": 2,
           "gd": 3,
           "area": 96,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
         },
         {
           "label": "Bath 1",
@@ -42527,7 +42800,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Bath 2",
@@ -42537,7 +42811,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Bath 3",
@@ -42547,57 +42822,63 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
-          "label": "Hallway",
+          "label": "Gallery 1",
           "type": "corridor",
           "gx": 7,
           "gz": 3,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+          "color": "#64748b",
+          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
         },
         {
-          "label": "Hallway 2",
+          "label": "Gallery 2",
           "type": "corridor",
           "gx": 11,
           "gz": 3,
           "gw": 1,
           "gd": 2,
           "area": 32,
-          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+          "color": "#64748b",
+          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
         },
         {
-          "label": "Utility/Laundry",
+          "label": "Utility/Pantry",
           "type": "utility",
           "gx": 14,
           "gz": 3,
           "gw": 4,
           "gd": 2,
           "area": 128,
-          "constraints": "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"
+          "color": "#94a3b8",
+          "constraints": "Washer + dryer side-by-side. 36in front clearance"
         },
         {
-          "label": "Central Hall",
+          "label": "Central Gallery",
           "type": "corridor",
           "gx": 5,
           "gz": 5,
           "gw": 13,
           "gd": 1,
           "area": 208,
-          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+          "color": "#64748b",
+          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
         },
         {
-          "label": "Back Porch",
-          "type": "deck",
+          "label": "Engawa",
+          "type": "engawa",
           "gx": 5,
           "gz": 6,
           "gw": 13,
           "gd": 1,
           "area": 208,
-          "constraints": "Exterior deck/porch. Typical 10\u00d712ft+"
+          "color": "#92400e",
+          "constraints": "Covered veranda/transition. 4-5ft wide. Indoor-outdoor threshold"
         }
       ]
     },
@@ -46850,7 +47131,8 @@
           "gw": 6,
           "gd": 5,
           "area": 480,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen/Dining",
@@ -46860,7 +47142,8 @@
           "gw": 6,
           "gd": 3,
           "area": 288,
-          "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+          "color": "#fbbf24",
+          "constraints": "NKBA: island + work triangle + dining. 48in around island"
         },
         {
           "label": "Primary Suite",
@@ -46870,7 +47153,8 @@
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
           "label": "En-Suite Bath",
@@ -46880,27 +47164,30 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
-          "label": "Primary Closet",
+          "label": "Walk-in",
           "type": "walk_in_closet",
           "gx": 9,
           "gz": 2,
           "gw": 2,
           "gd": 1,
           "area": 32,
-          "constraints": "Walk-in: 24in rod depth + 36in clearance. Min 5\u00d75ft practical"
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         },
         {
-          "label": "Guest Bed",
+          "label": "Guest Suite",
           "type": "bedroom",
           "gx": 6,
           "gz": 3,
           "gw": 5,
           "gd": 2,
           "area": 160,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
           "label": "Loft Suite",
@@ -46910,7 +47197,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Loft sleeping area. Accessed by code-compliant stair (IRC R311.7)"
+          "color": "#a5b4fc",
+          "constraints": "Loft sleeping area. Code-compliant stair (IRC R311.7)"
         },
         {
           "label": "Full Bath",
@@ -46920,7 +47208,8 @@
           "gw": 3,
           "gd": 2,
           "area": 96,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Powder Room",
@@ -46930,17 +47219,19 @@
           "gw": 2,
           "gd": 1,
           "area": 32,
-          "constraints": "Powder room: toilet + pedestal sink. IRC min 30\u00d730in shower n/a"
+          "color": "#22d3ee",
+          "constraints": "Powder room: toilet + pedestal sink"
         },
         {
-          "label": "Entry",
+          "label": "Genkan",
           "type": "entry",
           "gx": 8,
           "gz": 7,
           "gw": 3,
           "gd": 1,
           "area": 48,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
         }
       ]
     },
@@ -51379,7 +51670,8 @@
           "gw": 6,
           "gd": 4,
           "area": 384,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen/Dining",
@@ -51389,17 +51681,19 @@
           "gw": 6,
           "gd": 3,
           "area": 288,
-          "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+          "color": "#fbbf24",
+          "constraints": "NKBA: island + work triangle + dining. 48in around island"
         },
         {
-          "label": "Suite 1",
+          "label": "Primary Suite",
           "type": "primary_bed",
           "gx": 6,
           "gz": 0,
           "gw": 4,
           "gd": 3,
           "area": 192,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
           "label": "Loft Suite",
@@ -51409,57 +51703,63 @@
           "gw": 4,
           "gd": 2,
           "area": 128,
-          "constraints": "Loft sleeping area. Accessed by code-compliant stair (IRC R311.7)"
+          "color": "#a5b4fc",
+          "constraints": "Loft sleeping area. Code-compliant stair (IRC R311.7)"
         },
         {
-          "label": "Suite 2",
+          "label": "Guest Suite",
           "type": "bedroom",
           "gx": 6,
           "gz": 5,
           "gw": 4,
           "gd": 2,
           "area": 128,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
-          "label": "Bath 1",
+          "label": "Primary Bath",
           "type": "bathroom_full",
           "gx": 10,
           "gz": 0,
           "gw": 2,
           "gd": 3,
           "area": 96,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
-          "label": "Primary Closet",
+          "label": "Walk-in",
           "type": "walk_in_closet",
           "gx": 12,
           "gz": 0,
           "gw": 1,
           "gd": 3,
           "area": 48,
-          "constraints": "Walk-in: 24in rod depth + 36in clearance. Min 5\u00d75ft practical"
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         },
         {
-          "label": "Bath 2",
+          "label": "Loft Bath",
           "type": "bathroom_full",
           "gx": 10,
           "gz": 3,
           "gw": 3,
           "gd": 2,
           "area": 96,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
-          "label": "Loft Bath",
+          "label": "Guest Bath",
           "type": "bathroom_full",
           "gx": 10,
           "gz": 5,
           "gw": 3,
           "gd": 2,
           "area": 96,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         }
       ]
     },
@@ -58723,7 +59023,8 @@
           "gw": 5,
           "gd": 4,
           "area": 320,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen/Dining",
@@ -58733,7 +59034,8 @@
           "gw": 5,
           "gd": 3,
           "area": 240,
-          "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+          "color": "#fbbf24",
+          "constraints": "NKBA: island + work triangle + dining. 48in around island"
         },
         {
           "label": "Primary Suite",
@@ -58743,27 +59045,30 @@
           "gw": 4,
           "gd": 3,
           "area": 192,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
-          "label": "Bedroom 2",
+          "label": "Suite 2",
           "type": "bedroom",
           "gx": 9,
           "gz": 0,
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
-          "label": "Bedroom 3",
+          "label": "Suite 3",
           "type": "bedroom",
           "gx": 12,
           "gz": 0,
           "gw": 3,
           "gd": 3,
           "area": 144,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
           "label": "Primary Bath",
@@ -58773,7 +59078,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Guest Bath",
@@ -58783,7 +59089,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Powder Room",
@@ -58793,17 +59100,19 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Powder room: toilet + pedestal sink. IRC min 30\u00d730in shower n/a"
+          "color": "#22d3ee",
+          "constraints": "Powder room: toilet + pedestal sink"
         },
         {
-          "label": "Bed 3 Closet",
+          "label": "Walk-in",
           "type": "walk_in_closet",
           "gx": 11,
           "gz": 3,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Walk-in: 24in rod depth + 36in clearance. Min 5\u00d75ft practical"
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         },
         {
           "label": "Utility",
@@ -58813,37 +59122,41 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"
+          "color": "#94a3b8",
+          "constraints": "Washer + dryer side-by-side. 36in front clearance"
         },
         {
-          "label": "Hallway",
+          "label": "Gallery",
           "type": "corridor",
           "gx": 5,
           "gz": 5,
           "gw": 6,
           "gd": 2,
           "area": 192,
-          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+          "color": "#64748b",
+          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
         },
         {
-          "label": "Office",
+          "label": "Studio/Office",
           "type": "office",
           "gx": 11,
           "gz": 5,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Desk 60\u00d730in + 32in chair clearance behind + bookshelf"
+          "color": "#fb923c",
+          "constraints": "Desk 60\u00d730 + chair clearance + bookshelf"
         },
         {
-          "label": "Entry",
+          "label": "Genkan",
           "type": "entry",
           "gx": 13,
           "gz": 5,
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
         },
         {
           "label": "Covered Patio",
@@ -58853,7 +59166,8 @@
           "gw": 3,
           "gd": 7,
           "area": 336,
-          "constraints": "Exterior deck/porch. Typical 10\u00d712ft+"
+          "color": "#a16207",
+          "constraints": "Engawa/deck: covered outdoor transition. Nature connection"
         }
       ]
     },
@@ -68268,7 +68582,8 @@
           "gw": 6,
           "gd": 5,
           "area": 480,
-          "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+          "color": "#4ade80",
+          "constraints": "Combined living/dining. Open plan LDK heart"
         },
         {
           "label": "Kitchen/Dining",
@@ -68278,7 +68593,8 @@
           "gw": 6,
           "gd": 4,
           "area": 384,
-          "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+          "color": "#fbbf24",
+          "constraints": "NKBA: island + work triangle + dining. 48in around island"
         },
         {
           "label": "Primary Suite",
@@ -68288,7 +68604,8 @@
           "gw": 5,
           "gd": 3,
           "area": 240,
-          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+          "color": "#818cf8",
+          "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
         },
         {
           "label": "Suite 2",
@@ -68298,7 +68615,8 @@
           "gw": 4,
           "gd": 3,
           "area": 192,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
           "label": "Suite 3",
@@ -68308,7 +68626,8 @@
           "gw": 4,
           "gd": 3,
           "area": 192,
-          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+          "color": "#6366f1",
+          "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
         },
         {
           "label": "Loft Suite",
@@ -68318,7 +68637,8 @@
           "gw": 5,
           "gd": 2,
           "area": 160,
-          "constraints": "Loft sleeping area. Accessed by code-compliant stair (IRC R311.7)"
+          "color": "#a5b4fc",
+          "constraints": "Loft sleeping area. Code-compliant stair (IRC R311.7)"
         },
         {
           "label": "Storage",
@@ -68328,7 +68648,8 @@
           "gw": 5,
           "gd": 1,
           "area": 80,
-          "constraints": "Walk-in: 24in rod depth + 36in clearance. Min 5\u00d75ft practical"
+          "color": "#78716c",
+          "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
         },
         {
           "label": "Primary Bath",
@@ -68338,7 +68659,8 @@
           "gw": 3,
           "gd": 2,
           "area": 96,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Bath 2",
@@ -68348,7 +68670,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Bath 3",
@@ -68358,7 +68681,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+          "color": "#06b6d4",
+          "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
         },
         {
           "label": "Powder Room",
@@ -68368,7 +68692,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Powder room: toilet + pedestal sink. IRC min 30\u00d730in shower n/a"
+          "color": "#22d3ee",
+          "constraints": "Powder room: toilet + pedestal sink"
         },
         {
           "label": "Utility",
@@ -68378,7 +68703,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"
+          "color": "#94a3b8",
+          "constraints": "Washer + dryer side-by-side. 36in front clearance"
         },
         {
           "label": "Passage",
@@ -68388,7 +68714,8 @@
           "gw": 2,
           "gd": 2,
           "area": 64,
-          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+          "color": "#64748b",
+          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
         },
         {
           "label": "Garage",
@@ -68398,37 +68725,41 @@
           "gw": 5,
           "gd": 5,
           "area": 400,
-          "constraints": "Single car: 12\u00d720ft min. Door 8-10ft wide \u00d7 7-8ft tall"
+          "color": "#57534e",
+          "constraints": "Single car: 12\u00d720ft min"
         },
         {
-          "label": "Central Hall",
+          "label": "Central Gallery",
           "type": "corridor",
           "gx": 6,
           "gz": 5,
           "gw": 13,
           "gd": 2,
           "area": 416,
-          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred width"
+          "color": "#64748b",
+          "constraints": "IRC R311.6: \u226536in. 4ft grid = 48in = ADA preferred"
         },
         {
-          "label": "Back Porch",
-          "type": "deck",
+          "label": "Engawa",
+          "type": "engawa",
           "gx": 6,
           "gz": 7,
           "gw": 13,
           "gd": 2,
           "area": 416,
-          "constraints": "Exterior deck/porch. Typical 10\u00d712ft+"
+          "color": "#92400e",
+          "constraints": "Covered veranda/transition. 4-5ft wide. Indoor-outdoor threshold"
         },
         {
-          "label": "Entry",
+          "label": "Genkan",
           "type": "entry",
           "gx": 19,
           "gz": 8,
           "gw": 5,
           "gd": 1,
           "area": 80,
-          "constraints": "Exterior door (36in ADA) + coat hooks. Min 42in wide for flow"
+          "color": "#e879f9",
+          "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold"
         }
       ]
     }
@@ -68442,8 +68773,8 @@
       "roof-shed": true,
       "roof-flat": false,
       "floor-std": true,
-      "floor-deck": true,
-      "door-ext": false,
+      "floor-deck": false,
+      "door-ext": true,
       "door-sliding": true,
       "window-std": true,
       "door-int": true,

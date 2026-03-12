@@ -3468,6 +3468,39 @@
       "position": {
         "x": -2.0,
         "y": 5.5,
+        "z": -20.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "openings"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": -2.0,
+        "y": 9,
+        "z": -20.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "walls",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "window-std",
+      "position": {
+        "x": -2.0,
+        "y": 5.5,
         "z": 20.0
       },
       "rotation": {
@@ -3516,39 +3549,6 @@
         "x": 2.0,
         "y": 9,
         "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "window-std",
-      "position": {
-        "x": -2.0,
-        "y": 5.5,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -2.0,
-        "y": 9,
-        "z": -20.0
       },
       "rotation": {
         "x": 0,
@@ -3965,7 +3965,8 @@
       "gw": 4,
       "gd": 5,
       "area": 320,
-      "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+      "color": "#4ade80",
+      "constraints": "Combined living/dining. Open plan LDK heart"
     },
     {
       "label": "Kitchen",
@@ -3975,27 +3976,30 @@
       "gw": 4,
       "gd": 5,
       "area": 320,
-      "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+      "color": "#fbbf24",
+      "constraints": "NKBA: island + work triangle + dining. 48in around island"
     },
     {
-      "label": "Primary Bed",
-      "type": "primary_bed",
-      "gx": 4,
-      "gz": 5,
-      "gw": 3,
-      "gd": 5,
-      "area": 240,
-      "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
-    },
-    {
-      "label": "Guest/Flex",
+      "label": "Guest Suite",
       "type": "bedroom",
       "gx": 4,
       "gz": 0,
       "gw": 3,
       "gd": 5,
       "area": 240,
-      "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+      "color": "#6366f1",
+      "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
+    },
+    {
+      "label": "Primary Suite",
+      "type": "primary_bed",
+      "gx": 4,
+      "gz": 5,
+      "gw": 3,
+      "gd": 5,
+      "area": 240,
+      "color": "#818cf8",
+      "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
     },
     {
       "label": "Full Bath",
@@ -4005,7 +4009,8 @@
       "gw": 3,
       "gd": 3,
       "area": 144,
-      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+      "color": "#06b6d4",
+      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
     },
     {
       "label": "Half Bath",
@@ -4015,17 +4020,19 @@
       "gw": 1,
       "gd": 2,
       "area": 32,
-      "constraints": "Powder room: toilet + pedestal sink. IRC min 30\u00d730in shower n/a"
+      "color": "#22d3ee",
+      "constraints": "Powder room: toilet + pedestal sink"
     },
     {
-      "label": "Laundry",
+      "label": "Utility",
       "type": "utility",
       "gx": 8,
       "gz": 8,
       "gw": 2,
       "gd": 2,
       "area": 64,
-      "constraints": "Washer 27w + dryer 27w side-by-side=54in. 36in front clearance"
+      "color": "#94a3b8",
+      "constraints": "Washer + dryer side-by-side. 36in front clearance"
     }
   ]
 }

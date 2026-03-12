@@ -10,16 +10,16 @@
     },
     "geometry": "box",
     "material": {
-      "color": "#1a1a2e",
+      "color": "#2c2420",
       "opacity": 1,
-      "metalness": 0.3,
-      "roughness": 0.8
+      "metalness": 0.1,
+      "roughness": 0.95
     },
     "properties": {
       "structural": true,
       "insulated": true,
       "exterior": true,
-      "panelType": "steel-sip"
+      "panelType": "shou-sugi-ban"
     },
     "usedInHomes": [
       "ascent-adu",
@@ -52,14 +52,14 @@
     "material": {
       "color": "#d4c5a9",
       "opacity": 1,
-      "metalness": 0.05,
-      "roughness": 0.95
+      "metalness": 0.02,
+      "roughness": 0.98
     },
     "properties": {
       "structural": false,
       "insulated": false,
       "exterior": false,
-      "panelType": "drywall"
+      "panelType": "hinoki-panel"
     },
     "usedInHomes": [
       "ascent-adu",
@@ -91,16 +91,16 @@
     "geometry": "box",
     "pitchAngle": 25,
     "material": {
-      "color": "#2d2d3d",
+      "color": "#1a1a1a",
       "opacity": 1,
-      "metalness": 0.5,
-      "roughness": 0.5
+      "metalness": 0.6,
+      "roughness": 0.4
     },
     "properties": {
       "structural": true,
       "insulated": true,
       "exterior": true,
-      "panelType": "metal-roof"
+      "panelType": "zinc-standing-seam"
     },
     "usedInHomes": [
       "barnhouse-1-1",
@@ -125,16 +125,16 @@
     "geometry": "box",
     "pitchAngle": 45,
     "material": {
-      "color": "#1a1a2e",
+      "color": "#1a1a1a",
       "opacity": 1,
-      "metalness": 0.5,
-      "roughness": 0.5
+      "metalness": 0.6,
+      "roughness": 0.4
     },
     "properties": {
       "structural": true,
       "insulated": true,
       "exterior": true,
-      "panelType": "metal-roof"
+      "panelType": "zinc-standing-seam"
     },
     "usedInHomes": [
       "modern-alpine-2025",
@@ -155,16 +155,16 @@
     "geometry": "box",
     "pitchAngle": 12,
     "material": {
-      "color": "#2d2d3d",
+      "color": "#1a1a1a",
       "opacity": 1,
-      "metalness": 0.5,
-      "roughness": 0.5
+      "metalness": 0.6,
+      "roughness": 0.4
     },
     "properties": {
       "structural": true,
       "insulated": true,
       "exterior": true,
-      "panelType": "metal-roof"
+      "panelType": "zinc-standing-seam"
     },
     "usedInHomes": [
       "ascent-adu"
@@ -182,16 +182,16 @@
     "geometry": "box",
     "pitchAngle": 0,
     "material": {
-      "color": "#3d3d4d",
+      "color": "#262626",
       "opacity": 1,
-      "metalness": 0.4,
-      "roughness": 0.6
+      "metalness": 0.5,
+      "roughness": 0.5
     },
     "properties": {
       "structural": true,
       "insulated": true,
       "exterior": true,
-      "panelType": "membrane"
+      "panelType": "green-roof-membrane"
     },
     "usedInHomes": [
       "modern-treehouse",
@@ -209,16 +209,16 @@
     },
     "geometry": "box",
     "material": {
-      "color": "#8b7355",
+      "color": "#c4a882",
       "opacity": 1,
-      "metalness": 0.05,
-      "roughness": 0.9
+      "metalness": 0.02,
+      "roughness": 0.92
     },
     "properties": {
       "structural": true,
       "insulated": true,
       "exterior": false,
-      "panelType": "engineered-wood"
+      "panelType": "engineered-hinoki"
     },
     "usedInHomes": [
       "ascent-adu",
@@ -249,19 +249,18 @@
     },
     "geometry": "box",
     "material": {
-      "color": "#6b4226",
+      "color": "#8b6914",
       "opacity": 1,
-      "metalness": 0.05,
+      "metalness": 0.02,
       "roughness": 0.95
     },
     "properties": {
       "structural": true,
       "insulated": false,
       "exterior": true,
-      "panelType": "wood-deck"
+      "panelType": "cedar-deck"
     },
     "usedInHomes": [
-      "ascent-adu",
       "barnhouse-plus",
       "modern-treehouse",
       "barnhouse-3-3",
@@ -280,18 +279,19 @@
     },
     "geometry": "box",
     "material": {
-      "color": "#4a3728",
+      "color": "#3d2b1f",
       "opacity": 1,
-      "metalness": 0.15,
-      "roughness": 0.8
+      "metalness": 0.1,
+      "roughness": 0.85
     },
     "properties": {
       "structural": false,
       "insulated": true,
       "exterior": true,
-      "panelType": "insulated-door"
+      "panelType": "solid-timber-door"
     },
     "usedInHomes": [
+      "ascent-adu",
       "modern-alpine-2025",
       "outpost-plus",
       "barnhouse-1-1",
@@ -317,16 +317,16 @@
     },
     "geometry": "box",
     "material": {
-      "color": "#87ceeb",
-      "opacity": 0.4,
-      "metalness": 0.5,
-      "roughness": 0.15
+      "color": "#b8d4e3",
+      "opacity": 0.35,
+      "metalness": 0.4,
+      "roughness": 0.1
     },
     "properties": {
       "structural": false,
       "insulated": false,
       "exterior": true,
-      "panelType": "glass-sliding"
+      "panelType": "shoji-glass-sliding"
     },
     "usedInHomes": [
       "ascent-adu",
@@ -357,16 +357,16 @@
     },
     "geometry": "box",
     "material": {
-      "color": "#87ceeb",
-      "opacity": 0.35,
-      "metalness": 0.5,
-      "roughness": 0.15
+      "color": "#b8d4e3",
+      "opacity": 0.3,
+      "metalness": 0.4,
+      "roughness": 0.1
     },
     "properties": {
       "structural": false,
       "insulated": false,
       "exterior": true,
-      "panelType": "glass"
+      "panelType": "triple-glaze-timber"
     },
     "usedInHomes": [
       "ascent-adu",
@@ -397,16 +397,16 @@
     },
     "geometry": "box",
     "material": {
-      "color": "#b8a080",
+      "color": "#c4a882",
       "opacity": 1,
-      "metalness": 0.05,
-      "roughness": 0.9
+      "metalness": 0.02,
+      "roughness": 0.92
     },
     "properties": {
       "structural": false,
       "insulated": false,
       "exterior": false,
-      "panelType": "wood-door"
+      "panelType": "shoji-panel"
     },
     "usedInHomes": [
       "ascent-adu",
@@ -446,7 +446,7 @@
       "structural": true,
       "insulated": false,
       "exterior": true,
-      "panelType": "concrete"
+      "panelType": "concrete-pier"
     },
     "usedInHomes": [
       "ascent-adu",

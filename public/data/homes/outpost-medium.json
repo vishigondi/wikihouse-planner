@@ -4433,7 +4433,8 @@
       "gw": 6,
       "gd": 4,
       "area": 384,
-      "constraints": "Combined living/dining. Open plan. Typical 20\u00d716ft+"
+      "color": "#4ade80",
+      "constraints": "Combined living/dining. Open plan LDK heart"
     },
     {
       "label": "Kitchen/Dining",
@@ -4443,17 +4444,19 @@
       "gw": 6,
       "gd": 3,
       "area": 288,
-      "constraints": "NKBA: island + work triangle + dining. 48in around island. Typical 15\u00d718ft"
+      "color": "#fbbf24",
+      "constraints": "NKBA: island + work triangle + dining. 48in around island"
     },
     {
-      "label": "Suite 1",
+      "label": "Primary Suite",
       "type": "primary_bed",
       "gx": 6,
       "gz": 0,
       "gw": 4,
       "gd": 3,
       "area": 192,
-      "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access. Typical 12\u00d716ft"
+      "color": "#818cf8",
+      "constraints": "King 76\u00d780 + 24in clearance + walk-in closet access"
     },
     {
       "label": "Loft Suite",
@@ -4463,57 +4466,63 @@
       "gw": 4,
       "gd": 2,
       "area": 128,
-      "constraints": "Loft sleeping area. Accessed by code-compliant stair (IRC R311.7)"
+      "color": "#a5b4fc",
+      "constraints": "Loft sleeping area. Code-compliant stair (IRC R311.7)"
     },
     {
-      "label": "Suite 2",
+      "label": "Guest Suite",
       "type": "bedroom",
       "gx": 6,
       "gz": 5,
       "gw": 4,
       "gd": 2,
       "area": 128,
-      "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance 3 sides"
+      "color": "#6366f1",
+      "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance"
     },
     {
-      "label": "Bath 1",
+      "label": "Primary Bath",
       "type": "bathroom_full",
       "gx": 10,
       "gz": 0,
       "gw": 2,
       "gd": 3,
       "area": 96,
-      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+      "color": "#06b6d4",
+      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
     },
     {
-      "label": "Primary Closet",
+      "label": "Walk-in",
       "type": "walk_in_closet",
       "gx": 12,
       "gz": 0,
       "gw": 1,
       "gd": 3,
       "area": 48,
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Min 5\u00d75ft practical"
+      "color": "#78716c",
+      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything"
     },
     {
-      "label": "Bath 2",
+      "label": "Loft Bath",
       "type": "bathroom_full",
       "gx": 10,
       "gz": 3,
       "gw": 3,
       "gd": 2,
       "area": 96,
-      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+      "color": "#06b6d4",
+      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
     },
     {
-      "label": "Loft Bath",
+      "label": "Guest Bath",
       "type": "bathroom_full",
       "gx": 10,
       "gz": 5,
       "gw": 3,
       "gd": 2,
       "area": 96,
-      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance to opposite wall"
+      "color": "#06b6d4",
+      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance"
     }
   ]
 }
