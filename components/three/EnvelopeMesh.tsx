@@ -259,17 +259,19 @@ export default function EnvelopeMesh({ home, wallOpacity, roofVisible }: Props) 
 
   return (
     <group>
-      {/* Building shell — walls + roof as one extruded profile (long sides + roof) */}
-      <mesh geometry={shellGeo}>
-        <meshStandardMaterial
-          color="#f5f0e8"
-          transparent={wallOpacity < 1}
-          opacity={wallOpacity}
-          roughness={0.95}
-          metalness={0.02}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
+      {/* Building shell — roof shape only (walls are individual panels now) */}
+      {roofVisible && (
+        <mesh geometry={shellGeo}>
+          <meshStandardMaterial
+            color="#f5f0e8"
+            transparent
+            opacity={Math.min(wallOpacity, 0.4)}
+            roughness={0.95}
+            metalness={0.02}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      )}
 
       {/* End walls with glass detection — always visible */}
       {endWallMeshes}

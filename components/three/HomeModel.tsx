@@ -22,13 +22,12 @@ export default function HomeModel({
 }: Props) {
   const compMap = new Map(components.map(c => [c.id, c]));
 
-  // Filter placements: envelope handles exterior walls + roof,
-  // so only render floors, interior walls, and openings as boxes
-  const interiorPlacements = home.placements.filter(p => {
+  // Render ALL placements as individual panels (walls, floors, openings).
+  // Roof is handled by EnvelopeMesh. Walls are individual 4ft panels
+  // so door/window openings show as gaps.
+  const visiblePlacements = home.placements.filter(p => {
     const zone = p.zone || '';
-    // Skip exterior walls and roof — envelope handles these
-    if (zone === 'walls') return false;
-    if (zone === 'roof') return false;
+    if (zone === 'roof') return false; // envelope handles roof
     return true;
   });
 
@@ -59,8 +58,8 @@ export default function HomeModel({
         />
       )}
 
-      {/* Interior elements only: floors, interior walls, openings */}
-      {interiorPlacements.map((placement, i) => {
+      {/* All elements: walls (as panels), floors, interior walls, openings */}
+      {visiblePlacements.map((placement, i) => {
         const comp = compMap.get(placement.componentId);
         if (!comp) return null;
 
