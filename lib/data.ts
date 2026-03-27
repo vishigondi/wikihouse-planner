@@ -154,6 +154,7 @@ function spatialToDenHome(plan: any): DenHome {
     bedBath: plan.bedsBaths,
     roofStyle,
     hasLoft: (plan.levels || 1) > 1,
+    loftHeight: (plan.levels || 1) > 1 ? 8 : undefined, // 8ft loft floor elevation
     placements: [],
     componentsUsed: ['wall-ext', 'wall-int', 'floor-std', 'foundation', 'roof-gable', 'roof-steep'],
     rooms,
