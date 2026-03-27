@@ -16,8 +16,8 @@ interface Props {
 
 // Architectural model palette — warm, minimal
 const ARCH_COLORS: Record<string, string> = {
-  'wall-ext': '#f5f0e8',   // warm white
-  'wall-int': '#ebe5d9',   // slightly warmer
+  'wall-ext': '#e8e0d0',   // warm cream, slightly darker for visibility
+  'wall-int': '#ddd5c5',   // slightly warmer interior
   'roof-gable': '#d6d0c4', // warm light gray
   'roof-steep': '#d6d0c4',
   'roof-shed': '#d6d0c4',
