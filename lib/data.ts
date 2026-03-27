@@ -8,7 +8,11 @@ import libraryData from '@/public/data/library.json';
 const lib = libraryData as any as ComponentLibrary;
 
 export let components: ModularComponent[] = lib.components;
-export let homes: DenHome[] = lib.homes;
+// Regenerate placements for all homes using the TypeScript generator (single code path)
+export let homes: DenHome[] = lib.homes.map(h => ({
+  ...h,
+  placements: generatePlacements(h),
+}));
 export let coverage: Record<string, Record<string, boolean>> = lib.coverage;
 
 // ── SpatialIR → DenHome adapter ─────────────────────────────────────────────

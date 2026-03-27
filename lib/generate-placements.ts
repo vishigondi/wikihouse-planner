@@ -238,40 +238,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     }
   }
 
-  // ── Roof ────────────────────────────────────────────────────────────
-  const roofStyle = home.roofStyle || 'gable';
-  const roofComponent = roofStyle === 'a-frame' ? 'roof-steep' :
-                        roofStyle === 'steep-gable' ? 'roof-steep' :
-                        roofStyle === 'shed' ? 'roof-shed' : 'roof-gable';
-  const roofAngle = roofStyle === 'a-frame' ? 60 :
-                    roofStyle === 'steep-gable' ? 45 : 25;
-
-  // Two roof planes (north-facing and south-facing)
-  for (let gx = bbox.minGx; gx < bbox.maxGx; gx++) {
-    const hasRoom = Array.from({ length: gridD }, (_, i) =>
-      isOccupied(gx, bbox.minGz + i, groundRooms)
-    ).some(Boolean);
-    if (!hasRoom) continue;
-
-    const { x } = gridToWorld(gx, 0, bbox);
-    const halfDepth = (gridD * GRID) / 2;
-    const ridgeOffset = halfDepth * 0.4; // ridge position
-
-    // South-facing slope
-    placements.push({
-      componentId: roofComponent,
-      position: { x, y: Y_ROOF, z: -ridgeOffset },
-      rotation: { x: -roofAngle, y: 0, z: 0 },
-      zone: 'roof',
-    });
-    // North-facing slope
-    placements.push({
-      componentId: roofComponent,
-      position: { x, y: Y_ROOF, z: ridgeOffset },
-      rotation: { x: roofAngle, y: 0, z: 0 },
-      zone: 'roof',
-    });
-  }
+  // Roof is handled by EnvelopeMesh — no placement boxes needed.
+  // HomeModel.tsx filters zone === 'roof' anyway.
 
   // ── Windows (one per exterior-facing room, center of facade) ────────
   for (const room of groundRooms) {
