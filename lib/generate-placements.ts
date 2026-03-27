@@ -5,7 +5,7 @@
  * for foundation, floor, exterior walls, interior walls, and roof.
  */
 
-import type { ComponentPlacement, RoomLayout, DenHome } from './types';
+import type { ComponentPlacement, RoomLayout, RoomConnection, DenHome } from './types';
 
 const GRID = 4; // feet per grid unit
 
@@ -176,11 +176,23 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     }
   }
 
-  // ── Interior Walls (between rooms) ──────────────────────────────────
+  // ── Interior Walls (between rooms, skip open connections) ───────────
+  const connections = home.connections || [];
+  function isOpenConnection(labelA: string, labelB: string): boolean {
+    return connections.some((c: RoomConnection) =>
+      c.type === 'open' && (
+        (c.from === labelA && c.to === labelB) ||
+        (c.from === labelB && c.to === labelA)
+      )
+    );
+  }
+
   for (let i = 0; i < groundRooms.length; i++) {
     const a = groundRooms[i];
     for (let j = i + 1; j < groundRooms.length; j++) {
       const b = groundRooms[j];
+      // Skip wall if rooms have an open connection (open-plan LDK)
+      if (isOpenConnection(a.label, b.label)) continue;
       // Check if rooms share an edge
       // Horizontal edge (wall runs along x, faces N/S)
       if (a.gx < b.gx + b.gw && a.gx + a.gw > b.gx) {
