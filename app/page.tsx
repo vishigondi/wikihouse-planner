@@ -15,7 +15,7 @@ const Scene = dynamic(() => import('@/components/three/Scene'), { ssr: false });
 export default function Home() {
   const [selectedHomeId, setSelectedHomeId] = useState(homes[0]?.id ?? '');
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
-  const [wallOpacity, setWallOpacity] = useState(1);
+  const [wallOpacity, setWallOpacity] = useState(0.85);
   const [roofVisible, setRoofVisible] = useState(false);
   const [roomLabelsVisible, setRoomLabelsVisible] = useState(true);
   const [, setRefreshCount] = useState(0);
