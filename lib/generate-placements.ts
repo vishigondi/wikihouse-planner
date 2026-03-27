@@ -1,27 +1,38 @@
 /**
  * Auto-generates 3D component placements from room grid layout.
  *
- * Takes a DenHome with rooms (gx/gz/gw/gd) and produces placements
- * for foundation, floor, exterior walls, interior walls, and roof.
+ * Two-pass approach:
+ * Pass 1: Collect all opening positions (doors, windows, entry)
+ * Pass 2: Generate wall panels, skipping panels that overlap openings
+ *
+ * This produces walls with actual door/window cutouts.
  */
 
 import type { ComponentPlacement, RoomLayout, RoomConnection, DenHome } from './types';
 
 const GRID = 4; // feet per grid unit
 
-// Y positions for components
 const Y_FOUNDATION = 0.25;
 const Y_FLOOR = 0.83;
-const Y_ROOF = 5.7;   // roof starts above walls
 
 function wallY(roofStyle: string): number {
-  // A-frame has shorter walls (roof goes nearly to ground)
   return roofStyle === 'a-frame' ? 3.0 : 5.5;
 }
 
 interface BBox {
   minGx: number; maxGx: number;
   minGz: number; maxGz: number;
+}
+
+/** A wall segment position key: "gx,gz,orientation" */
+type WallKey = string;
+
+/** An opening that should cut through a wall panel */
+interface Opening {
+  key: WallKey;
+  componentId: string;
+  position: { x: number; y: number; z: number };
+  rotation: { x: number; y: number; z: number };
 }
 
 function getBBox(rooms: RoomLayout[]): BBox {
@@ -52,16 +63,18 @@ function isOccupied(gx: number, gz: number, rooms: RoomLayout[]): boolean {
   );
 }
 
+function hKey(gx: number, gz: number): WallKey { return `${gx},${gz},h`; }
+function vKey(gx: number, gz: number): WallKey { return `${gx},${gz},v`; }
+
 export function generatePlacements(home: DenHome): ComponentPlacement[] {
   const placements: ComponentPlacement[] = [];
   const rooms = home.rooms;
   const groundRooms = rooms.filter(r => !r.floor || r.floor === 0);
   const bbox = getBBox(rooms);
   const yWall = wallY(home.roofStyle || 'gable');
-  const gridW = bbox.maxGx - bbox.minGx;
-  const gridD = bbox.maxGz - bbox.minGz;
+  const connections = home.connections || [];
 
-  // ── Foundation + Floor ──────────────────────────────────────────────
+  // ── Pass 0: Foundation + Floor ──────────────────────────────────────
   for (let gx = bbox.minGx; gx < bbox.maxGx; gx++) {
     for (let gz = bbox.minGz; gz < bbox.maxGz; gz++) {
       if (!isOccupied(gx, gz, groundRooms)) continue;
@@ -80,109 +93,172 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     }
   }
 
-  // ── Exterior Walls ──────────────────────────────────────────────────
-  // North and south walls (rot_y=0, placed along x axis)
-  for (let gx = bbox.minGx; gx < bbox.maxGx; gx++) {
-    // North wall (top edge, z = maxGz)
-    if (isOccupied(gx, bbox.maxGz - 1, groundRooms)) {
-      const { x } = gridToWorld(gx, 0, bbox);
-      const { z } = gridToWorld(0, bbox.maxGz, bbox);
-      placements.push({
-        componentId: 'wall-ext',
-        position: { x, y: yWall, z },
-        rotation: { x: 0, y: 0, z: 0 },
-        zone: 'walls',
-      });
+  // ── Pass 1: Collect all openings ────────────────────────────────────
+  const openings = new Map<WallKey, Opening>();
+
+  // Windows: one per facade-facing room
+  for (const room of groundRooms) {
+    if (room.type === 'closet' || room.type === 'walk_in_closet' ||
+        room.type === 'pantry' || room.type === 'hallway' ||
+        room.type === 'stair' || room.type === 'landing') continue;
+
+    const midGx = Math.floor(room.gx + room.gw / 2);
+    const midGz = Math.floor(room.gz + room.gd / 2);
+
+    // North facade
+    if (room.gz + room.gd >= bbox.maxGz || !isOccupied(midGx, room.gz + room.gd, groundRooms)) {
+      const key = hKey(midGx, room.gz + room.gd);
+      if (!openings.has(key)) {
+        const { x } = gridToWorld(midGx, 0, bbox);
+        const { z } = gridToWorld(0, room.gz + room.gd, bbox);
+        openings.set(key, { key, componentId: 'window-std', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 } });
+      }
+      continue;
     }
-    // South wall (bottom edge, z = minGz)
-    if (isOccupied(gx, bbox.minGz, groundRooms)) {
-      const { x } = gridToWorld(gx, 0, bbox);
-      const { z } = gridToWorld(0, bbox.minGz, bbox);
-      placements.push({
-        componentId: 'wall-ext',
-        position: { x, y: yWall, z },
-        rotation: { x: 0, y: 0, z: 0 },
-        zone: 'walls',
-      });
+    // South facade
+    if (room.gz <= bbox.minGz || !isOccupied(midGx, room.gz - 1, groundRooms)) {
+      const key = hKey(midGx, room.gz);
+      if (!openings.has(key)) {
+        const { x } = gridToWorld(midGx, 0, bbox);
+        const { z } = gridToWorld(0, room.gz, bbox);
+        openings.set(key, { key, componentId: 'window-std', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 } });
+      }
     }
   }
 
-  // East and west walls (rot_y=90, placed along z axis)
+  // Entry door
+  const entryRoom = groundRooms.find(r => r.type === 'entry');
+  if (entryRoom) {
+    const key = hKey(entryRoom.gx, entryRoom.gz);
+    const { x } = gridToWorld(entryRoom.gx, 0, bbox);
+    const { z } = gridToWorld(0, entryRoom.gz, bbox);
+    openings.set(key, { key, componentId: 'door-ext', position: { x, y: 3.5, z }, rotation: { x: 0, y: 0, z: 0 } });
+  }
+
+  // Interior doors (from connections)
+  for (const conn of connections) {
+    if (conn.type !== 'door' && conn.type !== 'sliding') continue;
+    const doorComp = conn.type === 'sliding' ? 'door-sliding' : 'door-int';
+    const roomA = groundRooms.find(r => r.label === conn.from);
+    const roomB = groundRooms.find(r => r.label === conn.to);
+    if (!roomA || !roomB) continue;
+
+    const sharedHoriz = (roomA.gz + roomA.gd === roomB.gz || roomB.gz + roomB.gd === roomA.gz) &&
+                        roomA.gx < roomB.gx + roomB.gw && roomA.gx + roomA.gw > roomB.gx;
+    const sharedVert = (roomA.gx + roomA.gw === roomB.gx || roomB.gx + roomB.gw === roomA.gx) &&
+                       roomA.gz < roomB.gz + roomB.gd && roomA.gz + roomA.gd > roomB.gz;
+
+    if (sharedHoriz) {
+      const sharedZ = roomA.gz + roomA.gd === roomB.gz ? roomA.gz + roomA.gd : roomB.gz + roomB.gd;
+      const midX = Math.floor((Math.max(roomA.gx, roomB.gx) + Math.min(roomA.gx + roomA.gw, roomB.gx + roomB.gw)) / 2);
+      const key = hKey(midX, sharedZ);
+      const { x } = gridToWorld(midX, 0, bbox);
+      const { z } = gridToWorld(0, sharedZ, bbox);
+      openings.set(key, { key, componentId: doorComp, position: { x, y: 3.5, z }, rotation: { x: 0, y: 0, z: 0 } });
+    } else if (sharedVert) {
+      const sharedX = roomA.gx + roomA.gw === roomB.gx ? roomA.gx + roomA.gw : roomB.gx + roomB.gw;
+      const midZ = Math.floor((Math.max(roomA.gz, roomB.gz) + Math.min(roomA.gz + roomA.gd, roomB.gz + roomB.gd)) / 2);
+      const key = vKey(sharedX, midZ);
+      const { x } = gridToWorld(sharedX, 0, bbox);
+      const { z } = gridToWorld(0, midZ, bbox);
+      openings.set(key, { key, componentId: doorComp, position: { x: x - GRID / 2, y: 3.5, z }, rotation: { x: 0, y: 90, z: 0 } });
+    }
+  }
+
+  // ── Pass 2: Exterior wall panels (skip where openings exist) ────────
+
+  // Horizontal walls (N/S edges, rot_y=0)
+  for (let gx = bbox.minGx; gx < bbox.maxGx; gx++) {
+    // North perimeter
+    if (isOccupied(gx, bbox.maxGz - 1, groundRooms)) {
+      const key = hKey(gx, bbox.maxGz);
+      if (openings.has(key)) {
+        placements.push({ ...openings.get(key)!, zone: 'openings' });
+      } else {
+        const { x } = gridToWorld(gx, 0, bbox);
+        const { z } = gridToWorld(0, bbox.maxGz, bbox);
+        placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls' });
+      }
+    }
+    // South perimeter
+    if (isOccupied(gx, bbox.minGz, groundRooms)) {
+      const key = hKey(gx, bbox.minGz);
+      if (openings.has(key)) {
+        placements.push({ ...openings.get(key)!, zone: 'openings' });
+      } else {
+        const { x } = gridToWorld(gx, 0, bbox);
+        const { z } = gridToWorld(0, bbox.minGz, bbox);
+        placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls' });
+      }
+    }
+  }
+
+  // Vertical walls (E/W edges, rot_y=90)
   for (let gz = bbox.minGz; gz < bbox.maxGz; gz++) {
-    // West wall (left edge, x = minGx)
+    // West perimeter
     if (isOccupied(bbox.minGx, gz, groundRooms)) {
+      const key = vKey(bbox.minGx, gz);
       const { x } = gridToWorld(bbox.minGx, 0, bbox);
       const { z } = gridToWorld(0, gz, bbox);
-      placements.push({
-        componentId: 'wall-ext',
-        position: { x: x - GRID / 2, y: yWall, z },
-        rotation: { x: 0, y: 90, z: 0 },
-        zone: 'walls',
-      });
+      if (openings.has(key)) {
+        placements.push({ ...openings.get(key)!, zone: 'openings' });
+      } else {
+        placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls' });
+      }
     }
-    // East wall (right edge, x = maxGx)
+    // East perimeter
     if (isOccupied(bbox.maxGx - 1, gz, groundRooms)) {
+      const key = vKey(bbox.maxGx, gz);
       const { x } = gridToWorld(bbox.maxGx, 0, bbox);
       const { z } = gridToWorld(0, gz, bbox);
-      placements.push({
-        componentId: 'wall-ext',
-        position: { x: x - GRID / 2, y: yWall, z },
-        rotation: { x: 0, y: 90, z: 0 },
-        zone: 'walls',
-      });
+      if (openings.has(key)) {
+        placements.push({ ...openings.get(key)!, zone: 'openings' });
+      } else {
+        placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls' });
+      }
     }
   }
 
-  // Interior perimeter walls for non-rectangular layouts
+  // Interior perimeter walls (for non-rectangular layouts)
   for (let gx = bbox.minGx; gx < bbox.maxGx; gx++) {
     for (let gz = bbox.minGz; gz < bbox.maxGz; gz++) {
       if (!isOccupied(gx, gz, groundRooms)) continue;
-      // Check if adjacent cell is empty (need exterior wall on that edge)
       if (gz > bbox.minGz && !isOccupied(gx, gz - 1, groundRooms)) {
-        const { x } = gridToWorld(gx, 0, bbox);
-        const { z } = gridToWorld(0, gz, bbox);
-        placements.push({
-          componentId: 'wall-ext',
-          position: { x, y: yWall, z },
-          rotation: { x: 0, y: 0, z: 0 },
-          zone: 'walls',
-        });
+        const key = hKey(gx, gz);
+        if (!openings.has(key)) {
+          const { x } = gridToWorld(gx, 0, bbox);
+          const { z } = gridToWorld(0, gz, bbox);
+          placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls' });
+        }
       }
       if (gz < bbox.maxGz - 1 && !isOccupied(gx, gz + 1, groundRooms)) {
-        const { x } = gridToWorld(gx, 0, bbox);
-        const { z } = gridToWorld(0, gz + 1, bbox);
-        placements.push({
-          componentId: 'wall-ext',
-          position: { x, y: yWall, z },
-          rotation: { x: 0, y: 0, z: 0 },
-          zone: 'walls',
-        });
+        const key = hKey(gx, gz + 1);
+        if (!openings.has(key)) {
+          const { x } = gridToWorld(gx, 0, bbox);
+          const { z } = gridToWorld(0, gz + 1, bbox);
+          placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls' });
+        }
       }
       if (gx > bbox.minGx && !isOccupied(gx - 1, gz, groundRooms)) {
-        const { x } = gridToWorld(gx, 0, bbox);
-        const { z } = gridToWorld(0, gz, bbox);
-        placements.push({
-          componentId: 'wall-ext',
-          position: { x: x - GRID / 2, y: yWall, z },
-          rotation: { x: 0, y: 90, z: 0 },
-          zone: 'walls',
-        });
+        const key = vKey(gx, gz);
+        if (!openings.has(key)) {
+          const { x } = gridToWorld(gx, 0, bbox);
+          const { z } = gridToWorld(0, gz, bbox);
+          placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls' });
+        }
       }
       if (gx < bbox.maxGx - 1 && !isOccupied(gx + 1, gz, groundRooms)) {
-        const { x } = gridToWorld(gx + 1, 0, bbox);
-        const { z } = gridToWorld(0, gz, bbox);
-        placements.push({
-          componentId: 'wall-ext',
-          position: { x: x - GRID / 2, y: yWall, z },
-          rotation: { x: 0, y: 90, z: 0 },
-          zone: 'walls',
-        });
+        const key = vKey(gx + 1, gz);
+        if (!openings.has(key)) {
+          const { x } = gridToWorld(gx + 1, 0, bbox);
+          const { z } = gridToWorld(0, gz, bbox);
+          placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls' });
+        }
       }
     }
   }
 
-  // ── Interior Walls (on every shared edge EXCEPT open connections) ───
-  const connections = home.connections || [];
+  // ── Pass 3: Interior walls (shared edges, skip open connections) ────
   function isOpenConnection(labelA: string, labelB: string): boolean {
     return connections.some((c: RoomConnection) =>
       c.type === 'open' && (
@@ -196,42 +272,41 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     const a = groundRooms[i];
     for (let j = i + 1; j < groundRooms.length; j++) {
       const b = groundRooms[j];
-      // Skip wall if rooms have an open connection (open-plan LDK)
       if (isOpenConnection(a.label, b.label)) continue;
-      // Check if rooms share an edge in the grid
-      // Horizontal edge (wall runs along x, faces N/S)
+
+      // Horizontal shared edge
       if (a.gx < b.gx + b.gw && a.gx + a.gw > b.gx) {
         if (a.gz + a.gd === b.gz || b.gz + b.gd === a.gz) {
           const sharedZ = a.gz + a.gd === b.gz ? a.gz + a.gd : b.gz + b.gd;
           const startX = Math.max(a.gx, b.gx);
           const endX = Math.min(a.gx + a.gw, b.gx + b.gw);
           for (let gx = startX; gx < endX; gx++) {
-            const { x } = gridToWorld(gx, 0, bbox);
-            const { z } = gridToWorld(0, sharedZ, bbox);
-            placements.push({
-              componentId: 'wall-int',
-              position: { x, y: yWall, z },
-              rotation: { x: 0, y: 0, z: 0 },
-              zone: 'interior',
-            });
+            const key = hKey(gx, sharedZ);
+            if (openings.has(key)) {
+              // Door opening — already placed in pass 1
+            } else {
+              const { x } = gridToWorld(gx, 0, bbox);
+              const { z } = gridToWorld(0, sharedZ, bbox);
+              placements.push({ componentId: 'wall-int', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'interior' });
+            }
           }
         }
       }
-      // Vertical edge (wall runs along z, faces E/W)
+      // Vertical shared edge
       if (a.gz < b.gz + b.gd && a.gz + a.gd > b.gz) {
         if (a.gx + a.gw === b.gx || b.gx + b.gw === a.gx) {
           const sharedX = a.gx + a.gw === b.gx ? a.gx + a.gw : b.gx + b.gw;
           const startZ = Math.max(a.gz, b.gz);
           const endZ = Math.min(a.gz + a.gd, b.gz + b.gd);
           for (let gz = startZ; gz < endZ; gz++) {
-            const { x } = gridToWorld(sharedX, 0, bbox);
-            const { z } = gridToWorld(0, gz, bbox);
-            placements.push({
-              componentId: 'wall-int',
-              position: { x: x - GRID / 2, y: yWall, z },
-              rotation: { x: 0, y: 90, z: 0 },
-              zone: 'interior',
-            });
+            const key = vKey(sharedX, gz);
+            if (openings.has(key)) {
+              // Door opening — already placed
+            } else {
+              const { x } = gridToWorld(sharedX, 0, bbox);
+              const { z } = gridToWorld(0, gz, bbox);
+              placements.push({ componentId: 'wall-int', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'interior' });
+            }
           }
         }
       }
@@ -239,94 +314,6 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
   }
 
   // Roof is handled by EnvelopeMesh — no placement boxes needed.
-  // HomeModel.tsx filters zone === 'roof' anyway.
-
-  // ── Windows (one per exterior-facing room, center of facade) ────────
-  for (const room of groundRooms) {
-    if (room.type === 'closet' || room.type === 'walk_in_closet' ||
-        room.type === 'pantry' || room.type === 'hallway' ||
-        room.type === 'stair' || room.type === 'landing') continue;
-
-    // Place window on the first exterior wall of the room
-    const roomCenterGx = room.gx + room.gw / 2;
-    const roomCenterGz = room.gz + room.gd / 2;
-
-    // Check north edge
-    if (room.gz + room.gd >= bbox.maxGz || !isOccupied(Math.floor(roomCenterGx), room.gz + room.gd, groundRooms)) {
-      const { x } = gridToWorld(roomCenterGx - 0.5, 0, bbox);
-      const { z } = gridToWorld(0, room.gz + room.gd, bbox);
-      placements.push({
-        componentId: 'window-std',
-        position: { x, y: yWall, z },
-        rotation: { x: 0, y: 0, z: 0 },
-        zone: 'openings',
-      });
-      continue;
-    }
-    // Check south edge
-    if (room.gz <= bbox.minGz || !isOccupied(Math.floor(roomCenterGx), room.gz - 1, groundRooms)) {
-      const { x } = gridToWorld(roomCenterGx - 0.5, 0, bbox);
-      const { z } = gridToWorld(0, room.gz, bbox);
-      placements.push({
-        componentId: 'window-std',
-        position: { x, y: yWall, z },
-        rotation: { x: 0, y: 0, z: 0 },
-        zone: 'openings',
-      });
-    }
-  }
-
-  // ── Entry Door (on entry room's south facade) ─────────────────────
-  const entryRoom = groundRooms.find(r => r.type === 'entry');
-  if (entryRoom) {
-    const { x } = gridToWorld(entryRoom.gx, 0, bbox);
-    const { z } = gridToWorld(0, entryRoom.gz, bbox);
-    placements.push({
-      componentId: 'door-ext',
-      position: { x, y: 3.5, z },
-      rotation: { x: 0, y: 0, z: 0 },
-      zone: 'openings',
-    });
-  }
-
-  // ── Interior + Sliding Doors (for connections between rooms) ────────
-  for (const conn of connections) {
-    if (conn.type !== 'door' && conn.type !== 'sliding') continue;
-    const doorComponent = conn.type === 'sliding' ? 'door-sliding' : 'door-int';
-    const roomA = groundRooms.find(r => r.label === conn.from);
-    const roomB = groundRooms.find(r => r.label === conn.to);
-    if (!roomA || !roomB) continue;
-
-    // Find shared edge
-    const sharedHoriz = (roomA.gz + roomA.gd === roomB.gz || roomB.gz + roomB.gd === roomA.gz) &&
-                        roomA.gx < roomB.gx + roomB.gw && roomA.gx + roomA.gw > roomB.gx;
-    const sharedVert = (roomA.gx + roomA.gw === roomB.gx || roomB.gx + roomB.gw === roomA.gx) &&
-                       roomA.gz < roomB.gz + roomB.gd && roomA.gz + roomA.gd > roomB.gz;
-
-    if (sharedHoriz) {
-      const sharedZ = roomA.gz + roomA.gd === roomB.gz ? roomA.gz + roomA.gd : roomB.gz + roomB.gd;
-      const midX = (Math.max(roomA.gx, roomB.gx) + Math.min(roomA.gx + roomA.gw, roomB.gx + roomB.gw)) / 2;
-      const { x } = gridToWorld(midX - 0.5, 0, bbox);
-      const { z } = gridToWorld(0, sharedZ, bbox);
-      placements.push({
-        componentId: doorComponent,
-        position: { x, y: 3.5, z },
-        rotation: { x: 0, y: 0, z: 0 },
-        zone: 'openings',
-      });
-    } else if (sharedVert) {
-      const sharedX = roomA.gx + roomA.gw === roomB.gx ? roomA.gx + roomA.gw : roomB.gx + roomB.gw;
-      const midZ = (Math.max(roomA.gz, roomB.gz) + Math.min(roomA.gz + roomA.gd, roomB.gz + roomB.gd)) / 2;
-      const { x } = gridToWorld(sharedX, 0, bbox);
-      const { z } = gridToWorld(0, midZ - 0.5, bbox);
-      placements.push({
-        componentId: doorComponent,
-        position: { x: x - GRID / 2, y: 3.5, z },
-        rotation: { x: 0, y: 90, z: 0 },
-        zone: 'openings',
-      });
-    }
-  }
 
   return placements;
 }
