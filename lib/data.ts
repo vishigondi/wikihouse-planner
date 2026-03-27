@@ -39,14 +39,49 @@ function spatialToDenHome(plan: any): DenHome {
   const footprintGridW = Math.ceil(plan.footprint.width / gridSize);
 
   // Zone-aware packing: public+circulation on top row, private+service below
+  // Sort rooms within each zone by connection order (open-connected rooms adjacent)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const publicRooms = plan.rooms.filter((r: any) =>
+  function sortByConnections(roomList: any[]): any[] {
+    if (roomList.length <= 1) return roomList;
+    const edges = (plan.edges || []).filter((e: any) => e.type === 'open' || e.type === 'cased_opening');
+    const labelToRoom = new Map(roomList.map((r: any) => [r.id, r]));
+
+    // BFS from entry or first room
+    const entry = roomList.find((r: any) => r.type === 'entry') || roomList[0];
+    const visited = new Set<string>();
+    const ordered: any[] = [];
+    const queue = [entry.id];
+    visited.add(entry.id);
+
+    while (queue.length > 0) {
+      const cur = queue.shift()!;
+      const room = labelToRoom.get(cur);
+      if (room) ordered.push(room);
+
+      for (const e of edges) {
+        const neighbor = e.from === cur ? e.to : (e.to === cur ? e.from : null);
+        if (neighbor && !visited.has(neighbor) && labelToRoom.has(neighbor)) {
+          visited.add(neighbor);
+          queue.push(neighbor);
+        }
+      }
+    }
+
+    // Add any rooms not reached by BFS
+    for (const r of roomList) {
+      if (!visited.has(r.id)) ordered.push(r);
+    }
+    return ordered;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const publicRooms = sortByConnections(plan.rooms.filter((r: any) =>
     r.zone === 'public' || r.zone === 'circulation' || r.zone === 'outdoor'
-  );
+  ));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const privateRooms = plan.rooms.filter((r: any) =>
+  const privateRooms = sortByConnections(plan.rooms.filter((r: any) =>
     r.zone === 'private' || r.zone === 'service'
-  );
+  ));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function packRow(roomList: any[], startZ: number): { rooms: RoomLayout[]; maxDepth: number } {
