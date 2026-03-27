@@ -12,8 +12,12 @@ const GRID = 4; // feet per grid unit
 // Y positions for components
 const Y_FOUNDATION = 0.25;
 const Y_FLOOR = 0.83;
-const Y_WALL = 5.5;   // center of wall panel
 const Y_ROOF = 5.7;   // roof starts above walls
+
+function wallY(roofStyle: string): number {
+  // A-frame has shorter walls (roof goes nearly to ground)
+  return roofStyle === 'a-frame' ? 3.0 : 5.5;
+}
 
 interface BBox {
   minGx: number; maxGx: number;
@@ -53,6 +57,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
   const rooms = home.rooms;
   const groundRooms = rooms.filter(r => !r.floor || r.floor === 0);
   const bbox = getBBox(rooms);
+  const yWall = wallY(home.roofStyle || 'gable');
   const gridW = bbox.maxGx - bbox.minGx;
   const gridD = bbox.maxGz - bbox.minGz;
 
@@ -84,7 +89,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       const { z } = gridToWorld(0, bbox.maxGz, bbox);
       placements.push({
         componentId: 'wall-ext',
-        position: { x, y: Y_WALL, z },
+        position: { x, y: yWall, z },
         rotation: { x: 0, y: 0, z: 0 },
         zone: 'walls',
       });
@@ -95,7 +100,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       const { z } = gridToWorld(0, bbox.minGz, bbox);
       placements.push({
         componentId: 'wall-ext',
-        position: { x, y: Y_WALL, z },
+        position: { x, y: yWall, z },
         rotation: { x: 0, y: 0, z: 0 },
         zone: 'walls',
       });
@@ -110,7 +115,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       const { z } = gridToWorld(0, gz, bbox);
       placements.push({
         componentId: 'wall-ext',
-        position: { x: x - GRID / 2, y: Y_WALL, z },
+        position: { x: x - GRID / 2, y: yWall, z },
         rotation: { x: 0, y: 90, z: 0 },
         zone: 'walls',
       });
@@ -121,7 +126,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       const { z } = gridToWorld(0, gz, bbox);
       placements.push({
         componentId: 'wall-ext',
-        position: { x: x - GRID / 2, y: Y_WALL, z },
+        position: { x: x - GRID / 2, y: yWall, z },
         rotation: { x: 0, y: 90, z: 0 },
         zone: 'walls',
       });
@@ -138,7 +143,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         const { z } = gridToWorld(0, gz, bbox);
         placements.push({
           componentId: 'wall-ext',
-          position: { x, y: Y_WALL, z },
+          position: { x, y: yWall, z },
           rotation: { x: 0, y: 0, z: 0 },
           zone: 'walls',
         });
@@ -148,7 +153,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         const { z } = gridToWorld(0, gz + 1, bbox);
         placements.push({
           componentId: 'wall-ext',
-          position: { x, y: Y_WALL, z },
+          position: { x, y: yWall, z },
           rotation: { x: 0, y: 0, z: 0 },
           zone: 'walls',
         });
@@ -158,7 +163,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         const { z } = gridToWorld(0, gz, bbox);
         placements.push({
           componentId: 'wall-ext',
-          position: { x: x - GRID / 2, y: Y_WALL, z },
+          position: { x: x - GRID / 2, y: yWall, z },
           rotation: { x: 0, y: 90, z: 0 },
           zone: 'walls',
         });
@@ -168,7 +173,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         const { z } = gridToWorld(0, gz, bbox);
         placements.push({
           componentId: 'wall-ext',
-          position: { x: x - GRID / 2, y: Y_WALL, z },
+          position: { x: x - GRID / 2, y: yWall, z },
           rotation: { x: 0, y: 90, z: 0 },
           zone: 'walls',
         });
@@ -205,7 +210,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
             const { z } = gridToWorld(0, sharedZ, bbox);
             placements.push({
               componentId: 'wall-int',
-              position: { x, y: Y_WALL, z },
+              position: { x, y: yWall, z },
               rotation: { x: 0, y: 0, z: 0 },
               zone: 'interior',
             });
@@ -223,7 +228,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
             const { z } = gridToWorld(0, gz, bbox);
             placements.push({
               componentId: 'wall-int',
-              position: { x: x - GRID / 2, y: Y_WALL, z },
+              position: { x: x - GRID / 2, y: yWall, z },
               rotation: { x: 0, y: 90, z: 0 },
               zone: 'interior',
             });
@@ -284,7 +289,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       const { z } = gridToWorld(0, room.gz + room.gd, bbox);
       placements.push({
         componentId: 'window-std',
-        position: { x, y: Y_WALL, z },
+        position: { x, y: yWall, z },
         rotation: { x: 0, y: 0, z: 0 },
         zone: 'openings',
       });
@@ -296,7 +301,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       const { z } = gridToWorld(0, room.gz, bbox);
       placements.push({
         componentId: 'window-std',
-        position: { x, y: Y_WALL, z },
+        position: { x, y: yWall, z },
         rotation: { x: 0, y: 0, z: 0 },
         zone: 'openings',
       });
