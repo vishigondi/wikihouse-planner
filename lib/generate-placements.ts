@@ -181,11 +181,14 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     }
   }
 
-  // ── Interior Walls (between rooms, skip open connections) ───────────
+  // ── Interior Walls (ONLY between rooms with door/wall connections) ──
   const connections = home.connections || [];
-  function isOpenConnection(labelA: string, labelB: string): boolean {
+  function hasWallConnection(labelA: string, labelB: string): boolean {
+    // Only place walls between rooms that have an explicit door or wall connection
+    // This prevents false walls between rooms that are grid-adjacent but not
+    // actually neighboring in the real floor plan
     return connections.some((c: RoomConnection) =>
-      c.type === 'open' && (
+      (c.type === 'door' || c.type === 'wall' || c.type === 'sliding') && (
         (c.from === labelA && c.to === labelB) ||
         (c.from === labelB && c.to === labelA)
       )
@@ -196,9 +199,9 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     const a = groundRooms[i];
     for (let j = i + 1; j < groundRooms.length; j++) {
       const b = groundRooms[j];
-      // Skip wall if rooms have an open connection (open-plan LDK)
-      if (isOpenConnection(a.label, b.label)) continue;
-      // Check if rooms share an edge
+      // ONLY place wall if rooms have an explicit door/wall connection
+      if (!hasWallConnection(a.label, b.label)) continue;
+      // Check if rooms share an edge in the grid
       // Horizontal edge (wall runs along x, faces N/S)
       if (a.gx < b.gx + b.gw && a.gx + a.gw > b.gx) {
         if (a.gz + a.gd === b.gz || b.gz + b.gd === a.gz) {
