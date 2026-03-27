@@ -1,9 +1,11 @@
 'use client';
 
+import { useRef, useImperativeHandle, forwardRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, Environment, ContactShadows } from '@react-three/drei';
+import { OrbitControls, Grid } from '@react-three/drei';
 import type { DenHome, ModularComponent } from '@/lib/types';
 import HomeModel from './HomeModel';
+import * as THREE from 'three';
 
 interface Props {
   home: DenHome;
@@ -15,73 +17,150 @@ interface Props {
   roomLabelsVisible: boolean;
 }
 
-export default function Scene({
+export interface SceneHandle {
+  setTopView: () => void;
+  set3DView: () => void;
+}
+
+/* Inner component that has access to Three.js context */
+function CameraControls({ home, onRef }: { home: DenHome; onRef: (api: SceneHandle) => void }) {
+  const controlsRef = useRef<any>(null);
+  const w = home.footprint.width;
+  const d = home.footprint.depth;
+  const h = home.height;
+  const maxDim = Math.max(w, d, h);
+  const diagonal = Math.sqrt(w * w + d * d);
+
+  // Expose camera control methods
+  const api: SceneHandle = {
+    setTopView: () => {
+      const ctrl = controlsRef.current;
+      if (!ctrl) return;
+      const cam = ctrl.object;
+      // Use a wide FOV and compute distance so the entire footprint diagonal fits
+      const fov = 50;
+      const halfAngle = (fov * Math.PI / 180) / 2;
+      // Account for aspect ratio — use the larger span
+      const aspect = cam.aspect || 1;
+      const hFov = 2 * Math.atan(Math.tan(halfAngle) * aspect);
+      const fitDist = (diagonal / 2) / Math.tan(Math.min(halfAngle, hFov / 2));
+      const dist = fitDist * 2.0;
+      cam.position.set(0, Math.max(dist, 100), 0.01);
+      cam.fov = fov;
+      cam.updateProjectionMatrix();
+      ctrl.target.set(0, 0, 0);
+      ctrl.update();
+    },
+    set3DView: () => {
+      const ctrl = controlsRef.current;
+      if (!ctrl) return;
+      const cam = ctrl.object;
+      // Bird's-eye isometric — high enough to see the whole plan layout
+      const fov = 35;
+      const halfAngle = (fov * Math.PI / 180) / 2;
+      const bboxRadius = Math.sqrt(w * w + d * d + h * h) / 2;
+      const fitDist = bboxRadius / Math.sin(halfAngle);
+      const dist = fitDist * 1.6;
+      cam.position.set(dist * 0.25, dist * 0.90, dist * 0.25);
+      cam.fov = fov;
+      cam.updateProjectionMatrix();
+      ctrl.target.set(0, 0, 0);
+      ctrl.update();
+    },
+  };
+
+  // Pass API up on mount
+  if (controlsRef.current) {
+    onRef(api);
+  }
+
+  return (
+    <OrbitControls
+      ref={(ref) => {
+        controlsRef.current = ref;
+        if (ref) onRef(api);
+      }}
+      makeDefault
+      minDistance={5}
+      maxDistance={maxDim * 6}
+      maxPolarAngle={Math.PI / 2.0}
+      target={[0, h * 0.3, 0]}
+      enableDamping
+      dampingFactor={0.05}
+    />
+  );
+}
+
+const Scene = forwardRef<SceneHandle, Props>(function Scene({
   home, components, selectedComponent, onSelectComponent,
   wallOpacity, roofVisible, roomLabelsVisible
-}: Props) {
-  const maxDim = Math.max(home.footprint.width, home.footprint.depth, home.height);
-  const camDist = maxDim * 1.1;
+}, ref) {
+  const w = home.footprint.width;
+  const d = home.footprint.depth;
+  const h = home.height;
+  const bboxRadius = Math.sqrt(w * w + d * d + h * h) / 2;
+  const fov = 35;
+  const halfAngle = (fov * Math.PI / 180) / 2;
+  const fitDist = bboxRadius / Math.sin(halfAngle);
+  const camDist = fitDist * 0.85;
+  const maxDim = Math.max(w, d, h);
+  const apiRef = useRef<SceneHandle | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    setTopView: () => apiRef.current?.setTopView(),
+    set3DView: () => apiRef.current?.set3DView(),
+  }));
 
   return (
     <Canvas
       camera={{
-        position: [camDist * 0.7, camDist * 0.5, camDist * 0.7],
-        fov: 40,
+        position: [camDist * 0.25, camDist * 0.90, camDist * 0.25],
+        fov: 35,
         near: 0.1,
         far: 1000,
       }}
       style={{ background: '#f5f0eb' }}
-      shadows
+      gl={{
+        powerPreference: 'high-performance',
+        antialias: true,
+        alpha: false,
+      }}
+      onCreated={({ gl }) => {
+        gl.setClearColor('#f5f0eb');
+        gl.domElement.addEventListener('webglcontextlost', (e) => {
+          e.preventDefault();
+        });
+      }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onSelectComponent(null);
       }}
     >
-      {/* Japandi-inspired warm lighting */}
-      <ambientLight intensity={0.5} color="#fef3c7" />
-      <directionalLight
-        position={[60, 100, 40]}
-        intensity={1.2}
-        castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        shadow-camera-far={200}
-        shadow-camera-left={-80}
-        shadow-camera-right={80}
-        shadow-camera-top={80}
-        shadow-camera-bottom={-80}
-      />
-      <directionalLight position={[-40, 60, -30]} intensity={0.3} color="#e0e7ff" />
-      <Environment preset="apartment" environmentIntensity={0.15} />
+      {/* Clean architectural lighting */}
+      <ambientLight intensity={0.7} color="#faf5ee" />
+      <directionalLight position={[50, 80, 30]} intensity={0.8} color="#fff8f0" />
+      <directionalLight position={[-30, 40, -20]} intensity={0.25} color="#e8e4f0" />
+      <hemisphereLight args={['#faf5ee', '#e0dcd4', 0.3]} />
 
-      {/* Ground plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[400, 400]} />
-        <meshStandardMaterial color="#e8e0d4" roughness={1} metalness={0} />
+      {/* Ground — subtle warm */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
+        <planeGeometry args={[200, 200]} />
+        <meshStandardMaterial color="#ebe5db" roughness={1} metalness={0} />
       </mesh>
 
-      {/* Grid overlay */}
+      {/* Subtle grid */}
       <Grid
-        args={[200, 200]}
+        args={[120, 120]}
         cellSize={4}
         cellThickness={0.3}
-        cellColor="#d4ccc0"
+        cellColor="#ddd6ca"
         sectionSize={20}
-        sectionThickness={0.6}
-        sectionColor="#c4bab0"
-        fadeDistance={120}
+        sectionThickness={0.4}
+        sectionColor="#d0c9bd"
+        fadeDistance={80}
         position={[0, 0.005, 0]}
       />
 
-      {/* Contact shadows for grounding */}
-      <ContactShadows
-        position={[0, 0.01, 0]}
-        opacity={0.3}
-        scale={maxDim * 2}
-        blur={2}
-        far={20}
-      />
-
-      {/* The home model */}
+      {/* Home model */}
       <HomeModel
         home={home}
         components={components}
@@ -92,16 +171,10 @@ export default function Scene({
         roomLabelsVisible={roomLabelsVisible}
       />
 
-      {/* Controls */}
-      <OrbitControls
-        makeDefault
-        minDistance={8}
-        maxDistance={maxDim * 3}
-        maxPolarAngle={Math.PI / 2.05}
-        target={[0, home.height / 4, 0]}
-        enableDamping
-        dampingFactor={0.05}
-      />
+      {/* Orbit controls with API */}
+      <CameraControls home={home} onRef={(api) => { apiRef.current = api; }} />
     </Canvas>
   );
-}
+});
+
+export default Scene;

@@ -1,6 +1,6 @@
 # WikiHouse Planner
 
-3D parametric home planner for Den Outdoors modular homes. Browse 15 architecturally validated floor plans with real-time 3D visualization.
+3D parametric pattern book planner for Heavy Mass modular homes. Browse architecturally validated floor plans with real-time 3D visualization.
 
 ## Stack
 

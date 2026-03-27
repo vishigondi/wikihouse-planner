@@ -9,28 +9,26 @@ interface Props {
 }
 
 export default function HomeSelector({ homes, selectedHome, onSelectHome }: Props) {
+  const current = homes.find(h => h.id === selectedHome);
+
   return (
-    <div className="flex gap-1.5 px-3 py-2 overflow-x-auto border-b border-stone-200 bg-white/80 backdrop-blur scrollbar-thin">
-      {homes.map(h => {
-        const active = h.id === selectedHome;
-        return (
-          <button
-            key={h.id}
-            onClick={() => onSelectHome(h.id)}
-            className={`shrink-0 px-3 py-1.5 rounded-md text-left transition-all text-xs ${
-              active
-                ? 'bg-stone-800 text-stone-100 shadow-sm'
-                : 'bg-stone-100 text-stone-500 hover:bg-stone-200 hover:text-stone-700'
-            }`}
-          >
-            <div className="font-medium text-[11px] whitespace-nowrap">{h.model}</div>
-            <div className="flex gap-2 text-[10px] opacity-70 whitespace-nowrap">
-              <span>{h.sqft} sf</span>
-              <span>{h.bedBath}</span>
-            </div>
-          </button>
-        );
-      })}
+    <div className="flex items-center gap-3 px-4 py-2 border-b border-stone-200 bg-white/80 backdrop-blur">
+      <select
+        value={selectedHome}
+        onChange={(e) => onSelectHome(e.target.value)}
+        className="bg-stone-100 border border-stone-200 rounded-md px-3 py-1.5 text-xs text-stone-700 font-medium cursor-pointer hover:bg-stone-200 transition-colors focus:outline-none focus:ring-1 focus:ring-stone-400 min-w-[200px]"
+      >
+        {homes.map(h => (
+          <option key={h.id} value={h.id}>
+            {h.model} — {h.sqft}sf — {h.bedBath}
+          </option>
+        ))}
+      </select>
+      {current && (
+        <span className="text-[10px] text-stone-400">
+          {current.footprint.width}&apos;×{current.footprint.depth}&apos; — {current.rooms.length} rooms — {current.roofStyle}
+        </span>
+      )}
     </div>
   );
 }

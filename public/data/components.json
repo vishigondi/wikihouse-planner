@@ -22,21 +22,21 @@
       "panelType": "shou-sugi-ban"
     },
     "usedInHomes": [
-      "ascent-adu",
-      "modern-alpine-2025",
-      "outpost-plus",
-      "barnhouse-1-1",
+      "the-outpost",
+      "essential-retreat",
+      "a-frame-weekender",
+      "barnhouse-retreat",
+      "modern-loft-barnhouse",
       "barnhouse-2-1",
-      "barnhouse-plus",
-      "modern-treehouse",
-      "barnhouse-2-2",
-      "eastern-farmhouse",
-      "l-barnhouse",
-      "barnhouse-3-3",
+      "a-frame-retreat",
+      "essential-house",
+      "barnhouse-family",
       "a-frame-house-plus",
-      "outpost-medium",
-      "studio-house",
-      "barndo"
+      "eastern-farmhouse",
+      "modern-treehouse",
+      "barndo",
+      "townhome-2bed",
+      "townhome-3bed"
     ]
   },
   {
@@ -62,21 +62,21 @@
       "panelType": "hinoki-panel"
     },
     "usedInHomes": [
-      "ascent-adu",
-      "modern-alpine-2025",
-      "outpost-plus",
-      "barnhouse-1-1",
+      "the-outpost",
+      "essential-retreat",
+      "a-frame-weekender",
+      "barnhouse-retreat",
+      "modern-loft-barnhouse",
       "barnhouse-2-1",
-      "barnhouse-plus",
-      "modern-treehouse",
-      "barnhouse-2-2",
-      "eastern-farmhouse",
-      "l-barnhouse",
-      "barnhouse-3-3",
+      "a-frame-retreat",
+      "essential-house",
+      "barnhouse-family",
       "a-frame-house-plus",
-      "outpost-medium",
-      "studio-house",
-      "barndo"
+      "eastern-farmhouse",
+      "modern-treehouse",
+      "barndo",
+      "townhome-2bed",
+      "townhome-3bed"
     ]
   },
   {
@@ -103,14 +103,15 @@
       "panelType": "zinc-standing-seam"
     },
     "usedInHomes": [
-      "barnhouse-1-1",
+      "essential-retreat",
+      "barnhouse-retreat",
       "barnhouse-2-1",
-      "barnhouse-plus",
-      "barnhouse-2-2",
+      "essential-house",
+      "barnhouse-family",
       "eastern-farmhouse",
-      "l-barnhouse",
-      "barnhouse-3-3",
-      "barndo"
+      "barndo",
+      "townhome-2bed",
+      "townhome-3bed"
     ]
   },
   {
@@ -137,10 +138,12 @@
       "panelType": "zinc-standing-seam"
     },
     "usedInHomes": [
-      "modern-alpine-2025",
-      "outpost-plus",
+      "the-outpost",
+      "a-frame-weekender",
+      "modern-loft-barnhouse",
+      "a-frame-retreat",
       "a-frame-house-plus",
-      "outpost-medium"
+      "modern-treehouse"
     ]
   },
   {
@@ -166,9 +169,7 @@
       "exterior": true,
       "panelType": "zinc-standing-seam"
     },
-    "usedInHomes": [
-      "ascent-adu"
-    ]
+    "usedInHomes": []
   },
   {
     "id": "roof-flat",
@@ -193,10 +194,7 @@
       "exterior": true,
       "panelType": "green-roof-membrane"
     },
-    "usedInHomes": [
-      "modern-treehouse",
-      "studio-house"
-    ]
+    "usedInHomes": []
   },
   {
     "id": "floor-std",
@@ -221,21 +219,21 @@
       "panelType": "engineered-hinoki"
     },
     "usedInHomes": [
-      "ascent-adu",
-      "modern-alpine-2025",
-      "outpost-plus",
-      "barnhouse-1-1",
+      "the-outpost",
+      "essential-retreat",
+      "a-frame-weekender",
+      "barnhouse-retreat",
+      "modern-loft-barnhouse",
       "barnhouse-2-1",
-      "barnhouse-plus",
-      "modern-treehouse",
-      "barnhouse-2-2",
-      "eastern-farmhouse",
-      "l-barnhouse",
-      "barnhouse-3-3",
+      "a-frame-retreat",
+      "essential-house",
+      "barnhouse-family",
       "a-frame-house-plus",
-      "outpost-medium",
-      "studio-house",
-      "barndo"
+      "eastern-farmhouse",
+      "modern-treehouse",
+      "barndo",
+      "townhome-2bed",
+      "townhome-3bed"
     ]
   },
   {
@@ -261,11 +259,20 @@
       "panelType": "cedar-deck"
     },
     "usedInHomes": [
-      "barnhouse-plus",
+      "essential-retreat",
+      "a-frame-weekender",
+      "barnhouse-retreat",
+      "modern-loft-barnhouse",
+      "barnhouse-2-1",
+      "a-frame-retreat",
+      "essential-house",
+      "barnhouse-family",
+      "a-frame-house-plus",
+      "eastern-farmhouse",
       "modern-treehouse",
-      "barnhouse-3-3",
-      "studio-house",
-      "barndo"
+      "barndo",
+      "townhome-2bed",
+      "townhome-3bed"
     ]
   },
   {
@@ -291,19 +298,19 @@
       "panelType": "solid-timber-door"
     },
     "usedInHomes": [
-      "ascent-adu",
-      "modern-alpine-2025",
-      "outpost-plus",
-      "barnhouse-1-1",
+      "essential-retreat",
+      "barnhouse-retreat",
+      "modern-loft-barnhouse",
       "barnhouse-2-1",
-      "barnhouse-plus",
-      "modern-treehouse",
-      "barnhouse-2-2",
-      "eastern-farmhouse",
-      "barnhouse-3-3",
+      "a-frame-retreat",
+      "essential-house",
+      "barnhouse-family",
       "a-frame-house-plus",
-      "studio-house",
-      "barndo"
+      "eastern-farmhouse",
+      "modern-treehouse",
+      "barndo",
+      "townhome-2bed",
+      "townhome-3bed"
     ]
   },
   {
@@ -329,21 +336,20 @@
       "panelType": "shoji-glass-sliding"
     },
     "usedInHomes": [
-      "ascent-adu",
-      "modern-alpine-2025",
-      "outpost-plus",
-      "barnhouse-1-1",
+      "essential-retreat",
+      "a-frame-weekender",
+      "barnhouse-retreat",
+      "modern-loft-barnhouse",
       "barnhouse-2-1",
-      "barnhouse-plus",
-      "modern-treehouse",
-      "barnhouse-2-2",
-      "eastern-farmhouse",
-      "l-barnhouse",
-      "barnhouse-3-3",
+      "a-frame-retreat",
+      "essential-house",
+      "barnhouse-family",
       "a-frame-house-plus",
-      "outpost-medium",
-      "studio-house",
-      "barndo"
+      "eastern-farmhouse",
+      "modern-treehouse",
+      "barndo",
+      "townhome-2bed",
+      "townhome-3bed"
     ]
   },
   {
@@ -369,21 +375,21 @@
       "panelType": "triple-glaze-timber"
     },
     "usedInHomes": [
-      "ascent-adu",
-      "modern-alpine-2025",
-      "outpost-plus",
-      "barnhouse-1-1",
+      "the-outpost",
+      "essential-retreat",
+      "a-frame-weekender",
+      "barnhouse-retreat",
+      "modern-loft-barnhouse",
       "barnhouse-2-1",
-      "barnhouse-plus",
-      "modern-treehouse",
-      "barnhouse-2-2",
-      "eastern-farmhouse",
-      "l-barnhouse",
-      "barnhouse-3-3",
+      "a-frame-retreat",
+      "essential-house",
+      "barnhouse-family",
       "a-frame-house-plus",
-      "outpost-medium",
-      "studio-house",
-      "barndo"
+      "eastern-farmhouse",
+      "modern-treehouse",
+      "barndo",
+      "townhome-2bed",
+      "townhome-3bed"
     ]
   },
   {
@@ -409,21 +415,21 @@
       "panelType": "shoji-panel"
     },
     "usedInHomes": [
-      "ascent-adu",
-      "modern-alpine-2025",
-      "outpost-plus",
-      "barnhouse-1-1",
+      "the-outpost",
+      "essential-retreat",
+      "a-frame-weekender",
+      "barnhouse-retreat",
+      "modern-loft-barnhouse",
       "barnhouse-2-1",
-      "barnhouse-plus",
-      "modern-treehouse",
-      "barnhouse-2-2",
-      "eastern-farmhouse",
-      "l-barnhouse",
-      "barnhouse-3-3",
+      "a-frame-retreat",
+      "essential-house",
+      "barnhouse-family",
       "a-frame-house-plus",
-      "outpost-medium",
-      "studio-house",
-      "barndo"
+      "eastern-farmhouse",
+      "modern-treehouse",
+      "barndo",
+      "townhome-2bed",
+      "townhome-3bed"
     ]
   },
   {
@@ -449,21 +455,21 @@
       "panelType": "concrete-pier"
     },
     "usedInHomes": [
-      "ascent-adu",
-      "modern-alpine-2025",
-      "outpost-plus",
-      "barnhouse-1-1",
+      "the-outpost",
+      "essential-retreat",
+      "a-frame-weekender",
+      "barnhouse-retreat",
+      "modern-loft-barnhouse",
       "barnhouse-2-1",
-      "barnhouse-plus",
-      "modern-treehouse",
-      "barnhouse-2-2",
-      "eastern-farmhouse",
-      "l-barnhouse",
-      "barnhouse-3-3",
+      "a-frame-retreat",
+      "essential-house",
+      "barnhouse-family",
       "a-frame-house-plus",
-      "outpost-medium",
-      "studio-house",
-      "barndo"
+      "eastern-farmhouse",
+      "modern-treehouse",
+      "barndo",
+      "townhome-2bed",
+      "townhome-3bed"
     ]
   }
 ]

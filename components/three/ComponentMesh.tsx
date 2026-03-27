@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useMemo } from 'react';
 import * as THREE from 'three';
 import type { ModularComponent, ComponentPlacement } from '@/lib/types';
 
@@ -14,41 +14,95 @@ interface Props {
   roofVisible: boolean;
 }
 
+// Architectural model palette — warm, minimal
+const ARCH_COLORS: Record<string, string> = {
+  'wall-ext': '#f5f0e8',   // warm white
+  'wall-int': '#ebe5d9',   // slightly warmer
+  'roof-gable': '#d6d0c4', // warm light gray
+  'roof-steep': '#d6d0c4',
+  'roof-shed': '#d6d0c4',
+  'roof-flat': '#ccc6ba',
+  'floor-std': '#e8dcc8',  // warm natural
+  'floor-deck': '#c9b896', // cedar hint
+  'door-ext': '#8b7355',   // wood accent
+  'door-sliding': '#d4e4ec', // glass tint
+  'window-std': '#d4e4ec',
+  'door-int': '#ddd5c5',
+  'foundation': '#bbb5a9',
+};
+
+const ARCH_OPACITY: Record<string, number> = {
+  'door-sliding': 0.35,
+  'window-std': 0.3,
+};
+
+// Cache geometries
+const geoCache = new Map<string, THREE.BoxGeometry>();
+const edgeCache = new Map<string, THREE.EdgesGeometry>();
+
+function getBoxGeo(w: number, h: number, d: number): THREE.BoxGeometry {
+  const key = `${w},${h},${d}`;
+  let geo = geoCache.get(key);
+  if (!geo) { geo = new THREE.BoxGeometry(w, h, d); geoCache.set(key, geo); }
+  return geo;
+}
+
+function getEdgeGeo(w: number, h: number, d: number): THREE.EdgesGeometry {
+  const key = `${w},${h},${d}`;
+  let geo = edgeCache.get(key);
+  if (!geo) { geo = new THREE.EdgesGeometry(getBoxGeo(w, h, d)); edgeCache.set(key, geo); }
+  return geo;
+}
+
+/* Window / glass door mesh — simple transparent pane, no frame */
+function WindowMesh({ w, h, d, selected, onClick }: {
+  w: number; h: number; d: number; selected: boolean; onClick: () => void;
+}) {
+  return (
+    <mesh onClick={(e) => { e.stopPropagation(); onClick(); }}>
+      <boxGeometry args={[w, h, d * 0.3]} />
+      <meshStandardMaterial
+        color="#d4e8f0"
+        transparent
+        opacity={selected ? 0.4 : 0.2}
+        roughness={0.1}
+        metalness={0.05}
+        side={THREE.DoubleSide}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
 export default function ComponentMesh({
   component, placement, selected, highlighted, onClick, wallOpacity, roofVisible
 }: Props) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const [hovered, setHovered] = useState(false);
-
   const { x, y, z } = placement.position;
   const rot = placement.rotation;
   const { width: w, height: h, depth: d } = component.dimensions;
   const scale = placement.scale || { x: 1, y: 1, z: 1 };
-  const mat = component.material;
   const zone = placement.zone || '';
+  const cid = component.id;
 
-  // Hide roof when toggled off
   if (zone === 'roof' && !roofVisible) return null;
 
   const isWall = zone === 'walls' || zone === 'interior';
   const isFloor = zone === 'floor';
   const isOpening = zone === 'openings';
+  const isGlass = cid === 'window-std' || cid === 'door-sliding';
 
-  // Compute opacity based on wall transparency slider
-  let opacity = mat.opacity;
-  if (isWall) {
-    opacity = mat.opacity * wallOpacity;
-  } else if (!highlighted && !isFloor) {
-    opacity = mat.opacity * 0.4;
-  }
+  // Architectural model color
+  const color = ARCH_COLORS[cid] || '#e0d8cc';
+  let opacity = ARCH_OPACITY[cid] || 1;
+  if (isWall) opacity *= wallOpacity;
 
-  const baseColor = new THREE.Color(mat.color);
-  const emissive = selected
-    ? new THREE.Color('#4f46e5')
-    : hovered
-    ? new THREE.Color('#312e81')
-    : new THREE.Color('#000000');
-  const emissiveIntensity = selected ? 0.25 : hovered ? 0.1 : 0;
+  const boxGeo = useMemo(() => getBoxGeo(w, h, d), [w, h, d]);
+  const showEdges = (isWall || isOpening || zone === 'roof') && !isGlass;
+  const edgeGeo = useMemo(() => showEdges ? getEdgeGeo(w, h, d) : null, [w, h, d, showEdges]);
+
+  // Subtle selection highlight
+  const emissive = selected ? '#e8dcc8' : '#000000';
+  const emissiveIntensity = selected ? 0.15 : 0;
 
   return (
     <group
@@ -60,33 +114,39 @@ export default function ComponentMesh({
       ]}
       scale={[scale.x, scale.y, scale.z]}
     >
-      <mesh
-        ref={meshRef}
-        onClick={(e) => { e.stopPropagation(); onClick(); }}
-        onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }}
-        onPointerOut={() => { setHovered(false); document.body.style.cursor = 'default'; }}
-        castShadow={!isFloor}
-        receiveShadow
-      >
-        <boxGeometry args={[w, h, d]} />
-        <meshStandardMaterial
-          color={baseColor}
-          transparent={opacity < 1 || isOpening}
-          opacity={opacity}
-          metalness={mat.metalness}
-          roughness={mat.roughness}
-          emissive={emissive}
-          emissiveIntensity={emissiveIntensity}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
+      {isGlass ? (
+        /* Window / glass door with frame and transparent glass */
+        <WindowMesh w={w} h={h} d={d} selected={selected} onClick={onClick} />
+      ) : (
+        <>
+          <mesh
+            geometry={boxGeo}
+            onClick={(e) => { e.stopPropagation(); onClick(); }}
+            castShadow={!isFloor}
+            receiveShadow
+          >
+            <meshStandardMaterial
+              color={color}
+              transparent={opacity < 1}
+              opacity={opacity}
+              metalness={0.02}
+              roughness={0.95}
+              emissive={emissive}
+              emissiveIntensity={emissiveIntensity}
+              side={THREE.DoubleSide}
+              polygonOffset={isOpening}
+              polygonOffsetFactor={isOpening ? -1 : 0}
+              polygonOffsetUnits={isOpening ? -1 : 0}
+            />
+          </mesh>
 
-      {/* Edge lines for architectural look */}
-      {(isWall || isOpening) && (
-        <lineSegments>
-          <edgesGeometry args={[new THREE.BoxGeometry(w, h, d)]} />
-          <lineBasicMaterial color="#000000" transparent opacity={0.15} />
-        </lineSegments>
+          {/* Architectural edge lines */}
+          {edgeGeo && (
+            <lineSegments geometry={edgeGeo}>
+              <lineBasicMaterial color="#a09080" transparent opacity={highlighted ? 0.25 : 0.1} />
+            </lineSegments>
+          )}
+        </>
       )}
     </group>
   );

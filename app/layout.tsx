@@ -8,8 +8,8 @@ const mono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Den Outdoors — Retreat Planner",
-  description: "3D parametric retreat home planner with Japandi design principles",
+  title: "Heavy Mass — Pattern Book Planner",
+  description: "3D parametric pattern book planner for modular homes",
 };
 
 export default function RootLayout({

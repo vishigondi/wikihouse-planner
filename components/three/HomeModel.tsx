@@ -3,6 +3,8 @@
 import type { DenHome, ModularComponent } from '@/lib/types';
 import ComponentMesh from './ComponentMesh';
 import RoomZones from './RoomZones';
+import EnvelopeMesh from './EnvelopeMesh';
+import LoftPlatform from './LoftPlatform';
 
 interface Props {
   home: DenHome;
@@ -20,17 +22,45 @@ export default function HomeModel({
 }: Props) {
   const compMap = new Map(components.map(c => [c.id, c]));
 
+  // Filter placements: envelope handles exterior walls + roof,
+  // so only render floors, interior walls, and openings as boxes
+  const interiorPlacements = home.placements.filter(p => {
+    const zone = p.zone || '';
+    // Skip exterior walls and roof — envelope handles these
+    if (zone === 'walls') return false;
+    if (zone === 'roof') return false;
+    return true;
+  });
+
   return (
     <group>
+      {/* Building envelope — proper extruded cross-section */}
+      <EnvelopeMesh
+        home={home}
+        wallOpacity={wallOpacity}
+        roofVisible={roofVisible}
+      />
+
       {/* Room zone overlays */}
       <RoomZones
         rooms={home.rooms}
         footprint={home.footprint}
         visible={roomLabelsVisible}
+        loftHeight={home.loftHeight}
+        connections={home.connections}
       />
 
-      {/* All component placements */}
-      {home.placements.map((placement, i) => {
+      {/* Loft floor platform */}
+      {home.loftHeight != null && (
+        <LoftPlatform
+          footprint={home.footprint}
+          loftHeight={home.loftHeight}
+          rooms={home.rooms}
+        />
+      )}
+
+      {/* Interior elements only: floors, interior walls, openings */}
+      {interiorPlacements.map((placement, i) => {
         const comp = compMap.get(placement.componentId);
         if (!comp) return null;
 

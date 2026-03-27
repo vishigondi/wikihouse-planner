@@ -1,6 +1,8 @@
 export type ComponentCategory =
   | 'wall' | 'roof' | 'floor' | 'structural' | 'opening' | 'specialty';
 
+export type RoofStyle = 'gable' | 'a-frame' | 'steep-gable' | 'shed' | 'flat';
+
 export interface ModularComponent {
   id: string;
   name: string;
@@ -31,6 +33,16 @@ export interface ComponentPlacement {
   zone?: string;
 }
 
+export interface RoomFixture {
+  type: string;
+  wall: string;
+  x: number;
+  z: number;
+  w: number;
+  d: number;
+  desc: string;
+}
+
 export interface RoomLayout {
   label: string;
   type: string;
@@ -41,6 +53,26 @@ export interface RoomLayout {
   area: number;
   color: string;
   constraints: string;
+  floor?: number;
+  fixtures?: RoomFixture[];
+}
+
+// Building envelope — cross-section profile extruded along building length
+export interface BuildingEnvelope {
+  // 2D cross-section points (y=up, z=across depth), counter-clockwise
+  profile: Array<{ y: number; z: number }>;
+  wallHeight: number;   // vertical wall portion height (0 for pure A-frame)
+  wallThickness: number; // e.g. 0.5 feet
+  roofThickness: number; // e.g. 0.33 feet
+  overhang: number;      // eave overhang in feet
+}
+
+export type ConnectionType = 'open' | 'door' | 'sliding' | 'wall';
+
+export interface RoomConnection {
+  from: string;
+  to: string;
+  type: ConnectionType;
 }
 
 export interface DenHome {
@@ -52,9 +84,12 @@ export interface DenHome {
   bedBath: string;
   roofStyle: string;
   hasLoft: boolean;
+  loftHeight?: number;  // Y position of loft floor in feet (e.g. 8)
+  envelope?: BuildingEnvelope;
   placements: ComponentPlacement[];
   componentsUsed: string[];
   rooms: RoomLayout[];
+  connections?: RoomConnection[];
 }
 
 export interface ComponentLibrary {

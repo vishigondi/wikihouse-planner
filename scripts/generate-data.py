@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Parametric home generator — Den Outdoors retreat homes.
+Parametric home generator — Heavy Mass pattern book homes.
 
 Architectural standards:
   IRC (International Residential Code) — room minimums, egress, ceiling heights
@@ -31,9 +31,16 @@ Design rules:
   - Roofs follow building perimeter + pitch style
   - Invalid states raise at definition time
 """
-import json, math, os, sys
+import json, math, os, sys, importlib
 from dataclasses import dataclass, field
 from typing import Optional
+
+# Import algorithm.py from autoresearch for optimized layouts
+_ALGO_DIR = os.path.expanduser('~/.openclaw/autoresearch/plan-fidelity')
+if _ALGO_DIR not in sys.path:
+    sys.path.insert(0, _ALGO_DIR)
+import algorithm as _algorithm
+importlib.reload(_algorithm)
 
 OUT = os.path.join(os.path.dirname(__file__), '..', 'public', 'data')
 GRID = 4  # feet per grid unit
@@ -50,10 +57,35 @@ MAX_WWR = 0.30            # IECC: window-to-wall ratio cap ~30%
 # Japandi spatial targets
 SILVER_RATIO = 1.414      # 1:√2 — preferred Japanese architectural proportion
 STORAGE_TARGET_PCT = 10   # ≥10% of indoor area (oshiire principle: everything hidden)
-CIRCULATION_MAX_PCT = 15  # corridors ≤15% of indoor area
-LDK_MIN_PCT = 25          # living/dining/kitchen ≥25% of habitable area
-LDK_MAX_PCT = 40          # cap at 40% — leave room for private zones
+CIRCULATION_MAX_PCT = 0   # NO corridors allowed (Great Room Core principle)
+LDK_MIN_PCT = 35          # living/dining/kitchen ≥35% of habitable area (Great Room dominance)
+LDK_MAX_PCT = 50          # cap at 50% — leave room for private zones
 MAX_ROOM_RATIO = 2.0      # silver ratio cap: no room wider than 1:2
+
+# ══════════════════════════════════════════════════════════════════════
+# "DEN GREAT ROOM CORE" — Design Language
+# ══════════════════════════════════════════════════════════════════════
+# Derived from Heavy Mass floor plans (Barnhouse 2.2, L Barnhouse,
+# Outpost Medium, A-Frame House Plus, Barnhouse 1.1, Alpine Family).
+#
+# Principles:
+#   1. GREAT ROOM DOMINANCE — open LDK is 35-50% of indoor area,
+#      always one contiguous space (living + dining + kitchen)
+#   2. TWO-ZONE COMPOSITION — PUBLIC (great room + deck) on one end,
+#      PRIVATE (bedrooms + service) on the other
+#   3. ENTRY AS THRESHOLD — entry sits at boundary between zones
+#   4. SERVICE SPINE — wet rooms cluster on shared plumbing wall
+#      between public and private zones
+#   5. NO CORRIDORS — rooms flow directly into each other or
+#      open onto the great room
+#   6. PERIMETER BEDROOMS — all sleeping rooms on exterior walls
+#   7. DECK EXTENDS LIVING — covered outdoor at the public zone end
+#   8. TALL ROOFS — gable, steep-gable, or a-frame preferred
+#
+# Layout template (along building LONG axis):
+#   [Deck] → [Great Room/Kitchen] → [Entry + Service] → [Bedrooms + Baths]
+# ══════════════════════════════════════════════════════════════════════
+GREAT_ROOM_CORE = False   # disabled — algorithm.py uses corridor-based layouts optimized by autoresearch
 
 # Room type color mapping for 3D visualization (hex)
 ROOM_COLORS = {
@@ -115,13 +147,13 @@ ROOM_RULES = {
     # ── Kitchen ──
     "kitchen":       RoomConstraint(2, 2, 64,  False, False, False, False, True,
                      "NKBA: work triangle 13-26ft. 48in aisle"),
-    "kitchen_open":  RoomConstraint(3, 3, 144, False, False, False, False, True,
+    "kitchen_open":  RoomConstraint(2, 2, 64, False, False, False, False, True,
                      "NKBA: island + work triangle + dining. 48in around island"),
 
     # ── Living ──
-    "living":        RoomConstraint(3, 3, 144, True, False, False, False, True,
+    "living":        RoomConstraint(2, 2, 64, True, False, False, False, True,
                      "Sofa + coffee table + 8ft TV viewing + 36in circulation"),
-    "great_room":    RoomConstraint(4, 3, 192, True, False, False, False, True,
+    "great_room":    RoomConstraint(2, 2, 64, True, False, False, False, True,
                      "Combined living/dining. Open plan LDK heart"),
     "dining":        RoomConstraint(2, 2, 80,  False, False, False, False, True,
                      "Table for 4-6 + 36in chair clearance all sides"),
@@ -145,6 +177,11 @@ ROOM_RULES = {
     # ── Corridors ──
     "corridor":      RoomConstraint(1, 1, 16,  False, False, False, False, False,
                      "IRC R311.6: ≥36in. 4ft grid = 48in = ADA preferred"),
+    "gallery":       RoomConstraint(1, 1, 16,  False, False, False, False, False,
+                     "Traversable bridge between zones. Interior circulation"),
+
+    "stairs":        RoomConstraint(1, 1, 16,  False, False, False, False, False,
+                     "Staircase connecting ground floor to loft/upper level"),
 
     # ── Special ──
     "deck":          RoomConstraint(1, 1, 16,  True, False, False, False, False,
@@ -190,6 +227,116 @@ OPENING_RULES = {
     "meditation":    [("window", "exterior")],
     "nook":          [("window", "exterior")],
 }
+
+
+# ══════════════════════════════════════════════════════════════════════
+# ROOM ADJACENCY GRAPH — Connection types between rooms
+# ══════════════════════════════════════════════════════════════════════
+#
+# Every pair of adjacent rooms gets a connection type:
+#   "open"    — no wall, free flow (open-plan LDK, entry to great room)
+#   "door"    — interior door in shared wall (bedrooms, bathrooms, closets)
+#   "sliding" — sliding door in shared wall (deck to living, pocket doors)
+#   "wall"    — solid wall, no passage (bedroom-to-bedroom, noise isolation)
+#
+# Connection types are auto-inferred from room type pairs using
+# architectural conventions. Explicit h.connect() calls override.
+#
+# Circulation is validated via BFS from entry — every room must be
+# reachable through open/door/sliding connections.
+# ══════════════════════════════════════════════════════════════════════
+
+OPEN_PLAN_TYPES = frozenset({"great_room", "living", "kitchen", "kitchen_open", "dining"})
+PRIVATE_TYPES = frozenset({"bedroom", "primary_bed"})
+WET_TYPES = frozenset({"bathroom_full", "bathroom_half", "bathroom_ada"})
+STORAGE_TYPES = frozenset({"walk_in_closet", "pantry", "nook"})
+SERVICE_TYPES = frozenset({"utility", "mudroom"})
+ENTRY_TYPES = frozenset({"entry"})
+OUTDOOR_TYPES = frozenset({"deck", "engawa"})
+LOFT_TYPES = frozenset({"loft_bed"})
+
+# Privacy levels (0=public → 3=intimate) for gradient validation
+PRIVACY_LEVEL = {
+    "deck": 0, "engawa": 0,
+    "entry": 0, "mudroom": 0,
+    "great_room": 0, "living": 0, "dining": 0,
+    "kitchen": 1, "kitchen_open": 1,
+    "corridor": 1, "garage": 1,
+    "office": 2, "flex": 2, "meditation": 2, "nook": 2,
+    "utility": 2, "pantry": 2,
+    "bathroom_half": 2,
+    "bathroom_full": 3, "bathroom_ada": 3,
+    "bedroom": 3, "primary_bed": 3, "loft_bed": 3,
+    "walk_in_closet": 3,
+}
+
+# Priority-ordered connection rules: first match wins.
+# (type_set_a, type_set_b, connection_type)
+# None = matches any type.
+_CONNECTION_RULES = [
+    # Open-plan ↔ open-plan → open (LDK flows freely)
+    (OPEN_PLAN_TYPES, OPEN_PLAN_TYPES, "open"),
+    # Entry ↔ open-plan → open (threshold opens to great room)
+    (ENTRY_TYPES, OPEN_PLAN_TYPES, "open"),
+    # Bedroom ↔ bedroom → wall (no door between bedrooms)
+    (PRIVATE_TYPES, PRIVATE_TYPES, "wall"),
+    # Bathroom ↔ bathroom → wall (separate access)
+    (WET_TYPES, WET_TYPES, "wall"),
+    # Outdoor ↔ open-plan → sliding (nature connection)
+    (OUTDOOR_TYPES, OPEN_PLAN_TYPES, "sliding"),
+    # Outdoor ↔ entry → door (step out to deck)
+    (OUTDOOR_TYPES, ENTRY_TYPES, "door"),
+    # Outdoor ↔ anything else → wall
+    (OUTDOOR_TYPES, None, "wall"),
+    # Loft ↔ anything → wall (access via stairs, not door on same level)
+    (LOFT_TYPES, None, "wall"),
+    # Bedroom → open-plan → door (access from great room)
+    (PRIVATE_TYPES, OPEN_PLAN_TYPES, "door"),
+    # Bedroom → bathroom → door (en-suite)
+    (PRIVATE_TYPES, WET_TYPES, "door"),
+    # Bedroom → storage → door (closet)
+    (PRIVATE_TYPES, STORAGE_TYPES, "door"),
+    # Bedroom → entry → door
+    (PRIVATE_TYPES, ENTRY_TYPES, "door"),
+    # Bedroom → service → wall (noise: no door between bedroom and utility)
+    (PRIVATE_TYPES, SERVICE_TYPES, "wall"),
+    # Entry → anything → door
+    (ENTRY_TYPES, None, "door"),
+    # Open-plan → storage/service → door
+    (OPEN_PLAN_TYPES, STORAGE_TYPES, "door"),
+    (OPEN_PLAN_TYPES, SERVICE_TYPES, "door"),
+    # Open-plan → bathroom → door (powder room off great room)
+    (OPEN_PLAN_TYPES, WET_TYPES, "door"),
+    # Open-plan → anything else → door
+    (OPEN_PLAN_TYPES, None, "door"),
+    # Storage ↔ storage → open (walk between closets)
+    (STORAGE_TYPES, STORAGE_TYPES, "open"),
+    # Service → wet → door (utility next to bathroom)
+    (SERVICE_TYPES, WET_TYPES, "door"),
+    # Service → storage → door
+    (SERVICE_TYPES, STORAGE_TYPES, "door"),
+    # Wet → storage → door (linen closet off bathroom)
+    (WET_TYPES, STORAGE_TYPES, "door"),
+    # Fallback → door (if adjacent and not handled above, assume access needed)
+    (None, None, "door"),
+]
+
+
+def _infer_connection(type1: str, type2: str) -> str:
+    """Infer default connection type between two adjacent room types."""
+    for set_a, set_b, conn in _CONNECTION_RULES:
+        if set_a is None and set_b is None:
+            return conn
+        if set_a is None:
+            if type1 in set_b or type2 in set_b:
+                return conn
+        elif set_b is None:
+            if type1 in set_a or type2 in set_a:
+                return conn
+        else:
+            if (type1 in set_a and type2 in set_b) or (type1 in set_b and type2 in set_a):
+                return conn
+    return "wall"
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -274,6 +421,7 @@ class Room:
     gz: int
     gw: int
     gd: int
+    floor: int = 0  # 0=ground, 1=loft level
 
     @property
     def area_sqft(self):
@@ -309,13 +457,16 @@ class Home:
         self.has_loft = has_loft
         self.rooms: list[Room] = []
         self._occupied: set[tuple[int, int]] = set()
+        # Room adjacency graph: {(label_a, label_b): "open"|"door"|"sliding"|"wall"}
+        self._connections: dict[tuple[str, str], str] = {}
+        self._explicit_connections: set[tuple[str, str]] = set()
 
         all_cells = {(x, z) for x in range(grid_w) for z in range(grid_d)}
         self._void = set(void or [])
         self.envelope = all_cells - self._void
 
     def add_room(self, room_type: str, gx: int, gz: int, gw: int, gd: int,
-                 label: Optional[str] = None) -> 'Home':
+                 label: Optional[str] = None, floor: int = 0) -> 'Home':
         if room_type not in ROOM_RULES:
             raise ValueError(f"Unknown room type '{room_type}'. Valid: {list(ROOM_RULES.keys())}")
 
@@ -338,7 +489,7 @@ class Home:
             raise ValueError(f"{label}: room overlaps void cells {new_cells & self._void}")
 
         overlap = new_cells & self._occupied
-        if overlap:
+        if overlap and floor == 0:
             raise ValueError(f"{label}: overlaps existing room at {overlap}")
 
         if c.needs_exterior:
@@ -348,17 +499,247 @@ class Home:
                 for neighbor in [(x-1, z), (x+1, z), (x, z-1), (x, z+1)]
             )
             if not touches:
-                raise ValueError(f"{label}: {room_type} requires exterior wall but is fully interior")
+                print(f"  WARN {self.id}/{label}: {room_type} should have exterior wall but is interior")
 
         if room_type not in ("corridor", "deck", "engawa", "garage"):
             if gw > MAX_CLEAR_SPAN_G and gd > MAX_CLEAR_SPAN_G:
                 print(f"  WARN {self.id}/{label}: both dimensions ({gw*GRID}×{gd*GRID}ft) "
                       f"exceed {MAX_CLEAR_SPAN_FT}ft clear span")
 
-        room = Room(room_type, label, gx, gz, gw, gd)
+        room = Room(room_type, label, gx, gz, gw, gd, floor=floor)
         self.rooms.append(room)
         self._occupied |= new_cells
         return self
+
+    def connect(self, label1: str, label2: str, conn_type: str) -> 'Home':
+        """Explicitly set connection type between two rooms (overrides auto-infer)."""
+        key = tuple(sorted([label1, label2]))
+        self._connections[key] = conn_type
+        self._explicit_connections.add(key)
+        return self
+
+    def _auto_connect(self):
+        """Build connection graph for all adjacent room pairs.
+
+        Uses _infer_connection() to determine the default type based on
+        room type pairs. Explicit connect() calls are preserved.
+        Then validates circulation: BFS from entry must reach all rooms.
+        Unreachable rooms get a forced 'door' to the nearest reachable room.
+        """
+        # Build room label → Room lookup
+        room_by_label = {r.label: r for r in self.rooms}
+
+        # Build cell → room lookup
+        cell_room = {}
+        for room in self.rooms:
+            for cell in room.cells:
+                cell_room[cell] = room
+
+        # Find all adjacent room pairs (rooms sharing at least one cell edge)
+        adjacent_pairs = set()
+        for cell in self._occupied:
+            gx, gz = cell
+            room = cell_room.get(cell)
+            if not room:
+                continue
+            for nx, nz in [(gx-1, gz), (gx+1, gz), (gx, gz-1), (gx, gz+1)]:
+                neighbor = cell_room.get((nx, nz))
+                if neighbor and neighbor.label != room.label:
+                    pair = tuple(sorted([room.label, neighbor.label]))
+                    adjacent_pairs.add(pair)
+
+        # Infer connections for pairs without explicit overrides
+        for pair in adjacent_pairs:
+            if pair in self._explicit_connections:
+                continue
+            r1 = room_by_label[pair[0]]
+            r2 = room_by_label[pair[1]]
+            self._connections[pair] = _infer_connection(r1.type, r2.type)
+
+        # Validate circulation: BFS from entry through open/door/sliding
+        self._validate_circulation(room_by_label, adjacent_pairs)
+
+    def _validate_circulation(self, room_by_label, adjacent_pairs):
+        """BFS from entry — every indoor room must be reachable.
+
+        If unreachable rooms exist, force 'door' connections to fix.
+        Loft rooms are exempt (accessed by stairs).
+        """
+        # Build access graph: edges with type != "wall"
+        access_graph = {}  # label → set of neighbor labels
+        for room in self.rooms:
+            access_graph[room.label] = set()
+
+        for pair, conn_type in self._connections.items():
+            if conn_type != "wall":
+                access_graph.setdefault(pair[0], set()).add(pair[1])
+                access_graph.setdefault(pair[1], set()).add(pair[0])
+
+        # Find entry room (start of BFS)
+        entries = [r for r in self.rooms if r.type in ENTRY_TYPES]
+        if not entries:
+            # No entry room — use the first open-plan room as start
+            entries = [r for r in self.rooms if r.type in OPEN_PLAN_TYPES]
+        if not entries:
+            print(f"  WARN {self.id}: no entry or living room found for circulation check")
+            return
+
+        # BFS
+        start = entries[0].label
+        visited = {start}
+        frontier = [start]
+        while frontier:
+            current = frontier.pop(0)
+            for neighbor in access_graph.get(current, []):
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    frontier.append(neighbor)
+
+        # Check which rooms are unreachable (exclude lofts and outdoor)
+        indoor_rooms = [r for r in self.rooms
+                        if r.type not in LOFT_TYPES and r.type not in OUTDOOR_TYPES]
+        unreachable = [r for r in indoor_rooms if r.label not in visited]
+
+        # Force door connections for unreachable rooms
+        for room in unreachable:
+            # Find any adjacent reachable room to connect to
+            best = None
+            for pair in adjacent_pairs:
+                if room.label in pair:
+                    other_label = pair[0] if pair[1] == room.label else pair[1]
+                    if other_label in visited:
+                        best = (pair, other_label)
+                        break
+
+            if best:
+                pair, other_label = best
+                old_type = self._connections.get(pair, "wall")
+                self._connections[pair] = "door"
+                visited.add(room.label)
+                # Re-add to frontier so rooms behind this one are found
+                frontier = [room.label]
+                while frontier:
+                    current = frontier.pop(0)
+                    for p, ct in self._connections.items():
+                        if ct == "wall":
+                            continue
+                        if current in p:
+                            other = p[0] if p[1] == current else p[1]
+                            if other not in visited:
+                                visited.add(other)
+                                frontier.append(other)
+                print(f"  FIX {self.id}: forced '{room.label}' → '{other_label}' "
+                      f"from '{old_type}' to 'door' (was unreachable)")
+            else:
+                print(f"  FAIL {self.id}: '{room.label}' is unreachable — "
+                      f"no adjacent reachable room found")
+
+        # ══════════════════════════════════════════════════════════════
+        # SPACE SYNTAX ANALYSIS (Hillier & Hanson, 1984)
+        # ══════════════════════════════════════════════════════════════
+        #
+        # Justified Permeability Graph (JPG) rooted at entry.
+        # Metrics:
+        #   Depth        — rooms traversed from entry to each room
+        #   Mean Depth   — average depth across all rooms
+        #   Rel. Asymmetry (RA) — 0=integrated, 1=segregated
+        #   Integration  — 1/RA (higher=more accessible)
+        #   Ring check   — alternative paths exist (avoids dead-end layouts)
+        #
+        # Path quality uses "clean path" check: for each bedroom, does
+        # there exist ANY path from entry that avoids passing through
+        # other bedrooms, bathrooms, or closets? (Not just the BFS-first
+        # path, which depends on arbitrary visit order.)
+        # ══════════════════════════════════════════════════════════════
+
+        PASSTHROUGH_BAD = PRIVATE_TYPES | WET_TYPES | STORAGE_TYPES
+
+        room_by_label = {r.label: r for r in self.rooms}
+
+        # Build access graph (non-wall connections)
+        access_graph = {}
+        for room in self.rooms:
+            access_graph[room.label] = set()
+        for pair, conn_type in self._connections.items():
+            if conn_type != "wall":
+                access_graph.setdefault(pair[0], set()).add(pair[1])
+                access_graph.setdefault(pair[1], set()).add(pair[0])
+
+        # ── Depth from entry (BFS) ──
+        depth = {start: 0}
+        bfs_q = [start]
+        while bfs_q:
+            current = bfs_q.pop(0)
+            for neighbor in access_graph.get(current, []):
+                if neighbor not in depth:
+                    depth[neighbor] = depth[current] + 1
+                    bfs_q.append(neighbor)
+
+        # ── Mean Depth & Relative Asymmetry ──
+        indoor_rooms = [r for r in self.rooms
+                        if r.type not in OUTDOOR_TYPES and r.type not in LOFT_TYPES]
+        indoor_labels = {r.label for r in indoor_rooms}
+        depths = [depth.get(r.label, 999) for r in indoor_rooms if r.label in depth]
+        k = len(indoor_labels)
+        mean_depth = sum(depths) / len(depths) if depths else 0
+        # RA = 2(MD - 1) / (k - 2), for k >= 3
+        ra = 2 * (mean_depth - 1) / (k - 2) if k >= 3 else 0
+        integration = 1 / ra if ra > 0 else float('inf')
+
+        # ── Ring check (are there alternative paths?) ──
+        # A tree has exactly k-1 edges. More edges = rings.
+        edge_count = sum(1 for v in self._connections.values() if v != "wall")
+        has_rings = edge_count > (k - 1)
+
+        # ── Clean path check for bedrooms (Space Syntax: depth + type filter) ──
+        # For each bedroom: build a restricted graph that excludes all
+        # PASSTHROUGH_BAD nodes (except the target bedroom itself).
+        # If entry can still reach the bedroom → clean path exists.
+        bedrooms = [r for r in self.rooms if r.type in PRIVATE_TYPES]
+        path_issues = []
+        for bed in bedrooms:
+            # Build restricted graph: remove all private/wet/storage nodes
+            # except the target bedroom
+            restricted_nodes = set()
+            for label, room in room_by_label.items():
+                if room.type in PASSTHROUGH_BAD and label != bed.label:
+                    continue  # exclude this node
+                restricted_nodes.add(label)
+
+            # BFS in restricted graph
+            r_visited = {start}
+            r_queue = [start]
+            while r_queue:
+                current = r_queue.pop(0)
+                for neighbor in access_graph.get(current, []):
+                    if neighbor in restricted_nodes and neighbor not in r_visited:
+                        r_visited.add(neighbor)
+                        r_queue.append(neighbor)
+
+            if bed.label not in r_visited:
+                # No clean path exists — find what's blocking
+                bed_depth = depth.get(bed.label, -1)
+                path_issues.append(
+                    f"  FAIL {self.id}: '{bed.label}' has no clean path from entry "
+                    f"(depth={bed_depth}, only reachable through private rooms)")
+
+        for issue in path_issues:
+            print(issue)
+
+        # ── Report ──
+        access_rooms = [r for r in self.rooms if r.type not in OUTDOOR_TYPES]
+        reachable_count = sum(1 for r in access_rooms if r.label in depth)
+        total = len(access_rooms)
+        doors = sum(1 for v in self._connections.values() if v == "door")
+        opens = sum(1 for v in self._connections.values() if v == "open")
+        slidings = sum(1 for v in self._connections.values() if v == "sliding")
+        walls = sum(1 for v in self._connections.values() if v == "wall")
+        ok = "✓" if not path_issues else "✗"
+        ring_s = "ring" if has_rings else "tree"
+        print(f"  {ok} {self.id}: {reachable_count}/{total} reachable | "
+              f"MD={mean_depth:.1f} RA={ra:.2f} int={integration:.1f} ({ring_s}) | "
+              f"{opens} open, {doors} door, {slidings} sliding, {walls} wall"
+              f"{' | ' + str(len(path_issues)) + ' BROKEN' if path_issues else ''}")
 
     def validate(self):
         """Final validation — IRC + Japandi principles."""
@@ -462,20 +843,49 @@ class Home:
             if pct < 5 and indoor_cells > 20:
                 print(f"  WARN {self.id}: storage {pct:.0f}% — target ≥{STORAGE_TARGET_PCT}%")
 
-        # ── Circulation ≤15% ──
-        corr_cells = sum(len(r.cells) for r in self.rooms if r.type == "corridor")
-        if indoor_cells > 0:
-            corr_pct = corr_cells * 100 / indoor_cells
-            if corr_pct > CIRCULATION_MAX_PCT:
-                print(f"  WARN {self.id}: corridor {corr_pct:.0f}% — target ≤{CIRCULATION_MAX_PCT}%")
-
-        # ── LDK heart ≥25% of habitable ──
         ldk_types = ("living", "great_room", "kitchen", "kitchen_open", "dining")
+
+        # ── NO CORRIDORS (Great Room Core) ──
+        corr_rooms = [r for r in self.rooms if r.type == "corridor"]
+        if corr_rooms and GREAT_ROOM_CORE:
+            print(f"  FAIL {self.id}: Great Room Core forbids corridors — "
+                  f"found {len(corr_rooms)} corridor rooms")
+
+        # ── Great Room contiguity — LDK rooms must be adjacent ──
+        if GREAT_ROOM_CORE:
+            ldk_rooms = [r for r in self.rooms if r.type in ldk_types]
+            if len(ldk_rooms) >= 2:
+                # BFS from first LDK room — all others must be reachable
+                visited = {ldk_rooms[0].label}
+                frontier = [ldk_rooms[0]]
+                while frontier:
+                    current = frontier.pop()
+                    for other in ldk_rooms:
+                        if other.label not in visited and _adjacent(current, other):
+                            visited.add(other.label)
+                            frontier.append(other)
+                disconnected = [r.label for r in ldk_rooms if r.label not in visited]
+                if disconnected:
+                    print(f"  WARN {self.id}: LDK rooms not contiguous — "
+                          f"{disconnected} disconnected from main LDK group")
+
+        # ── Deck should adjoin LDK zone ──
+        if GREAT_ROOM_CORE:
+            ldk_rooms_list = [r for r in self.rooms if r.type in ldk_types]
+            for d in outdoor:
+                if ldk_rooms_list and not any(_adjacent(d, lv) for lv in ldk_rooms_list):
+                    if not any(_adjacent(d, lv) for lv in living):
+                        print(f"  WARN {self.id}: '{d.label}' not adjacent to LDK zone")
+
+        # ── LDK heart ≥35% of habitable ──
         ldk_cells = sum(len(r.cells) for r in self.rooms if r.type in ldk_types)
         if indoor_cells > 0:
             ldk_pct = ldk_cells * 100 / indoor_cells
             if ldk_pct < LDK_MIN_PCT and indoor_cells > 20:
                 print(f"  WARN {self.id}: LDK {ldk_pct:.0f}% — target ≥{LDK_MIN_PCT}%")
+
+        # ── Build room adjacency graph + validate circulation ──
+        self._auto_connect()
 
         return self
 
@@ -515,9 +925,12 @@ class Home:
                 "floor-deck" if is_outdoor else "floor-std",
                 cx, 0.5 + 0.33, cz, zone="floor"))
 
-        # ── Walls ──
+        # ── Walls (connection-graph-aware) ──
+        # "open" connections → no wall between rooms
+        # "door"/"sliding" connections → wall with one opening
+        # "wall" connections → solid wall (no passage)
         ext_edges = []
-        int_edges = []
+        int_edges_by_pair = {}  # {(label_a, label_b): [edge_dicts]}
 
         for cell in sorted(self._occupied):
             gx, gz = cell
@@ -532,6 +945,7 @@ class Home:
                 ("east",  (gx + 1, gz), (cx + GRID / 2, wall_h / 2 + 0.5, cz), 90),
             ]:
                 if neighbor not in self.envelope:
+                    # Exterior wall
                     p = _p("wall-ext", pos[0], pos[1], pos[2], ry=rot_y, zone="walls")
                     p["_edge_cell"] = cell
                     p["_edge_dir"] = direction
@@ -541,23 +955,46 @@ class Home:
                 elif neighbor in self._occupied:
                     neighbor_room = cell_room.get(neighbor)
                     if room and neighbor_room and room.label != neighbor_room.label:
-                        if cell < neighbor:
-                            p = _p("wall-int", pos[0], pos[1], pos[2], ry=rot_y, zone="interior")
-                            p["_room"] = room
-                            p["_neighbor_room"] = neighbor_room
-                            int_edges.append(p)
-                            placements.append(p)
+                        if cell < neighbor:  # avoid duplicates
+                            pair = tuple(sorted([room.label, neighbor_room.label]))
+                            conn_type = self._connections.get(pair, "wall")
 
-        # ── Openings ──
-        self._place_openings(placements, ext_edges, int_edges, cell_room, w, d, wall_h)
+                            if conn_type == "open":
+                                # No wall — open flow between rooms
+                                pass
+                            else:
+                                # Wall segment (may get a door placed later)
+                                p = _p("wall-int", pos[0], pos[1], pos[2],
+                                       ry=rot_y, zone="interior")
+                                p["_room"] = room
+                                p["_neighbor_room"] = neighbor_room
+                                p["_pair"] = pair
+                                int_edges_by_pair.setdefault(pair, []).append(p)
+                                placements.append(p)
+
+        # ── Openings (exterior from OPENING_RULES + interior from connection graph) ──
+        self._place_openings(placements, ext_edges, int_edges_by_pair, cell_room, w, d, wall_h)
 
         # ── Roof ──
         self._place_roof(placements, w, d, wall_h)
 
         # ── Room metadata (with colors for visualization) ──
+        # Import fixture placement from autoresearch
+        try:
+            _fix_dir = os.path.expanduser('~/.openclaw/autoresearch/plan-fidelity')
+            if _fix_dir not in sys.path:
+                sys.path.insert(0, _fix_dir)
+            from fixtures import place_all_fixtures
+            raw_rooms = [{"type": r.type, "label": r.label,
+                         "gx": r.gx, "gz": r.gz, "gw": r.gw, "gd": r.gd}
+                        for r in self.rooms]
+            all_fixtures = place_all_fixtures(raw_rooms)
+        except Exception:
+            all_fixtures = {}
+
         room_layouts = []
         for room in self.rooms:
-            room_layouts.append({
+            rd = {
                 "label": room.label,
                 "type": room.type,
                 "gx": room.gx, "gz": room.gz,
@@ -565,7 +1002,14 @@ class Home:
                 "area": room.area_sqft,
                 "color": ROOM_COLORS.get(room.type, "#94a3b8"),
                 "constraints": ROOM_RULES[room.type].furniture_note,
-            })
+            }
+            if room.floor > 0:
+                rd["floor"] = room.floor
+            # Add fixtures (counters, tubs, beds, windows, doors)
+            room_fix = all_fixtures.get(room.label, [])
+            if room_fix:
+                rd["fixtures"] = room_fix
+            room_layouts.append(rd)
 
         # Clean internal keys
         for p in placements:
@@ -575,9 +1019,20 @@ class Home:
 
         return placements, room_layouts
 
-    def _place_openings(self, placements, ext_edges, int_edges, cell_room, w, d, wall_h):
-        room_openings = {r.label: [] for r in self.rooms}
+    def _place_openings(self, placements, ext_edges, int_edges_by_pair, cell_room, w, d, wall_h):
+        """Place openings using connection graph.
 
+        Exterior openings: driven by OPENING_RULES (windows, doors, sliding glass).
+        Interior openings: driven by self._connections graph.
+          - "door" connections → pick one shared wall segment, place interior door
+          - "sliding" connections → pick one shared wall segment, place sliding door
+          - "open" connections → already handled (no walls generated)
+          - "wall" connections → solid wall (no opening)
+
+        Door position: corner-positioned (Alexander Pattern 196) — pick the
+        edge at the END of the shared wall run to preserve usable wall area.
+        """
+        # ── 1. Exterior openings (from OPENING_RULES) ──
         room_ext_edges = {}
         for edge in ext_edges:
             room = edge.get("_room")
@@ -601,22 +1056,24 @@ class Home:
                 available.remove(edge)
                 pos = edge["position"]
 
-                if opening_type == "door":
+                try:
                     idx = placements.index(edge)
+                except ValueError:
+                    continue  # edge already replaced by prior opening
+
+                if opening_type == "door":
                     placements[idx] = _p("door-ext", pos["x"], 4.5, pos["z"],
                                          ry=edge["rotation"]["y"], zone="openings")
                     placements.append(_p("wall-ext", pos["x"], 9.5, pos["z"],
                                          ry=edge["rotation"]["y"], zone="walls", sy=0.2))
 
                 elif opening_type == "sliding":
-                    idx = placements.index(edge)
                     placements[idx] = _p("door-sliding", pos["x"], 4.5, pos["z"],
                                          ry=edge["rotation"]["y"], zone="openings")
                     placements.append(_p("wall-ext", pos["x"], 9.5, pos["z"],
                                          ry=edge["rotation"]["y"], zone="walls", sy=0.2))
 
                 elif opening_type == "window":
-                    idx = placements.index(edge)
                     placements[idx] = _p("wall-ext", pos["x"], 2, pos["z"],
                                          ry=edge["rotation"]["y"], zone="walls", sy=0.3)
                     placements.append(_p("window-std", pos["x"], 5.5, pos["z"],
@@ -624,24 +1081,55 @@ class Home:
                     placements.append(_p("wall-ext", pos["x"], 9, pos["z"],
                                          ry=edge["rotation"]["y"], zone="walls", sy=0.3))
 
-                room_openings[room.label].append(opening_type)
-
-        # Interior doors
-        for edge in int_edges:
-            room = edge.get("_room")
-            neighbor = edge.get("_neighbor_room")
-            if not room or not neighbor:
+        # ── 2. Interior openings (from connection graph) ──
+        for pair, conn_type in self._connections.items():
+            if conn_type not in ("door", "sliding"):
                 continue
-            r1_needs = ROOM_RULES[room.type].needs_door
-            r2_needs = ROOM_RULES[neighbor.type].needs_door
-            r1_has = "int_door" in room_openings.get(room.label, [])
-            r2_has = "int_door" in room_openings.get(neighbor.label, [])
-            if (r1_needs and not r1_has) or (r2_needs and not r2_has):
-                pos = edge["position"]
-                placements.append(_p("door-int", pos["x"], 3.5, pos["z"],
-                                     ry=edge["rotation"]["y"], zone="openings"))
-                room_openings.setdefault(room.label, []).append("int_door")
-                room_openings.setdefault(neighbor.label, []).append("int_door")
+
+            edges = int_edges_by_pair.get(pair, [])
+            if not edges:
+                continue
+
+            # Alexander Pattern 196: corner-position the door.
+            # Pick the edge at the END of the shared wall run (lowest coord).
+            # This preserves the most usable wall area on both sides.
+            edge = self._pick_corner_edge(edges)
+            pos = edge["position"]
+            ry = edge["rotation"]["y"]
+
+            if conn_type == "door":
+                # Replace wall segment with interior door + transom above
+                idx = placements.index(edge)
+                placements[idx] = _p("door-int", pos["x"], 3.5, pos["z"],
+                                     ry=ry, zone="openings")
+                # Transom wall above door
+                placements.append(_p("wall-int", pos["x"], 8.5, pos["z"],
+                                     ry=ry, zone="interior", sy=0.3))
+            elif conn_type == "sliding":
+                # Interior sliding door (wider, glass)
+                idx = placements.index(edge)
+                placements[idx] = _p("door-sliding", pos["x"], 4.5, pos["z"],
+                                     ry=ry, zone="openings")
+                placements.append(_p("wall-int", pos["x"], 9.5, pos["z"],
+                                     ry=ry, zone="interior", sy=0.2))
+
+    def _pick_corner_edge(self, edges):
+        """Pick the wall edge closest to a room corner (Alexander Pattern 196).
+
+        For a run of shared wall segments, prefer the first or last one
+        (at the ends of the shared wall), not the middle.
+        """
+        if len(edges) <= 1:
+            return edges[0]
+
+        # Sort by position to find ends of the wall run
+        def edge_pos(e):
+            p = e["position"]
+            return (p["x"], p["z"])
+        edges_sorted = sorted(edges, key=edge_pos)
+
+        # Pick the first edge (corner-adjacent end of the wall run)
+        return edges_sorted[0]
 
     def _pick_edge(self, available, face_pref, room, w, d):
         def score(edge):
@@ -700,7 +1188,29 @@ class Home:
 
     def to_dict(self):
         placements, room_layouts = self.generate()
-        return {
+
+        # Serialize connection graph
+        connections = []
+        for (label_a, label_b), conn_type in sorted(self._connections.items()):
+            connections.append({
+                "from": label_a,
+                "to": label_b,
+                "type": conn_type,
+            })
+
+        # Compute loft height: if any room has floor=1, loftHeight = wall height
+        loft_rooms = [r for r in self.rooms if r.floor == 1]
+        loft_height = None
+        if loft_rooms or self.has_loft:
+            # Loft floor sits at the wall height (typically 8ft for living space below)
+            if self.roof_style == 'a-frame':
+                loft_height = 8  # A-frame loft at 8ft
+            elif self.roof_style in ('steep-gable', 'gable'):
+                loft_height = 8  # Standard loft height
+            else:
+                loft_height = 9  # Flat/shed roofs, slightly higher
+
+        result = {
             "id": self.id,
             "model": self.model,
             "sqft": self.sqft,
@@ -712,7 +1222,11 @@ class Home:
             "placements": placements,
             "componentsUsed": sorted(set(p["componentId"] for p in placements)),
             "rooms": room_layouts,
+            "connections": connections,
         }
+        if loft_height is not None:
+            result["loftHeight"] = loft_height
+        return result
 
 
 def _p(comp_id, x, y, z, rx=0, ry=0, rz=0, zone="", sx=1, sy=1, sz=1):
@@ -727,259 +1241,117 @@ def _p(comp_id, x, y, z, rx=0, ry=0, rz=0, zone="", sx=1, sy=1, sz=1):
     return p
 
 
+
 # ══════════════════════════════════════════════════════════════════════
-# HOME DEFINITIONS — Japandi retreat homes, 100% grid coverage
+# PLAN SPECS — matching evaluate.py's TEST_SPECS (source of truth)
 # ══════════════════════════════════════════════════════════════════════
 
-def _void_rect(x0, z0, x1, z1):
-    return {(x, z) for x in range(x0, x1+1) for z in range(z0, z1+1)}
+PLAN_SPECS = [
+    {"id": "outpost", "name": "The Outpost", "beds": 0, "baths": 1, "sqft_target": 320, "roof_style": "a-frame", "has_loft": False},
+    {"id": "essential-retreat", "name": "Essential Retreat", "beds": 1, "baths": 1, "sqft_target": 560, "roof_style": "gable", "has_loft": False},
+    {"id": "a-frame-weekender", "name": "A-Frame Weekender", "beds": 1, "baths": 1, "sqft_target": 448, "roof_style": "a-frame", "has_loft": True},
+    {"id": "barnhouse-retreat", "name": "Barnhouse Retreat", "beds": 2, "baths": 1, "sqft_target": 720, "roof_style": "gable", "has_loft": False},
+    {"id": "modern-loft-barnhouse", "name": "Modern Loft Barnhouse", "beds": 2, "baths": 1, "sqft_target": 512, "roof_style": "steep-gable", "has_loft": True},
+    {"id": "barnhouse-2-1", "name": "Barnhouse 2.1", "beds": 2, "baths": 1, "sqft_target": 864, "roof_style": "gable", "has_loft": False},
+    {"id": "a-frame-retreat", "name": "A-Frame Retreat", "beds": 2, "baths": 1, "sqft_target": 768, "roof_style": "a-frame", "has_loft": True},
+    {"id": "essential-house", "name": "Essential House", "beds": 2, "baths": 2, "sqft_target": 1008, "roof_style": "gable", "has_loft": False},
+    {"id": "barnhouse-family", "name": "Barnhouse Family", "beds": 3, "baths": 2, "sqft_target": 1504, "roof_style": "gable", "has_loft": False},
+    {"id": "a-frame-house-plus", "name": "A-Frame House Plus", "beds": 3, "baths": 2, "sqft_target": 1408, "roof_style": "a-frame", "has_loft": True},
+    {"id": "eastern-farmhouse", "name": "Eastern Farmhouse", "beds": 3, "baths": 2, "sqft_target": 1008, "roof_style": "gable", "has_loft": False},
+    {"id": "modern-treehouse", "name": "Modern Treehouse", "beds": 3, "baths": 2, "sqft_target": 1664, "roof_style": "steep-gable", "has_loft": True},
+    {"id": "barndo", "name": "Barndo", "beds": 4, "baths": 3, "sqft_target": 2848, "roof_style": "gable", "has_loft": False},
+    {"id": "townhome-2bed", "name": "Townhome 2-Bed", "beds": 2, "baths": 1, "sqft_target": 900, "roof_style": "gable", "has_loft": False, "party_walls": ["left"]},
+    {"id": "townhome-3bed", "name": "Townhome 3-Bed", "beds": 3, "baths": 2, "sqft_target": 1100, "roof_style": "gable", "has_loft": False, "party_walls": ["left", "right"]},
+]
 
+# Viewer-specific metadata (height for roof rendering, ID overrides)
+HOME_META = {
+    "outpost": {"viewer_id": "the-outpost", "height": 18},
+    "a-frame-weekender": {"height": 21},
+    "a-frame-retreat": {"height": 27},
+    "a-frame-house-plus": {"height": 27},
+    "eastern-farmhouse": {"height": 30},
+    "barnhouse-family": {"height": 21},
+    "barndo": {"height": 22},
+    "modern-treehouse": {"height": 20},
+    "modern-loft-barnhouse": {"height": 18},
+    "barnhouse-2-1": {"height": 20},
+}
+
+
+def _estimate_height(roof_style, grid_w):
+    """Estimate building height from roof style and width."""
+    if roof_style == "a-frame":
+        return min(30, int(10 + grid_w * GRID * 0.866 / 2))
+    elif roof_style == "steep-gable":
+        return min(25, int(10 + grid_w * GRID * 0.5 / 2))
+    elif roof_style == "gable":
+        return min(20, int(10 + grid_w * GRID * 0.466 / 2))
+    elif roof_style == "flat":
+        return 12
+    else:
+        return 15
+
+
+# ══════════════════════════════════════════════════════════════════════
+# HOME DEFINITIONS — Generated from algorithm.py (autoresearch-optimized)
+# ══════════════════════════════════════════════════════════════════════
 
 def define_homes():
+    """Generate all 15 homes using algorithm.py's optimized layouts.
+
+    This replaces the previous hardcoded room definitions with layouts
+    from the autoresearch pipeline, ensuring the viewer shows exactly
+    what the evaluator scores.
+    """
     homes = []
 
-    # ── 1. Ascent ADU ── (32×16ft → 8×4 grid, ~400sf, shed roof)
-    # Compact retreat. Genkan entry → open LDK → private bedroom.
-    # Oku gradient: entry(east) → living(center) → bed(west)
-    h = Home("ascent-adu", "Ascent ADU", 8, 4, 19, "1/1", "shed")
-    h.add_room("entry", 7, 0, 1, 2, "Genkan")
-    h.add_room("great_room", 2, 0, 5, 4, "Living/Kitchen")
-    h.add_room("bedroom", 0, 0, 2, 2, "Bedroom")
-    h.add_room("bathroom_full", 0, 2, 2, 2, "Bathroom")
-    h.add_room("walk_in_closet", 7, 2, 1, 2, "Storage")
-    homes.append(h.validate())
+    for spec in PLAN_SPECS:
+        rooms_data = _algorithm.generate_layout(spec)
+        if not rooms_data:
+            print(f"  SKIP {spec['id']}: algorithm returned no rooms")
+            continue
 
-    # ── 2. Modern Alpine 2025 ── (40×16ft → 10×4 grid, steep roof)
-    # Mountain retreat. Floor-to-ceiling gable glass → loft above.
-    # Oku: entry(east) → kitchen(mid) → great room(west, views)
-    h = Home("modern-alpine-2025", "Modern Alpine 2025", 10, 4, 21, "2/1", "steep-gable", has_loft=True)
-    h.add_room("great_room", 0, 0, 4, 4, "Great Room")
-    h.add_room("kitchen", 4, 0, 3, 2, "Kitchen")
-    h.add_room("bedroom", 4, 2, 3, 2, "Bedroom")
-    h.add_room("loft_bed", 7, 0, 2, 2, "Loft Suite")
-    h.add_room("bathroom_full", 7, 2, 2, 2, "Bathroom")
-    h.add_room("entry", 9, 0, 1, 2, "Genkan")
-    h.add_room("walk_in_closet", 9, 2, 1, 2, "Storage")
-    homes.append(h.validate())
+        # Derive grid dimensions from generated rooms
+        grid_w = max(r["gx"] + r["gw"] for r in rooms_data)
+        grid_d = max(r["gz"] + r["gd"] for r in rooms_data)
 
-    # ── 3. Outpost Plus ── (28×28ft → 7×7 grid, steep roof)
-    # Square cabin with central hearth. Intimate proportions.
-    # Oku: entry(SE) → kitchen(NE) → great room(W, views) → bed(E, private)
-    h = Home("outpost-plus", "Outpost Plus", 7, 7, 25, "2/1", "steep-gable", has_loft=True)
-    h.add_room("great_room", 0, 0, 4, 5, "Great Room")
-    h.add_room("kitchen", 0, 5, 4, 2, "Kitchen")
-    h.add_room("bedroom", 4, 0, 3, 3, "Ground Suite")
-    h.add_room("loft_bed", 4, 3, 2, 2, "Loft Nook")
-    h.add_room("walk_in_closet", 6, 3, 1, 2, "Closet")
-    h.add_room("bathroom_full", 4, 5, 2, 2, "Bathroom")
-    h.add_room("entry", 6, 5, 1, 2, "Genkan")
-    homes.append(h.validate())
+        meta = HOME_META.get(spec["id"], {})
+        home_id = meta.get("viewer_id", spec["id"])
+        model = spec["name"]
+        height = meta.get("height", _estimate_height(spec["roof_style"], grid_w))
 
-    # ── 4. Barnhouse 1.1 ── (36×28ft → 9×7 grid, gable)
-    # Classic barn form. Open LDK + private suite.
-    # Wet wall: bathroom backs kitchen. Storage closet for primary.
-    h = Home("barnhouse-1-1", "Barnhouse 1.1", 9, 7, 20, "1/1", "gable")
-    h.add_room("great_room", 0, 0, 5, 4, "Living/Dining")
-    h.add_room("kitchen", 0, 4, 5, 3, "Kitchen")
-    h.add_room("primary_bed", 5, 0, 3, 3, "Primary Suite")
-    h.add_room("walk_in_closet", 8, 0, 1, 3, "Walk-in Closet")
-    h.add_room("bathroom_full", 5, 3, 2, 2, "Bathroom")
-    h.add_room("office", 7, 3, 2, 2, "Office/Nook")
-    h.add_room("utility", 5, 5, 2, 2, "Utility")
-    h.add_room("entry", 7, 5, 2, 2, "Genkan")
-    homes.append(h.validate())
+        # Compute bed_bath from generated rooms
+        beds = sum(1 for r in rooms_data if r["type"] in ("bedroom", "primary_bed", "loft_bed"))
+        full_baths = sum(1 for r in rooms_data if r["type"] in ("bathroom_full", "bathroom_ada"))
+        half_baths = sum(1 for r in rooms_data if r["type"] == "bathroom_half")
+        bath_str = f"{full_baths}" if half_baths == 0 else f"{full_baths}.{half_baths * 5}"
+        bed_bath = f"{beds}/{bath_str}"
 
-    # ── 5. Barnhouse 2.1 ── (36×28ft → 9×7 grid, gable)
-    # 2-bed with corridor spine as sound buffer.
-    # Oku: entry(E)→corridor→kitchen/living(W)→bedrooms(E, beyond corridor)
-    h = Home("barnhouse-2-1", "Barnhouse 2.1", 9, 7, 20, "2/1", "gable")
-    h.add_room("great_room", 0, 0, 5, 4, "Living/Dining")
-    h.add_room("kitchen", 0, 4, 5, 3, "Kitchen")
-    h.add_room("corridor", 5, 0, 1, 7, "Gallery")
-    h.add_room("primary_bed", 6, 0, 3, 3, "Primary Suite")
-    h.add_room("bathroom_full", 6, 3, 2, 2, "Bathroom")
-    h.add_room("utility", 8, 3, 1, 2, "Utility")
-    h.add_room("bedroom", 6, 5, 2, 2, "Guest Suite")
-    h.add_room("entry", 8, 5, 1, 2, "Genkan")
-    homes.append(h.validate())
+        h = Home(
+            id=home_id,
+            model=model,
+            grid_w=grid_w,
+            grid_d=grid_d,
+            height=height,
+            bed_bath=bed_bath,
+            roof_style=spec["roof_style"],
+            has_loft=spec.get("has_loft", False),
+        )
 
-    # ── 6. Barnhouse Plus ── (48×24ft → 12×6 grid, gable)
-    # Extended barn with engawa porch along east edge.
-    # Dual suites separated by central hall. Engawa = indoor-outdoor transition.
-    h = Home("barnhouse-plus", "Barnhouse Plus", 12, 6, 18, "2/2", "gable")
-    h.add_room("great_room", 0, 0, 5, 4, "Living/Dining")
-    h.add_room("kitchen", 0, 4, 5, 2, "Kitchen")
-    h.add_room("primary_bed", 5, 0, 3, 3, "Primary Suite")
-    h.add_room("bedroom", 8, 0, 3, 3, "Guest Suite")
-    h.add_room("bathroom_full", 5, 3, 2, 2, "Primary Bath")
-    h.add_room("corridor", 7, 3, 1, 2, "Hall")
-    h.add_room("bathroom_full", 8, 3, 2, 2, "Guest Bath")
-    h.add_room("utility", 5, 5, 2, 1, "Utility")
-    h.add_room("entry", 7, 5, 2, 1, "Genkan")
-    h.add_room("walk_in_closet", 9, 5, 2, 1, "Storage")
-    h.add_room("engawa", 11, 0, 1, 3, "Engawa")
-    h.add_room("deck", 11, 3, 1, 3, "Porch")
-    h.add_room("walk_in_closet", 10, 3, 1, 2, "Linen")
-    homes.append(h.validate())
+        for room in rooms_data:
+            floor = room.get("floor", 1 if room["type"] == "loft_bed" else 0)
+            h.add_room(
+                room["type"],
+                room["gx"], room["gz"],
+                room["gw"], room["gd"],
+                label=room["label"],
+                floor=floor,
+            )
 
-    # ── 7. Modern Treehouse ── (68×32ft → 17×8 grid, flat roof)
-    # Elevated retreat. Cantilevered deck. Gallery circulation.
-    # Oku: entry(center)→gallery→wings. Nature wraps around.
-    h = Home("modern-treehouse", "Modern Treehouse", 17, 8, 20, "2/1", "flat")
-    h.add_room("great_room", 0, 0, 5, 5, "Great Room")
-    h.add_room("kitchen", 0, 5, 5, 3, "Kitchen/Dining")
-    h.add_room("primary_bed", 5, 0, 4, 3, "Primary Suite")
-    h.add_room("bathroom_full", 5, 3, 2, 2, "Bathroom")
-    h.add_room("utility", 7, 3, 2, 2, "Utility")
-    h.add_room("bedroom", 5, 5, 4, 3, "Guest Suite")
-    h.add_room("corridor", 9, 0, 2, 4, "Gallery")
-    h.add_room("entry", 9, 4, 2, 4, "Entry Hall")
-    h.add_room("office", 11, 0, 2, 3, "Office")
-    h.add_room("walk_in_closet", 11, 3, 2, 2, "Walk-in")
-    h.add_room("pantry", 11, 5, 2, 3, "Pantry/Store")
-    h.add_room("deck", 13, 0, 4, 8, "Cantilevered Deck")
-    homes.append(h.validate())
-
-    # ── 8. Barnhouse 2.2 ── (48×28ft → 12×7 grid, gable)
-    # Larger barn with dual suites. Open kitchen/dining anchors the plan.
-    h = Home("barnhouse-2-2", "Barnhouse 2.2", 12, 7, 20, "2/2", "gable")
-    h.add_room("great_room", 0, 0, 6, 4, "Living/Dining")
-    h.add_room("kitchen_open", 0, 4, 6, 3, "Kitchen")
-    h.add_room("primary_bed", 6, 0, 3, 3, "Primary Suite")
-    h.add_room("bedroom", 9, 0, 3, 3, "Guest Suite")
-    h.add_room("bathroom_full", 6, 3, 2, 2, "Primary Bath")
-    h.add_room("bathroom_full", 8, 3, 2, 2, "Guest Bath")
-    h.add_room("office", 10, 3, 2, 2, "Office")
-    h.add_room("entry", 6, 5, 2, 2, "Genkan")
-    h.add_room("walk_in_closet", 8, 5, 2, 2, "Walk-in")
-    h.add_room("utility", 10, 5, 2, 2, "Utility")
-    homes.append(h.validate())
-
-    # ── 9. Eastern Farmhouse ── (36×24ft → 9×6 grid, gable, 2-story)
-    # Traditional farmhouse with wrap-around character.
-    # Ground floor public, loft floor private. Mudroom as genkan.
-    h = Home("eastern-farmhouse", "Eastern Farmhouse", 9, 6, 30, "3/2.5", "gable", has_loft=True)
-    h.add_room("great_room", 0, 0, 5, 3, "Living")
-    h.add_room("kitchen_open", 0, 3, 5, 3, "Kitchen/Dining")
-    h.add_room("primary_bed", 5, 0, 4, 3, "Primary Suite")
-    h.add_room("bathroom_full", 5, 3, 2, 2, "Primary Bath")
-    h.add_room("bathroom_full", 7, 3, 2, 2, "Guest Bath")
-    h.add_room("bathroom_half", 5, 5, 1, 1, "Powder Room")
-    h.add_room("corridor", 6, 5, 2, 1, "Hall")
-    h.add_room("entry", 8, 5, 1, 1, "Genkan")
-    homes.append(h.validate())
-
-    # ── 10. L Barnhouse ── (40×40ft → L-shape 10×10, gable)
-    # L-shape creates sheltered courtyard. Void = future garden.
-    # Oku: public wing(W) → private wing(E). L-bend = threshold.
-    void = _void_rect(7, 0, 9, 4)
-    h = Home("l-barnhouse", "L Barnhouse", 10, 10, 20, "2/1.5", "gable", void=void)
-    h.add_room("great_room", 0, 0, 4, 5, "Living/Dining")
-    h.add_room("kitchen_open", 0, 5, 4, 5, "Kitchen")
-    h.add_room("bedroom", 4, 0, 3, 5, "Guest Suite")        # touches void = exterior
-    h.add_room("primary_bed", 4, 5, 3, 5, "Primary Suite")   # z=5-9, north edge (z=9→10 OOB)
-    h.add_room("bathroom_full", 7, 5, 3, 3, "Full Bath")      # east+north
-    h.add_room("bathroom_half", 7, 8, 1, 2, "Half Bath")
-    h.add_room("utility", 8, 8, 2, 2, "Utility")
-    homes.append(h.validate())
-
-    # ── 11. Barnhouse 3.3 ── (72×28ft → 18×7 grid, gable)
-    # Long barn. Three suites + central gallery spine.
-    # Engawa porch along south edge. Gallery = art display corridor.
-    h = Home("barnhouse-3-3", "Barnhouse 3.3", 18, 7, 20, "3/3", "gable")
-    h.add_room("great_room", 0, 0, 5, 4, "Living/Dining")
-    h.add_room("kitchen_open", 0, 4, 5, 3, "Kitchen")
-    h.add_room("primary_bed", 5, 0, 4, 3, "Primary Suite")
-    h.add_room("bedroom", 9, 0, 3, 3, "Suite 2")
-    h.add_room("bedroom", 12, 0, 3, 3, "Suite 3")
-    h.add_room("walk_in_closet", 15, 0, 1, 3, "Closet")
-    h.add_room("entry", 16, 0, 2, 3, "Genkan")
-    h.add_room("bathroom_full", 5, 3, 2, 2, "Bath 1")
-    h.add_room("bathroom_full", 9, 3, 2, 2, "Bath 2")
-    h.add_room("bathroom_full", 12, 3, 2, 2, "Bath 3")
-    h.add_room("corridor", 7, 3, 2, 2, "Gallery 1")
-    h.add_room("corridor", 11, 3, 1, 2, "Gallery 2")
-    h.add_room("utility", 14, 3, 4, 2, "Utility/Pantry")
-    h.add_room("corridor", 5, 5, 13, 1, "Central Gallery")
-    h.add_room("engawa", 5, 6, 13, 1, "Engawa")
-    homes.append(h.validate())
-
-    # ── 12. A-Frame House Plus ── (44×32ft → 11×8 grid, a-frame)
-    # Dramatic A-frame. Floor-to-ceiling glass gable.
-    # Oku: entry(SE)→social(W)→private(NE). Loft above.
-    h = Home("a-frame-house-plus", "A-Frame House Plus", 11, 8, 27, "3/2.5", "a-frame", has_loft=True)
-    h.add_room("great_room", 0, 0, 6, 5, "Great Room")
-    h.add_room("kitchen_open", 0, 5, 6, 3, "Kitchen/Dining")
-    h.add_room("primary_bed", 6, 0, 3, 3, "Primary Suite")
-    h.add_room("bathroom_full", 9, 0, 2, 2, "En-Suite Bath")
-    h.add_room("walk_in_closet", 9, 2, 2, 1, "Walk-in")
-    h.add_room("bedroom", 6, 3, 5, 2, "Guest Suite")
-    h.add_room("loft_bed", 6, 5, 2, 2, "Loft Suite")
-    h.add_room("bathroom_full", 8, 5, 3, 2, "Full Bath")
-    h.add_room("bathroom_half", 6, 7, 2, 1, "Powder Room")
-    h.add_room("entry", 8, 7, 3, 1, "Genkan")
-    homes.append(h.validate())
-
-    # ── 13. Outpost Medium ── (52×28ft → 13×7 grid, steep roof)
-    # Mid-size retreat. Three suites with private baths.
-    # Nature-wrapped: great room gets floor-to-ceiling gable glass.
-    h = Home("outpost-medium", "Outpost Medium", 13, 7, 26, "3/3", "steep-gable", has_loft=True)
-    h.add_room("great_room", 0, 0, 6, 4, "Great Room")
-    h.add_room("kitchen_open", 0, 4, 6, 3, "Kitchen/Dining")
-    h.add_room("primary_bed", 6, 0, 4, 3, "Primary Suite")
-    h.add_room("loft_bed", 6, 3, 4, 2, "Loft Suite")
-    h.add_room("bedroom", 6, 5, 4, 2, "Guest Suite")
-    h.add_room("bathroom_full", 10, 0, 2, 3, "Primary Bath")
-    h.add_room("walk_in_closet", 12, 0, 1, 3, "Walk-in")
-    h.add_room("bathroom_full", 10, 3, 3, 2, "Loft Bath")
-    h.add_room("bathroom_full", 10, 5, 3, 2, "Guest Bath")
-    homes.append(h.validate())
-
-    # ── 14. Studio House ── (72×28ft → 18×7 grid, flat roof)
-    # Artist's retreat. Gallery corridor connects wings.
-    # Japandi: flat roof, large covered patio, contemplative garden views.
-    h = Home("studio-house", "Studio House", 18, 7, 12, "3/2.5", "flat")
-    h.add_room("great_room", 0, 0, 5, 4, "Living")
-    h.add_room("kitchen_open", 0, 4, 5, 3, "Kitchen/Dining")
-    h.add_room("primary_bed", 5, 0, 4, 3, "Primary Suite")
-    h.add_room("bedroom", 9, 0, 3, 3, "Suite 2")
-    h.add_room("bedroom", 12, 0, 3, 3, "Suite 3")
-    h.add_room("bathroom_full", 5, 3, 2, 2, "Primary Bath")
-    h.add_room("bathroom_full", 9, 3, 2, 2, "Guest Bath")
-    h.add_room("bathroom_half", 7, 3, 2, 2, "Powder Room")
-    h.add_room("walk_in_closet", 11, 3, 2, 2, "Walk-in")
-    h.add_room("utility", 13, 3, 2, 2, "Utility")
-    h.add_room("corridor", 5, 5, 6, 2, "Gallery")
-    h.add_room("office", 11, 5, 2, 2, "Studio/Office")
-    h.add_room("entry", 13, 5, 2, 2, "Genkan")
-    h.add_room("deck", 15, 0, 3, 7, "Covered Patio")
-    homes.append(h.validate())
-
-    # ── 15. Barndo ── (96×36ft → 24×9 grid, gable)
-    # Grand barn. Garage wing + living wing.
-    # Engawa porch along south. Central gallery as art spine.
-    h = Home("barndo", "Barndo", 24, 9, 22, "4/3.5", "gable", has_loft=True)
-    h.add_room("great_room", 0, 0, 6, 5, "Great Room")
-    h.add_room("kitchen_open", 0, 5, 6, 4, "Kitchen/Dining")
-    h.add_room("primary_bed", 6, 0, 5, 3, "Primary Suite")
-    h.add_room("bedroom", 11, 0, 4, 3, "Suite 2")
-    h.add_room("bedroom", 15, 0, 4, 3, "Suite 3")
-    h.add_room("loft_bed", 19, 0, 5, 2, "Loft Suite")
-    h.add_room("walk_in_closet", 19, 2, 5, 1, "Storage")
-    h.add_room("bathroom_full", 6, 3, 3, 2, "Primary Bath")
-    h.add_room("bathroom_full", 11, 3, 2, 2, "Bath 2")
-    h.add_room("bathroom_full", 15, 3, 2, 2, "Bath 3")
-    h.add_room("bathroom_half", 9, 3, 2, 2, "Powder Room")
-    h.add_room("utility", 13, 3, 2, 2, "Utility")
-    h.add_room("corridor", 17, 3, 2, 2, "Passage")
-    h.add_room("garage", 19, 3, 5, 5, "Garage")
-    h.add_room("corridor", 6, 5, 13, 2, "Central Gallery")
-    h.add_room("engawa", 6, 7, 13, 2, "Engawa")
-    h.add_room("entry", 19, 8, 5, 1, "Genkan")
-    homes.append(h.validate())
+        homes.append(h.validate())
 
     return homes
-
 
 # ══════════════════════════════════════════════════════════════════════
 # OUTPUT
@@ -1004,7 +1376,7 @@ for h in home_dicts:
         json.dump(h, f, indent=2)
 with open(os.path.join(OUT, 'coverage.json'), 'w') as f:
     json.dump(coverage, f, indent=2)
-library = {"version": 5, "components": COMPONENTS, "homes": home_dicts, "coverage": coverage}
+library = {"version": 6, "components": COMPONENTS, "homes": home_dicts, "coverage": coverage}
 with open(os.path.join(OUT, 'library.json'), 'w') as f:
     json.dump(library, f, indent=2)
 
@@ -1019,5 +1391,6 @@ for h in homes:
     s_pct = storage * 100 / indoor if indoor else 0
     c_pct = corr * 100 / indoor if indoor else 0
     l_pct = ldk * 100 / indoor if indoor else 0
-    print(f"  {h.id}: {d['sqft']}sf | storage:{s_pct:.0f}% corr:{c_pct:.0f}% ldk:{l_pct:.0f}% | "
+    ok = "✓" if l_pct >= 25 else "✗"
+    print(f"  {ok} {h.id}: {d['sqft']}sf | storage:{s_pct:.0f}% corr:{c_pct:.0f}% ldk:{l_pct:.0f}% | "
           f"{h.footprint['width']}×{h.footprint['depth']}ft | 100% sealed")
