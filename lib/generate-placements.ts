@@ -57,7 +57,6 @@ function gridToWorld(gx: number, gz: number, bbox: BBox): { x: number; z: number
 
 function isOccupied(gx: number, gz: number, rooms: RoomLayout[]): boolean {
   return rooms.some(r =>
-    (!r.floor || r.floor === 0) &&
     gx >= r.gx && gx < r.gx + r.gw &&
     gz >= r.gz && gz < r.gz + r.gd
   );
@@ -69,7 +68,9 @@ function vKey(gx: number, gz: number): WallKey { return `${gx},${gz},v`; }
 export function generatePlacements(home: DenHome): ComponentPlacement[] {
   const placements: ComponentPlacement[] = [];
   const rooms = home.rooms;
-  const groundRooms = rooms.filter(r => !r.floor || r.floor === 0);
+  // Use the minimum floor level as "ground" (some plans use level 1 as main floor)
+  const minFloor = Math.min(...rooms.map(r => r.floor ?? 0));
+  const groundRooms = rooms.filter(r => (r.floor ?? 0) === minFloor);
   const bbox = getBBox(rooms);
   const yWall = wallY(home.roofStyle || 'gable');
   const connections = home.connections || [];
