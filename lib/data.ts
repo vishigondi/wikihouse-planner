@@ -143,6 +143,18 @@ export async function refreshData(): Promise<void> {
       console.log(`Loaded ${spatialHomes.length} plans from SpatialIR manifest (${homes.length} total)`);
     }
 
+    // Load Kintsugi cabin designs
+    try {
+      const kintsugiRes = await fetch(`/data/kintsugi-plans.json?t=${Date.now()}`, { cache: 'no-store' });
+      if (kintsugiRes.ok) {
+        const kintsugiData = await kintsugiRes.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const kintsugiHomes = kintsugiData.plans.map((p: any) => spatialToDenHome(p));
+        homes = [...homes, ...kintsugiHomes].sort((a, b) => a.sqft - b.sqft);
+        console.log(`Loaded ${kintsugiHomes.length} Kintsugi cabin designs`);
+      }
+    } catch { /* OK if not available */ }
+
     // Also try library.json for components
     const libRes = await fetch(`/data/library.json?t=${Date.now()}`, { cache: 'no-store' });
     if (libRes.ok) {
