@@ -316,9 +316,10 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     });
   }
 
-  // ── Interior Doors (for door connections between rooms) ───────────
+  // ── Interior + Sliding Doors (for connections between rooms) ────────
   for (const conn of connections) {
-    if (conn.type !== 'door') continue;
+    if (conn.type !== 'door' && conn.type !== 'sliding') continue;
+    const doorComponent = conn.type === 'sliding' ? 'door-sliding' : 'door-int';
     const roomA = groundRooms.find(r => r.label === conn.from);
     const roomB = groundRooms.find(r => r.label === conn.to);
     if (!roomA || !roomB) continue;
@@ -335,7 +336,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       const { x } = gridToWorld(midX - 0.5, 0, bbox);
       const { z } = gridToWorld(0, sharedZ, bbox);
       placements.push({
-        componentId: 'door-int',
+        componentId: doorComponent,
         position: { x, y: 3.5, z },
         rotation: { x: 0, y: 0, z: 0 },
         zone: 'openings',
@@ -346,7 +347,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       const { x } = gridToWorld(sharedX, 0, bbox);
       const { z } = gridToWorld(0, midZ - 0.5, bbox);
       placements.push({
-        componentId: 'door-int',
+        componentId: doorComponent,
         position: { x: x - GRID / 2, y: 3.5, z },
         rotation: { x: 0, y: 90, z: 0 },
         zone: 'openings',
