@@ -1,13 +1,159 @@
-import type { ModularComponent, DenHome, ComponentLibrary } from './types';
+import type { ModularComponent, DenHome, ComponentLibrary, RoomLayout, RoomConnection } from './types';
+import { generatePlacements } from './generate-placements';
 
+// Static import as fallback (available immediately on first render)
 import libraryData from '@/public/data/library.json';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const lib = libraryData as any as ComponentLibrary;
 
-export const components: ModularComponent[] = lib.components;
-export const homes: DenHome[] = lib.homes;
-export const coverage: Record<string, Record<string, boolean>> = lib.coverage;
+export let components: ModularComponent[] = lib.components;
+export let homes: DenHome[] = lib.homes;
+export let coverage: Record<string, Record<string, boolean>> = lib.coverage;
+
+// ── SpatialIR → DenHome adapter ─────────────────────────────────────────────
+
+const ROOM_COLORS: Record<string, string> = {
+  entry: '#a8a29e', kitchen: '#fbbf24', kitchenette: '#fbbf24',
+  dining: '#f59e0b', living: '#d97706', great_room: '#d97706',
+  bedroom: '#93c5fd', master_bedroom: '#60a5fa',
+  bathroom_full: '#06b6d4', bathroom_half: '#22d3ee', ensuite: '#06b6d4',
+  closet: '#78716c', walk_in_closet: '#78716c', pantry: '#a3a3a3',
+  hallway: '#d4d4d4', stair: '#d4d4d4', landing: '#d4d4d4',
+  loft: '#818cf8', deck: '#86efac', porch: '#86efac',
+  covered_porch: '#86efac', screened_porch: '#86efac',
+  laundry: '#a3a3a3', laundry_closet: '#a3a3a3', utility: '#a3a3a3',
+  mudroom: '#a3a3a3', office: '#c084fc', garage: '#737373',
+};
+
+const EDGE_MAP: Record<string, string> = {
+  open: 'open', door: 'door', pocket_door: 'door', barn_door: 'door',
+  bifold_door: 'door', sliding_door: 'sliding', french_door: 'sliding',
+  exterior_door: 'door', cased_opening: 'open', stair_connection: 'open',
+  wall: 'wall',
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function spatialToDenHome(plan: any): DenHome {
+  const gridSize = 4;
+  const footprintGridW = Math.ceil(plan.footprint.width / gridSize);
+
+  // Zone-aware packing: public+circulation on top row, private+service below
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const publicRooms = plan.rooms.filter((r: any) =>
+    r.zone === 'public' || r.zone === 'circulation' || r.zone === 'outdoor'
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const privateRooms = plan.rooms.filter((r: any) =>
+    r.zone === 'private' || r.zone === 'service'
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function packRow(roomList: any[], startZ: number): { rooms: RoomLayout[]; maxDepth: number } {
+    let curX = 0;
+    let rowMaxD = 0;
+    let curZ = startZ;
+    const packed: RoomLayout[] = [];
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const r of roomList) {
+      const gw = Math.max(1, Math.round(r.dimensions.width / gridSize));
+      const gd = Math.max(1, Math.round(r.dimensions.depth / gridSize));
+
+      if (curX + gw > footprintGridW) {
+        curZ += rowMaxD;
+        curX = 0;
+        rowMaxD = 0;
+      }
+
+      packed.push({
+        label: r.label,
+        type: r.type,
+        gx: curX,
+        gz: curZ,
+        gw,
+        gd,
+        area: r.area,
+        color: ROOM_COLORS[r.type] || '#a8a29e',
+        constraints: '',
+        floor: r.level || 0,
+      });
+
+      curX += gw;
+      rowMaxD = Math.max(rowMaxD, gd);
+    }
+    return { rooms: packed, maxDepth: curZ + rowMaxD - startZ };
+  }
+
+  const publicPack = packRow(publicRooms, 0);
+  const privatePack = packRow(privateRooms, publicPack.maxDepth);
+  const rooms: RoomLayout[] = [...publicPack.rooms, ...privatePack.rooms];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const roomLabelMap = new Map(plan.rooms.map((r: any) => [r.id, r.label]));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const connections: RoomConnection[] = plan.edges
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((e: any) => EDGE_MAP[e.type])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((e: any) => ({
+      from: roomLabelMap.get(e.from) || e.from,
+      to: roomLabelMap.get(e.to) || e.to,
+      type: EDGE_MAP[e.type] || 'door',
+    }));
+
+  const roofStyle = plan.roofStyle.includes('a-frame') ? 'a-frame' :
+                    plan.roofStyle.includes('steep') ? 'steep-gable' :
+                    plan.roofStyle.includes('shed') ? 'shed' : 'gable';
+
+  const home: DenHome = {
+    id: plan.id,
+    model: plan.name,
+    sqft: plan.totalArea,
+    footprint: plan.footprint,
+    height: roofStyle === 'a-frame' ? 21 : roofStyle === 'steep-gable' ? 18 : 16,
+    bedBath: plan.bedsBaths,
+    roofStyle,
+    hasLoft: (plan.levels || 1) > 1,
+    placements: [],
+    componentsUsed: ['wall-ext', 'wall-int', 'floor-std', 'foundation', 'roof-gable', 'roof-steep'],
+    rooms,
+    connections,
+  };
+
+  // Auto-generate 3D placements from room grid
+  home.placements = generatePlacements(home);
+  return home;
+}
+
+// Refresh data — loads SpatialIR manifest and merges with existing library
+export async function refreshData(): Promise<void> {
+  try {
+    // Load SpatialIR manifest (symlinked from dev-compiler)
+    const manifestRes = await fetch(`/data/spatial-manifest.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (manifestRes.ok) {
+      const manifest = await manifestRes.json();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const spatialHomes = manifest.plans.map((p: any) => spatialToDenHome(p));
+      const spatialIds = new Set(spatialHomes.map((h: DenHome) => h.id));
+
+      // Keep existing homes not in manifest (e.g. townhomes)
+      const kept = lib.homes.filter(h => !spatialIds.has(h.id));
+      homes = [...kept, ...spatialHomes].sort((a, b) => a.sqft - b.sqft);
+      console.log(`Loaded ${spatialHomes.length} plans from SpatialIR manifest (${homes.length} total)`);
+    }
+
+    // Also try library.json for components
+    const libRes = await fetch(`/data/library.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (libRes.ok) {
+      const data = await libRes.json() as ComponentLibrary;
+      components = data.components;
+      coverage = data.coverage;
+    }
+  } catch {
+    // Static import fallback is fine
+  }
+}
 
 export function getHome(id: string): DenHome | undefined {
   return homes.find(h => h.id === id);
