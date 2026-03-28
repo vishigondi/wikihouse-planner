@@ -42,6 +42,10 @@ function spatialToDenHome(plan: any): DenHome {
   const gridSize = 4;
   const footprintGridW = Math.ceil(plan.footprint.width / gridSize);
 
+  // Normalize floor levels — if min level is > 0, shift all down to 0-based
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const minLevel = Math.min(...plan.rooms.map((r: any) => r.level ?? 0));
+
   // Zone-aware packing: public+circulation on top row, private+service below
   // Sort rooms within each zone by connection order (open-connected rooms adjacent)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,7 +119,7 @@ function spatialToDenHome(plan: any): DenHome {
         area: r.area,
         color: ROOM_COLORS[r.type] || '#a8a29e',
         constraints: '',
-        floor: r.level || 0,
+        floor: (r.level ?? 0) - minLevel,  // normalize: min level becomes 0
       });
 
       curX += gw;
