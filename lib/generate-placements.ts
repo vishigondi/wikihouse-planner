@@ -15,8 +15,22 @@ const GRID = 4; // feet per grid unit
 const Y_FOUNDATION = 0.25;
 const Y_FLOOR = 0.83;
 
+// Component heights (must match library.json dimensions)
+// Wall center Y = height / 2 so base sits flush at y=0 (ground plane)
+const WALL_EXT_H = 10;   // wall-ext height in feet
+const WALL_INT_H = 9;    // wall-int height in feet
+const WALL_EXT_Y = WALL_EXT_H / 2;   // = 5.0 — center at half-height
+const WALL_INT_Y = WALL_INT_H / 2;   // = 4.5
+
+// A-frame knee wall is shorter (foot of the A, ~2ft knee + slope starts)
+const WALL_EXT_Y_AFRAME = 3.0;
+
 function wallY(roofStyle: string): number {
-  return roofStyle === 'a-frame' ? 3.0 : 5.5;
+  return roofStyle === 'a-frame' ? WALL_EXT_Y_AFRAME : WALL_EXT_Y;
+}
+
+function intWallY(): number {
+  return WALL_INT_Y;
 }
 
 interface BBox {
@@ -288,7 +302,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
             } else {
               const { x } = gridToWorld(gx, 0, bbox);
               const { z } = gridToWorld(0, sharedZ, bbox);
-              placements.push({ componentId: 'wall-int', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'interior' });
+              placements.push({ componentId: 'wall-int', position: { x, y: intWallY(), z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'interior' });
             }
           }
         }
@@ -306,7 +320,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
             } else {
               const { x } = gridToWorld(sharedX, 0, bbox);
               const { z } = gridToWorld(0, gz, bbox);
-              placements.push({ componentId: 'wall-int', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'interior' });
+              placements.push({ componentId: 'wall-int', position: { x: x - GRID / 2, y: intWallY(), z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'interior' });
             }
           }
         }

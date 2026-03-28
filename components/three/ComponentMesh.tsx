@@ -86,7 +86,9 @@ export default function ComponentMesh({
 
   if (zone === 'roof' && !roofVisible) return null;
 
-  const isWall = zone === 'walls' || zone === 'interior';
+  const isExtWall = zone === 'walls';
+  const isIntWall = zone === 'interior';
+  const isWall = isExtWall || isIntWall;
   const isFloor = zone === 'floor';
   const isOpening = zone === 'openings';
   const isGlass = cid === 'window-std' || cid === 'door-sliding';
@@ -97,7 +99,12 @@ export default function ComponentMesh({
   if (isWall) opacity *= wallOpacity;
 
   const boxGeo = useMemo(() => getBoxGeo(w, h, d), [w, h, d]);
-  const showEdges = (isWall || isOpening || zone === 'roof') && !isGlass;
+
+  // Edge lines only on: exterior walls (shows panel joints) + openings (defines frames).
+  // Interior walls and floors get NO edge lines — avoids the "wire cage" pattern
+  // from hundreds of 4ft segment seam lines through the building interior.
+  // Selected components always show edges for feedback.
+  const showEdges = (isExtWall || isOpening) && !isGlass || selected;
   const edgeGeo = useMemo(() => showEdges ? getEdgeGeo(w, h, d) : null, [w, h, d, showEdges]);
 
   // Subtle selection highlight
@@ -122,15 +129,15 @@ export default function ComponentMesh({
           <mesh
             geometry={boxGeo}
             onClick={(e) => { e.stopPropagation(); onClick(); }}
-            castShadow={!isFloor}
-            receiveShadow
+            castShadow={isExtWall}
+            receiveShadow={isFloor || isExtWall}
           >
             <meshStandardMaterial
               color={color}
               transparent={opacity < 1}
               opacity={opacity}
-              metalness={0.02}
-              roughness={0.95}
+              metalness={isIntWall ? 0.0 : 0.02}
+              roughness={isIntWall ? 1.0 : 0.95}
               emissive={emissive}
               emissiveIntensity={emissiveIntensity}
               side={THREE.DoubleSide}
