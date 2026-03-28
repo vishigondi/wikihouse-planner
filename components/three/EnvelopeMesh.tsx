@@ -55,18 +55,24 @@ function computeRoofProfile(
       ];
     }
     case 'shed': {
+      // Shed cap: a right triangle connecting the two eave heights
+      // Left side is high, right side is low, close at the low eave height
       const rise = peakHeight - wallHeight;
       return [
-        { z: -halfD, y: wallHeight + rise },
-        { z: halfD, y: wallHeight },
+        { z: -halfD, y: wallHeight + rise },  // left eave (high)
+        { z: halfD,  y: wallHeight },           // right eave (low)
+        { z: -halfD, y: wallHeight },           // base of triangle (close shape)
       ];
     }
     case 'flat':
     default: {
-      // No roof triangle; just a flat cap at wallHeight
+      // Flat roof: a thin rectangular slab at the top of the walls
+      const slabThickness = 0.33;
       return [
+        { z: -halfD, y: wallHeight + slabThickness },
+        { z: halfD,  y: wallHeight + slabThickness },
+        { z: halfD,  y: wallHeight },
         { z: -halfD, y: wallHeight },
-        { z: halfD, y: wallHeight },
       ];
     }
   }

@@ -16,8 +16,8 @@ interface Props {
 
 // Architectural model palette — warm, minimal
 const ARCH_COLORS: Record<string, string> = {
-  'wall-ext': '#e8e0d0',   // warm cream, slightly darker for visibility
-  'wall-int': '#ddd5c5',   // slightly warmer interior
+  'wall-ext': '#c8bfaf',   // warm taupe — clearly distinct from floor
+  'wall-int': '#d5cbb8',   // warm interior — lighter than exterior
   'roof-gable': '#d6d0c4', // warm light gray
   'roof-steep': '#d6d0c4',
   'roof-shed': '#d6d0c4',
@@ -150,7 +150,7 @@ export default function ComponentMesh({
           {/* Architectural edge lines */}
           {edgeGeo && (
             <lineSegments geometry={edgeGeo}>
-              <lineBasicMaterial color="#a09080" transparent opacity={highlighted ? 0.25 : 0.1} />
+              <lineBasicMaterial color="#706050" transparent opacity={highlighted ? 0.5 : 0.2} />
             </lineSegments>
           )}
         </>

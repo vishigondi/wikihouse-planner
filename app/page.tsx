@@ -15,7 +15,7 @@ const Scene = dynamic(() => import('@/components/three/Scene'), { ssr: false });
 export default function Home() {
   const [selectedHomeId, setSelectedHomeId] = useState(homes[0]?.id ?? '');
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
-  const [wallOpacity, setWallOpacity] = useState(0.85);
+  const [wallOpacity, setWallOpacity] = useState(1.0);
   const [roofVisible, setRoofVisible] = useState(false);
   const [roomLabelsVisible, setRoomLabelsVisible] = useState(true);
   const [, setRefreshCount] = useState(0);
@@ -113,10 +113,10 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right: 3D viewport (top) + floor plan (bottom) */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* 3D viewport */}
-          <div className="flex-1 relative min-h-0">
+        {/* Right: 3D viewport (top) + floor plan (bottom) — scrollable */}
+        <div className="flex-1 flex flex-col overflow-y-auto">
+          {/* 3D viewport — fixed height */}
+          <div className="relative" style={{ minHeight: '450px', height: '50vh' }}>
             {currentHome && (
               <Scene
                 ref={sceneRef}
@@ -203,9 +203,9 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Floor plan — always visible at bottom */}
+          {/* Floor plan — scrollable, never cut off */}
           {currentHome && (
-            <div className="h-[45%] border-t border-stone-200 bg-[#fdfbf7] overflow-auto flex items-start justify-center p-2">
+            <div className="border-t border-stone-200 bg-[#fdfbf7] flex items-start justify-center p-4" style={{ minHeight: '400px' }}>
               <FloorPlanView
                 rooms={currentHome.rooms}
                 footprint={currentHome.footprint}
