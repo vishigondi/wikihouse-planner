@@ -90,6 +90,11 @@ export default function Home() {
             onSelectHome={(id) => { setSelectedHomeId(id); setSelectedComponent(null); }}
           />
         </div>
+        {currentHome && (
+          <span className="text-[10px] text-stone-400 ml-2 hidden md:inline">
+            {currentHome.footprint.width}&apos;×{currentHome.footprint.depth}&apos; — {currentHome.rooms.length} rooms — {currentHome.roofStyle}
+          </span>
+        )}
       </div>
 
       {/* Main content */}
