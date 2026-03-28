@@ -14,21 +14,21 @@ interface Props {
   roofVisible: boolean;
 }
 
-// Architectural model palette — warm, minimal
+// Japandi palette — shou-sugi-ban exterior, hinoki interior
 const ARCH_COLORS: Record<string, string> = {
-  'wall-ext': '#c8bfaf',   // warm taupe — clearly distinct from floor
-  'wall-int': '#d5cbb8',   // warm interior — lighter than exterior
-  'roof-gable': '#d6d0c4', // warm light gray
-  'roof-steep': '#d6d0c4',
-  'roof-shed': '#d6d0c4',
-  'roof-flat': '#ccc6ba',
-  'floor-std': '#e8dcc8',  // warm natural
-  'floor-deck': '#c9b896', // cedar hint
-  'door-ext': '#8b7355',   // wood accent
-  'door-sliding': '#d4e4ec', // glass tint
-  'window-std': '#d4e4ec',
-  'door-int': '#ddd5c5',
-  'foundation': '#bbb5a9',
+  'wall-ext': '#8a7e6e',   // shou-sugi-ban — dark charred wood exterior
+  'wall-int': '#d5cbb8',   // hinoki — warm light interior
+  'roof-gable': '#9a9080', // standing seam metal — warm gray
+  'roof-steep': '#9a9080',
+  'roof-shed': '#9a9080',
+  'roof-flat': '#a09688',
+  'floor-std': '#e8dcc8',  // warm natural wood floor
+  'floor-deck': '#b09870', // western red cedar deck
+  'door-ext': '#5a4a35',   // dark wood entry door
+  'door-sliding': '#c8dde8', // glass tint
+  'window-std': '#c8dde8',
+  'door-int': '#c5b9a5',   // lighter interior doors
+  'foundation': '#9a948a',
 };
 
 const ARCH_OPACITY: Record<string, number> = {
