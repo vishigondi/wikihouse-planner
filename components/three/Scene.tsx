@@ -55,13 +55,13 @@ function CameraControls({ home, onRef }: { home: DenHome; onRef: (api: SceneHand
       const ctrl = controlsRef.current;
       if (!ctrl) return;
       const cam = ctrl.object;
-      // Bird's-eye isometric — high enough to see the whole plan layout
+      // Architectural presentation angle — low enough to show facade
       const fov = 35;
       const halfAngle = (fov * Math.PI / 180) / 2;
       const bboxRadius = Math.sqrt(w * w + d * d + h * h) / 2;
       const fitDist = bboxRadius / Math.sin(halfAngle);
-      const dist = fitDist * 1.6;
-      cam.position.set(dist * 0.25, dist * 0.90, dist * 0.25);
+      const dist = fitDist * 1.5;
+      cam.position.set(dist * 0.45, dist * 0.65, dist * 0.45);
       cam.fov = fov;
       cam.updateProjectionMatrix();
       ctrl.target.set(0, 0, 0);
