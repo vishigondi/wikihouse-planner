@@ -271,11 +271,6 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     }
   }
 
-  // NOTE: Removed interior perimeter wall generation for non-rectangular layouts.
-  // It was placing false walls at empty grid cells within the building footprint.
-  // The bbox perimeter walls (N/S/E/W edges above) are sufficient.
-  // Interior walls between rooms are handled by Pass 3 below.
-
   // ── Pass 3: Interior walls (shared edges, skip open connections) ────
   function isOpenConnection(labelA: string, labelB: string): boolean {
     return connections.some((c: RoomConnection) =>

@@ -1,6 +1,6 @@
 import type { ModularComponent, DenHome, ComponentLibrary, RoomLayout, RoomConnection } from './types';
 import { generatePlacements } from './generate-placements';
-import { validateConversion, logValidation } from './conversion-validator';
+import { logValidation } from './conversion-validator';
 import { graphLayout } from './graph-layout';
 
 // Static import as fallback (available immediately on first render)
