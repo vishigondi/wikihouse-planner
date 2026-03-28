@@ -1,5 +1,7 @@
 import type { ModularComponent, DenHome, ComponentLibrary, RoomLayout, RoomConnection } from './types';
 import { generatePlacements } from './generate-placements';
+import { validateConversion, logValidation } from './conversion-validator';
+import { graphLayout } from './graph-layout';
 
 // Static import as fallback (available immediately on first render)
 import libraryData from '@/public/data/library.json';
@@ -40,103 +42,36 @@ const EDGE_MAP: Record<string, string> = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function spatialToDenHome(plan: any): DenHome {
   const gridSize = 4;
-  const footprintGridW = Math.ceil(plan.footprint.width / gridSize);
 
   // Normalize floor levels — if min level is > 0, shift all down to 0-based
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const minLevel = Math.min(...plan.rooms.map((r: any) => r.level ?? 0));
 
-  // Zone-aware packing: public+circulation on top row, private+service below
-  // Sort rooms within each zone by connection order (open-connected rooms adjacent)
+  // Check if rooms have position data — if so, use it directly
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function sortByConnections(roomList: any[]): any[] {
-    if (roomList.length <= 1) return roomList;
-    const edges = (plan.edges || []).filter((e: any) => e.type === 'open' || e.type === 'cased_opening');
-    const labelToRoom = new Map(roomList.map((r: any) => [r.id, r]));
+  const hasPositions = plan.rooms.every((r: any) => r.position && typeof r.position.x === 'number');
 
-    // BFS from entry or first room
-    const entry = roomList.find((r: any) => r.type === 'entry') || roomList[0];
-    const visited = new Set<string>();
-    const ordered: any[] = [];
-    const queue = [entry.id];
-    visited.add(entry.id);
+  let rooms: RoomLayout[];
 
-    while (queue.length > 0) {
-      const cur = queue.shift()!;
-      const room = labelToRoom.get(cur);
-      if (room) ordered.push(room);
-
-      for (const e of edges) {
-        const neighbor = e.from === cur ? e.to : (e.to === cur ? e.from : null);
-        if (neighbor && !visited.has(neighbor) && labelToRoom.has(neighbor)) {
-          visited.add(neighbor);
-          queue.push(neighbor);
-        }
-      }
-    }
-
-    // Add any rooms not reached by BFS
-    for (const r of roomList) {
-      if (!visited.has(r.id)) ordered.push(r);
-    }
-    return ordered;
-  }
-
-  // Three-row packing: public → outdoor → private
-  // This creates a natural layout where decks sit between the
-  // main living space and the bedrooms, matching the Den pattern.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const publicRooms = sortByConnections(plan.rooms.filter((r: any) =>
-    r.zone === 'public' || r.zone === 'circulation'
-  ));
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const outdoorRooms = plan.rooms.filter((r: any) => r.zone === 'outdoor');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const privateRooms = sortByConnections(plan.rooms.filter((r: any) =>
-    r.zone === 'private' || r.zone === 'service'
-  ));
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function packRow(roomList: any[], startZ: number): { rooms: RoomLayout[]; maxDepth: number } {
-    let curX = 0;
-    let rowMaxD = 0;
-    let curZ = startZ;
-    const packed: RoomLayout[] = [];
-
+  if (hasPositions) {
+    // Direct placement from SpatialIR positions — no packing needed
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const r of roomList) {
-      const gw = Math.max(1, Math.round(r.dimensions.width / gridSize));
-      const gd = Math.max(1, Math.round(r.dimensions.depth / gridSize));
-
-      if (curX + gw > footprintGridW) {
-        curZ += rowMaxD;
-        curX = 0;
-        rowMaxD = 0;
-      }
-
-      packed.push({
-        label: r.label,
-        type: r.type,
-        gx: curX,
-        gz: curZ,
-        gw,
-        gd,
-        area: r.area,
-        color: ROOM_COLORS[r.type] || '#a8a29e',
-        constraints: '',
-        floor: (r.level ?? 0) - minLevel,  // normalize: min level becomes 0
-      });
-
-      curX += gw;
-      rowMaxD = Math.max(rowMaxD, gd);
-    }
-    return { rooms: packed, maxDepth: curZ + rowMaxD - startZ };
+    rooms = plan.rooms.map((r: any) => ({
+      label: r.label,
+      type: r.type,
+      gx: Math.round(r.position.x / gridSize),
+      gz: Math.round(r.position.z / gridSize),
+      gw: Math.max(1, Math.round(r.dimensions.width / gridSize)),
+      gd: Math.max(1, Math.round(r.dimensions.depth / gridSize)),
+      area: r.area,
+      color: ROOM_COLORS[r.type] || '#a8a29e',
+      constraints: '',
+      floor: (r.level ?? 0) - minLevel,
+    }));
+  } else {
+    // Graph-based layout: BFS through edges, places connected rooms adjacent
+    rooms = graphLayout(plan, gridSize);
   }
-
-  const publicPack = packRow(publicRooms, 0);
-  const outdoorPack = packRow(outdoorRooms, publicPack.maxDepth);
-  const privatePack = packRow(privateRooms, publicPack.maxDepth + outdoorPack.maxDepth);
-  const rooms: RoomLayout[] = [...publicPack.rooms, ...outdoorPack.rooms, ...privatePack.rooms];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const roomLabelMap = new Map(plan.rooms.map((r: any) => [r.id, r.label]));
@@ -171,8 +106,25 @@ function spatialToDenHome(plan: any): DenHome {
     connections,
   };
 
+  // Fix footprint to match actual room bounding box — prevents roof/room mismatch
+  const groundRooms = rooms.filter(r => !r.floor || r.floor === 0);
+  if (groundRooms.length > 0) {
+    const minGx = Math.min(...groundRooms.map(r => r.gx));
+    const maxGx = Math.max(...groundRooms.map(r => r.gx + r.gw));
+    const minGz = Math.min(...groundRooms.map(r => r.gz));
+    const maxGz = Math.max(...groundRooms.map(r => r.gz + r.gd));
+    home.footprint = {
+      width: (maxGx - minGx) * gridSize,
+      depth: (maxGz - minGz) * gridSize,
+    };
+  }
+
   // Auto-generate 3D placements from room grid
   home.placements = generatePlacements(home);
+
+  // Validate conversion integrity
+  logValidation(home);
+
   return home;
 }
 
