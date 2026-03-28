@@ -114,7 +114,7 @@ const Scene = forwardRef<SceneHandle, Props>(function Scene({
   return (
     <Canvas
       camera={{
-        position: [camDist * 0.25, camDist * 0.90, camDist * 0.25],
+        position: [camDist * 0.45, camDist * 0.65, camDist * 0.45],
         fov: 35,
         near: 0.1,
         far: 1000,
@@ -137,8 +137,8 @@ const Scene = forwardRef<SceneHandle, Props>(function Scene({
     >
       {/* Clean architectural lighting */}
       <ambientLight intensity={0.7} color="#faf5ee" />
-      <directionalLight position={[50, 80, 30]} intensity={0.8} color="#fff8f0" />
-      <directionalLight position={[-30, 40, -20]} intensity={0.25} color="#e8e4f0" />
+      <directionalLight position={[50, 80, 30]} intensity={1.0} color="#fff8f0" castShadow />
+      <directionalLight position={[-30, 40, -20]} intensity={0.3} color="#e8e4f0" />
       <hemisphereLight args={['#faf5ee', '#e0dcd4', 0.3]} />
 
       {/* Ground — subtle warm */}
