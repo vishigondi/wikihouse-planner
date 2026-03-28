@@ -82,10 +82,15 @@ function spatialToDenHome(plan: any): DenHome {
     return ordered;
   }
 
+  // Three-row packing: public → outdoor → private
+  // This creates a natural layout where decks sit between the
+  // main living space and the bedrooms, matching the Den pattern.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const publicRooms = sortByConnections(plan.rooms.filter((r: any) =>
-    r.zone === 'public' || r.zone === 'circulation' || r.zone === 'outdoor'
+    r.zone === 'public' || r.zone === 'circulation'
   ));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const outdoorRooms = plan.rooms.filter((r: any) => r.zone === 'outdoor');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const privateRooms = sortByConnections(plan.rooms.filter((r: any) =>
     r.zone === 'private' || r.zone === 'service'
@@ -129,8 +134,9 @@ function spatialToDenHome(plan: any): DenHome {
   }
 
   const publicPack = packRow(publicRooms, 0);
-  const privatePack = packRow(privateRooms, publicPack.maxDepth);
-  const rooms: RoomLayout[] = [...publicPack.rooms, ...privatePack.rooms];
+  const outdoorPack = packRow(outdoorRooms, publicPack.maxDepth);
+  const privatePack = packRow(privateRooms, publicPack.maxDepth + outdoorPack.maxDepth);
+  const rooms: RoomLayout[] = [...publicPack.rooms, ...outdoorPack.rooms, ...privatePack.rooms];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const roomLabelMap = new Map(plan.rooms.map((r: any) => [r.id, r.label]));
