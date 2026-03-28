@@ -1019,12 +1019,22 @@ function FloorLevel({
             ? room.label.replace(/^Open /, '').toLowerCase()
             : room.label;
 
+          // Scale font size based on room width — avoid overflow in narrow rooms
+          const roomWidthPx = r.w;
+          const baseFontSize = isOpenPlan ? 8 : 10;
+          const maxChars = shortLabel.length;
+          const charWidth = baseFontSize * 0.6;
+          const labelWidth = maxChars * charWidth;
+          const scaledFontSize = labelWidth > roomWidthPx * 0.85
+            ? Math.max(6, baseFontSize * (roomWidthPx * 0.85) / labelWidth)
+            : baseFontSize;
+
           return (
             <g key={`${prefix}-label-${i}`}>
               <text x={r.cx} y={r.cy - (isOpenPlan ? 2 : 4)}
                 textAnchor="middle" dominantBaseline="central"
                 fontFamily={FONT}
-                fontSize={isOpenPlan ? 8 : 10}
+                fontSize={scaledFontSize}
                 fontWeight={isOpenPlan ? 400 : 600}
                 fill={isOpenPlan ? '#666' : LABEL_COLOR}
                 opacity={isOpenPlan ? 0.5 : 0.8}
