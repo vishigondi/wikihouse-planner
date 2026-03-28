@@ -86,7 +86,10 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
   const minFloor = Math.min(...rooms.map(r => r.floor ?? 0));
   const groundRooms = rooms.filter(r => (r.floor ?? 0) === minFloor);
   const bbox = getBBox(rooms);
+  const isAFrame = (home.roofStyle || 'gable') === 'a-frame';
   const yWall = wallY(home.roofStyle || 'gable');
+  // A-frame exterior walls are scaled to 30% height (knee walls only)
+  const extWallScale = isAFrame ? { x: 1, y: 0.3, z: 1 } : undefined;
   const connections = home.connections || [];
 
   // ── Pass 0: Foundation + Floor ──────────────────────────────────────
@@ -192,7 +195,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       } else {
         const { x } = gridToWorld(gx, 0, bbox);
         const { z } = gridToWorld(0, bbox.maxGz, bbox);
-        placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls' });
+        placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
       }
     }
     // South perimeter
@@ -203,7 +206,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       } else {
         const { x } = gridToWorld(gx, 0, bbox);
         const { z } = gridToWorld(0, bbox.minGz, bbox);
-        placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls' });
+        placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
       }
     }
   }
@@ -218,7 +221,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       if (openings.has(key)) {
         placements.push({ ...openings.get(key)!, zone: 'openings' });
       } else {
-        placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls' });
+        placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
       }
     }
     // East perimeter
@@ -229,7 +232,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       if (openings.has(key)) {
         placements.push({ ...openings.get(key)!, zone: 'openings' });
       } else {
-        placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls' });
+        placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
       }
     }
   }
@@ -243,7 +246,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         if (!openings.has(key)) {
           const { x } = gridToWorld(gx, 0, bbox);
           const { z } = gridToWorld(0, gz, bbox);
-          placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls' });
+          placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
         }
       }
       if (gz < bbox.maxGz - 1 && !isOccupied(gx, gz + 1, groundRooms)) {
@@ -251,7 +254,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         if (!openings.has(key)) {
           const { x } = gridToWorld(gx, 0, bbox);
           const { z } = gridToWorld(0, gz + 1, bbox);
-          placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls' });
+          placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
         }
       }
       if (gx > bbox.minGx && !isOccupied(gx - 1, gz, groundRooms)) {
@@ -259,7 +262,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         if (!openings.has(key)) {
           const { x } = gridToWorld(gx, 0, bbox);
           const { z } = gridToWorld(0, gz, bbox);
-          placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls' });
+          placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
         }
       }
       if (gx < bbox.maxGx - 1 && !isOccupied(gx + 1, gz, groundRooms)) {
@@ -267,7 +270,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         if (!openings.has(key)) {
           const { x } = gridToWorld(gx + 1, 0, bbox);
           const { z } = gridToWorld(0, gz, bbox);
-          placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls' });
+          placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
         }
       }
     }
