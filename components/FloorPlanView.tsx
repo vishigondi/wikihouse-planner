@@ -8,7 +8,7 @@ const GRID = 4; // feet per cell
 const PX_PER_FT = 15; // scale factor
 const GRID_PX = GRID * PX_PER_FT; // pixels per grid cell
 const MARGIN = 48; // svg padding in px
-const WALL_STROKE = 1.5;
+const WALL_STROKE = 2.0;
 const FIXTURE_STROKE = 1;
 const FONT = "'Courier New', 'Courier', monospace";
 const BG = '#fdfbf7'; // warm cream
@@ -828,7 +828,7 @@ function FloorLevel({
         const deck = isDeck(room);
         // Subtle zone-based tinting from room color
         const roomColor = room.color || '#fff';
-        const fill = deck ? 'none' : (roomColor !== '#fff' ? roomColor + '15' : '#fff');
+        const fill = deck ? 'none' : (roomColor !== '#fff' ? roomColor + '20' : '#fff');
         return (
           <rect key={`${prefix}-fill-${i}`}
             x={r.x} y={r.y} width={r.w} height={r.h}
@@ -924,7 +924,7 @@ function FloorLevel({
         const r = roomRect(room);
         const ext = exteriorWalls[i];
         if (!ext) return null;
-        const thick = WALL_STROKE * 2.5;
+        const thick = WALL_STROKE * 3;
         return (
           <g key={`${prefix}-ext-${i}`}>
             {ext.top && <line x1={r.x} y1={r.y} x2={r.x + r.w} y2={r.y} stroke={WALL_COLOR} strokeWidth={thick} />}
