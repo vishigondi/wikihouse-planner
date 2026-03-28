@@ -113,20 +113,48 @@ export function graphLayout(plan: any, gridSize: number = GRID): RoomLayout[] {
     });
   }
 
-  // Build adjacency from ALL edges (not just open)
+  // Separate ground and upper-level rooms
+  // Upper-level rooms are laid out independently, centered over the ground floor
+  const groundRoomIds = new Set(
+    plan.rooms.filter((r: any) => ((r.level ?? 0) - minLevel) === 0).map((r: any) => r.id)
+  );
+  const upperRoomIds = new Set(
+    plan.rooms.filter((r: any) => ((r.level ?? 0) - minLevel) > 0).map((r: any) => r.id)
+  );
+
+  // Build adjacency from ALL edges (not just open), but only within same level
   const edges: Array<{ from: string; to: string; type: string }> = plan.edges || [];
   const adj = new Map<string, string[]>();
   for (const e of edges) {
+    // Skip stair_connection edges for layout (they connect across levels)
+    if (e.type === 'stair_connection') continue;
+    // Only connect rooms on the same level
+    const fromLevel = rooms.get(e.from)?.level ?? 0;
+    const toLevel = rooms.get(e.to)?.level ?? 0;
+    if (fromLevel !== toLevel) continue;
+
     if (!adj.has(e.from)) adj.set(e.from, []);
     if (!adj.has(e.to)) adj.set(e.to, []);
     adj.get(e.from)!.push(e.to);
     adj.get(e.to)!.push(e.from);
   }
 
-  // Place rooms via BFS from entry
+  // Place GROUND rooms via BFS from entry
   const placed = new Map<string, Placement>();
-  const entry = plan.rooms.find((r: any) => r.type === 'entry') || plan.rooms[0];
-  const entryRoom = rooms.get(entry.id)!;
+  const groundRoomsList = plan.rooms.filter((r: any) => groundRoomIds.has(r.id));
+  const entry = groundRoomsList.find((r: any) => r.type === 'entry') || groundRoomsList[0];
+  if (!entry) {
+    // No ground rooms — just return all rooms at origin
+    return plan.rooms.map((r: any) => ({
+      label: rooms.get(r.id)!.label,
+      type: rooms.get(r.id)!.type,
+      gx: 0, gz: 0,
+      gw: rooms.get(r.id)!.gw, gd: rooms.get(r.id)!.gd,
+      area: rooms.get(r.id)!.area,
+      color: ROOM_COLORS[rooms.get(r.id)!.type] || '#a8a29e',
+      constraints: '', floor: rooms.get(r.id)!.level,
+    }));
+  }
 
   // Entry at origin (will compact later)
   placed.set(entry.id, { gx: 0, gz: 0 });
@@ -228,11 +256,10 @@ export function graphLayout(plan: any, gridSize: number = GRID): RoomLayout[] {
     addNeighbors(curId);
   }
 
-  // Place any rooms not reached by BFS
+  // Place any ground rooms not reached by BFS
   for (const r of plan.rooms) {
-    if (!placed.has(r.id)) {
+    if (!placed.has(r.id) && groundRoomIds.has(r.id)) {
       const room = rooms.get(r.id)!;
-      // Find non-overlapping spot
       for (let gx = 0; ; gx++) {
         if (!overlaps(gx, 0, room.gw, room.gd, placed, rooms)) {
           placed.set(r.id, { gx, gz: 0 });
@@ -242,10 +269,88 @@ export function graphLayout(plan: any, gridSize: number = GRID): RoomLayout[] {
     }
   }
 
-  // Compact: shift everything so min gx/gz = 0
-  const allPlacements = [...placed.entries()];
-  const minGx = Math.min(...allPlacements.map(([, p]) => p.gx));
-  const minGz = Math.min(...allPlacements.map(([, p]) => p.gz));
+  // Compact ground rooms: shift so min gx/gz = 0
+  const groundPlacements = [...placed.entries()].filter(([id]) => groundRoomIds.has(id));
+  const minGx = groundPlacements.length > 0
+    ? Math.min(...groundPlacements.map(([, p]) => p.gx)) : 0;
+  const minGz = groundPlacements.length > 0
+    ? Math.min(...groundPlacements.map(([, p]) => p.gz)) : 0;
+
+  // Place upper-level rooms centered over the ground floor
+  if (upperRoomIds.size > 0) {
+    // Compute ground floor center
+    const maxGx = groundPlacements.length > 0
+      ? Math.max(...groundPlacements.map(([id, p]) => p.gx + rooms.get(id)!.gw)) : 0;
+    const maxGz = groundPlacements.length > 0
+      ? Math.max(...groundPlacements.map(([id, p]) => p.gz + rooms.get(id)!.gd)) : 0;
+    const groundCenterGx = (minGx + maxGx) / 2;
+    const groundCenterGz = (minGz + maxGz) / 2;
+
+    // Layout upper rooms with their own BFS, then center over ground
+    const upperPlaced = new Map<string, Placement>();
+    const upperRoomsList = plan.rooms.filter((r: any) => upperRoomIds.has(r.id));
+    const upperEntry = upperRoomsList[0];
+    if (upperEntry) {
+      upperPlaced.set(upperEntry.id, { gx: 0, gz: 0 });
+      const uVisited = new Set<string>([upperEntry.id]);
+      const uQueue: string[] = [];
+      const uNeighbors = adj.get(upperEntry.id) || [];
+      for (const n of uNeighbors) {
+        if (!uVisited.has(n) && upperRoomIds.has(n)) { uVisited.add(n); uQueue.push(n); }
+      }
+      while (uQueue.length > 0) {
+        const curId = uQueue.shift()!;
+        const cur = rooms.get(curId)!;
+        const neighbors = adj.get(curId) || [];
+        let anchor: { id: string; placement: Placement } | null = null;
+        for (const n of neighbors) {
+          if (upperPlaced.has(n)) { anchor = { id: n, placement: upperPlaced.get(n)! }; break; }
+        }
+        if (!anchor) anchor = { id: upperEntry.id, placement: upperPlaced.get(upperEntry.id)! };
+        const anchorRoom = rooms.get(anchor.id)!;
+        const ap = anchor.placement;
+        const dirs = [
+          { gx: ap.gx, gz: ap.gz - cur.gd },
+          { gx: ap.gx, gz: ap.gz + anchorRoom.gd },
+          { gx: ap.gx - cur.gw, gz: ap.gz },
+          { gx: ap.gx + anchorRoom.gw, gz: ap.gz },
+        ];
+        let didPlace = false;
+        for (const d of dirs) {
+          if (!overlaps(d.gx, d.gz, cur.gw, cur.gd, upperPlaced, rooms)) {
+            upperPlaced.set(curId, d);
+            didPlace = true;
+            break;
+          }
+        }
+        if (!didPlace) upperPlaced.set(curId, { gx: upperPlaced.size * 3, gz: 0 });
+        const curNeighbors = adj.get(curId) || [];
+        for (const n of curNeighbors) {
+          if (!uVisited.has(n) && upperRoomIds.has(n)) { uVisited.add(n); uQueue.push(n); }
+        }
+      }
+      // Place remaining upper rooms
+      for (const r of upperRoomsList) {
+        if (!upperPlaced.has(r.id)) upperPlaced.set(r.id, { gx: upperPlaced.size * 3, gz: 0 });
+      }
+
+      // Compute upper room group center and offset to ground center
+      const uAll = [...upperPlaced.entries()];
+      const uMinGx = Math.min(...uAll.map(([, p]) => p.gx));
+      const uMaxGx = Math.max(...uAll.map(([id, p]) => p.gx + rooms.get(id)!.gw));
+      const uMinGz = Math.min(...uAll.map(([, p]) => p.gz));
+      const uMaxGz = Math.max(...uAll.map(([id, p]) => p.gz + rooms.get(id)!.gd));
+      const uCenterGx = (uMinGx + uMaxGx) / 2;
+      const uCenterGz = (uMinGz + uMaxGz) / 2;
+
+      // Shift upper rooms so their center aligns with ground center
+      const offsetGx = Math.round(groundCenterGx - uCenterGx);
+      const offsetGz = Math.round(groundCenterGz - uCenterGz);
+      for (const [id, p] of upperPlaced) {
+        placed.set(id, { gx: p.gx + offsetGx, gz: p.gz + offsetGz });
+      }
+    }
+  }
 
   // Convert to RoomLayout
   const result: RoomLayout[] = [];

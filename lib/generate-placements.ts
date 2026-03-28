@@ -120,6 +120,25 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     }
   }
 
+  // ── Pass 0b: Loft floor panels (at loftHeight elevation) ───────────
+  const loftHeight = home.loftHeight || 8;
+  const loftRooms = rooms.filter(r => (r.floor ?? 0) > minFloor);
+  if (loftRooms.length > 0) {
+    for (const room of loftRooms) {
+      for (let gx = room.gx; gx < room.gx + room.gw; gx++) {
+        for (let gz = room.gz; gz < room.gz + room.gd; gz++) {
+          const { x, z } = gridToWorld(gx, gz, bbox); // use main bbox for positioning
+          placements.push({
+            componentId: 'floor-std',
+            position: { x, y: loftHeight + Y_FLOOR, z },
+            rotation: { x: 0, y: 0, z: 0 },
+            zone: 'loft',
+          });
+        }
+      }
+    }
+  }
+
   // ── Pass 1: Collect all openings ────────────────────────────────────
   const openings = new Map<WallKey, Opening>();
 
