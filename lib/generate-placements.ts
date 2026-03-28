@@ -212,61 +212,61 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     }
   }
 
-  // ── Pass 2: Exterior wall panels (skip openings + deck perimeters) ──
+  // ── Pass 2: Exterior wall panels ────────────────────────────────────
+  // Place a wall on ANY cell edge where one side is occupied (non-deck)
+  // and the other side is empty or out of bounds. This correctly handles
+  // non-rectangular building shapes from the graph layout.
 
   function isDeckCell(gx: number, gz: number): boolean {
     const room = getRoomAt(gx, gz);
     return !!room && OUTDOOR_TYPES.has(room.type);
   }
 
-  // Horizontal walls (N/S edges, rot_y=0)
+  function needsExtWall(occupiedGx: number, occupiedGz: number, emptyGx: number, emptyGz: number): boolean {
+    // An exterior wall is needed when an occupied non-deck cell faces an empty or out-of-bounds cell
+    if (!isOccupied(occupiedGx, occupiedGz, groundRooms)) return false;
+    if (isDeckCell(occupiedGx, occupiedGz)) return false;
+    // The other side must be empty (not occupied, or a deck cell)
+    if (!isOccupied(emptyGx, emptyGz, groundRooms)) return true;
+    if (isDeckCell(emptyGx, emptyGz)) return true;
+    return false;
+  }
+
+  // Check every cell edge for occupied↔empty boundaries
   for (let gx = bbox.minGx; gx < bbox.maxGx; gx++) {
-    // North perimeter — skip if deck
-    if (isOccupied(gx, bbox.maxGz - 1, groundRooms) && !isDeckCell(gx, bbox.maxGz - 1)) {
-      const key = hKey(gx, bbox.maxGz);
-      if (openings.has(key)) {
-        placements.push({ ...openings.get(key)!, zone: 'openings' });
-      } else {
-        const { x } = gridToWorld(gx, 0, bbox);
-        const { z } = gridToWorld(0, bbox.maxGz, bbox);
-        placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
-      }
-    }
-    // South perimeter — skip if deck
-    if (isOccupied(gx, bbox.minGz, groundRooms) && !isDeckCell(gx, bbox.minGz)) {
-      const key = hKey(gx, bbox.minGz);
-      if (openings.has(key)) {
-        placements.push({ ...openings.get(key)!, zone: 'openings' });
-      } else {
-        const { x } = gridToWorld(gx, 0, bbox);
-        const { z } = gridToWorld(0, bbox.minGz, bbox);
-        placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
+    for (let gz = bbox.minGz; gz <= bbox.maxGz; gz++) {
+      // Horizontal edge at (gx, gz): cell below is (gx, gz-1), cell above is (gx, gz)
+      const belowOccupied = gz > bbox.minGz && needsExtWall(gx, gz - 1, gx, gz);
+      const aboveOccupied = gz < bbox.maxGz && needsExtWall(gx, gz, gx, gz - 1);
+
+      if (belowOccupied || aboveOccupied) {
+        const key = hKey(gx, gz);
+        if (openings.has(key)) {
+          placements.push({ ...openings.get(key)!, zone: 'openings' });
+        } else {
+          const { x } = gridToWorld(gx, 0, bbox);
+          const { z } = gridToWorld(0, gz, bbox);
+          placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
+        }
       }
     }
   }
 
-  // Vertical walls (E/W edges, rot_y=90)
   for (let gz = bbox.minGz; gz < bbox.maxGz; gz++) {
-    // West perimeter
-    if (isOccupied(bbox.minGx, gz, groundRooms) && !isDeckCell(bbox.minGx, gz)) {
-      const key = vKey(bbox.minGx, gz);
-      const { x } = gridToWorld(bbox.minGx, 0, bbox);
-      const { z } = gridToWorld(0, gz, bbox);
-      if (openings.has(key)) {
-        placements.push({ ...openings.get(key)!, zone: 'openings' });
-      } else {
-        placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
-      }
-    }
-    // East perimeter
-    if (isOccupied(bbox.maxGx - 1, gz, groundRooms) && !isDeckCell(bbox.maxGx - 1, gz)) {
-      const key = vKey(bbox.maxGx, gz);
-      const { x } = gridToWorld(bbox.maxGx, 0, bbox);
-      const { z } = gridToWorld(0, gz, bbox);
-      if (openings.has(key)) {
-        placements.push({ ...openings.get(key)!, zone: 'openings' });
-      } else {
-        placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
+    for (let gx = bbox.minGx; gx <= bbox.maxGx; gx++) {
+      // Vertical edge at (gx, gz): cell left is (gx-1, gz), cell right is (gx, gz)
+      const leftOccupied = gx > bbox.minGx && needsExtWall(gx - 1, gz, gx, gz);
+      const rightOccupied = gx < bbox.maxGx && needsExtWall(gx, gz, gx - 1, gz);
+
+      if (leftOccupied || rightOccupied) {
+        const key = vKey(gx, gz);
+        if (openings.has(key)) {
+          placements.push({ ...openings.get(key)!, zone: 'openings' });
+        } else {
+          const { x } = gridToWorld(gx, 0, bbox);
+          const { z } = gridToWorld(0, gz, bbox);
+          placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
+        }
       }
     }
   }
