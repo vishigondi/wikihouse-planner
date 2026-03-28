@@ -12,6 +12,45 @@ export interface ValidationResult {
 }
 
 const OUTDOOR = new Set(['deck', 'porch', 'covered_porch', 'screened_porch']);
+const LOFT_TYPES = new Set(['loft', 'landing']);
+
+/** Generate a brief Airbnb-style description for a plan. */
+export function airbnbSummary(home: DenHome): string {
+  const beds = home.rooms.filter(r => BEDROOM.has(r.type)).length;
+  const baths = home.rooms.filter(r => r.type === 'bathroom_full' || r.type === 'ensuite').length;
+  const halfBaths = home.rooms.filter(r => r.type === 'bathroom_half').length;
+  const hasLoft = home.rooms.some(r => LOFT_TYPES.has(r.type));
+  const hasOutdoor = home.rooms.some(r => OUTDOOR.has(r.type));
+  const hasMaster = home.rooms.some(r => r.type === 'master_bedroom');
+  const hasOffice = home.rooms.some(r => r.type === 'office');
+  const roofStyle = home.roofStyle;
+
+  const parts: string[] = [];
+
+  // Size category
+  if (home.sqft < 300) parts.push('Tiny cabin');
+  else if (home.sqft < 600) parts.push('Cozy cabin');
+  else if (home.sqft < 1000) parts.push('Modern cabin');
+  else if (home.sqft < 1500) parts.push('Spacious cabin');
+  else parts.push('Estate home');
+
+  // Sleeping
+  if (beds === 0 && hasLoft) parts.push('with loft sleeping');
+  else if (beds === 1 && hasMaster) parts.push('with master suite');
+  else if (beds >= 3) parts.push(`${beds} bedrooms`);
+
+  // Roof character
+  if (roofStyle === 'a-frame') parts.push('A-frame');
+  else if (roofStyle === 'steep-gable') parts.push('cathedral ceiling');
+
+  // Features
+  if (hasOutdoor) parts.push('private deck');
+  if (hasOffice) parts.push('work nook');
+  if (hasLoft && beds > 0) parts.push('+ loft');
+  if (baths >= 2) parts.push(`${baths} baths`);
+
+  return parts.join(' · ');
+}
 const PUBLIC = new Set(['entry', 'kitchen', 'kitchenette', 'dining', 'living', 'great_room']);
 const BEDROOM = new Set(['bedroom', 'master_bedroom']);
 

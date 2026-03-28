@@ -8,7 +8,7 @@ import ComponentCatalog from '@/components/ui/ComponentCatalog';
 import ComponentDetail from '@/components/ui/ComponentDetail';
 import type { SceneHandle } from '@/components/three/Scene';
 import FloorPlanView from '@/components/FloorPlanView';
-import { validatePlan } from '@/lib/plan-validator';
+import { validatePlan, airbnbSummary } from '@/lib/plan-validator';
 
 const Scene = dynamic(() => import('@/components/three/Scene'), { ssr: false });
 
@@ -181,9 +181,11 @@ export default function Home() {
             {/* Info overlay */}
             {currentHome && (() => {
               const validation = validatePlan(currentHome);
+              const summary = airbnbSummary(currentHome);
               return (
-                <div className="absolute top-3 right-3 z-20 bg-white/90 backdrop-blur border border-stone-200 rounded-lg px-3 py-2 text-[10px] space-y-1 pointer-events-none shadow-sm max-w-48">
+                <div className="absolute top-3 right-3 z-20 bg-white/90 backdrop-blur border border-stone-200 rounded-lg px-3 py-2 text-[10px] space-y-1 pointer-events-none shadow-sm max-w-52">
                   <div className="text-stone-700 font-semibold text-xs">{currentHome.model}</div>
+                  <div className="text-stone-400 italic">{summary}</div>
                   <div className="text-stone-400">
                     {currentHome.footprint.width}&apos; × {currentHome.footprint.depth}&apos; — {currentHome.height}&apos; peak
                   </div>
