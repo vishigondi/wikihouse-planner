@@ -252,44 +252,10 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     }
   }
 
-  // Interior perimeter walls (for non-rectangular layouts)
-  for (let gx = bbox.minGx; gx < bbox.maxGx; gx++) {
-    for (let gz = bbox.minGz; gz < bbox.maxGz; gz++) {
-      if (!isOccupied(gx, gz, groundRooms)) continue;
-      if (gz > bbox.minGz && !isOccupied(gx, gz - 1, groundRooms)) {
-        const key = hKey(gx, gz);
-        if (!openings.has(key)) {
-          const { x } = gridToWorld(gx, 0, bbox);
-          const { z } = gridToWorld(0, gz, bbox);
-          placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
-        }
-      }
-      if (gz < bbox.maxGz - 1 && !isOccupied(gx, gz + 1, groundRooms)) {
-        const key = hKey(gx, gz + 1);
-        if (!openings.has(key)) {
-          const { x } = gridToWorld(gx, 0, bbox);
-          const { z } = gridToWorld(0, gz + 1, bbox);
-          placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
-        }
-      }
-      if (gx > bbox.minGx && !isOccupied(gx - 1, gz, groundRooms)) {
-        const key = vKey(gx, gz);
-        if (!openings.has(key)) {
-          const { x } = gridToWorld(gx, 0, bbox);
-          const { z } = gridToWorld(0, gz, bbox);
-          placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
-        }
-      }
-      if (gx < bbox.maxGx - 1 && !isOccupied(gx + 1, gz, groundRooms)) {
-        const key = vKey(gx + 1, gz);
-        if (!openings.has(key)) {
-          const { x } = gridToWorld(gx + 1, 0, bbox);
-          const { z } = gridToWorld(0, gz, bbox);
-          placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
-        }
-      }
-    }
-  }
+  // NOTE: Removed interior perimeter wall generation for non-rectangular layouts.
+  // It was placing false walls at empty grid cells within the building footprint.
+  // The bbox perimeter walls (N/S/E/W edges above) are sufficient.
+  // Interior walls between rooms are handled by Pass 3 below.
 
   // ── Pass 3: Interior walls (shared edges, skip open connections) ────
   function isOpenConnection(labelA: string, labelB: string): boolean {
