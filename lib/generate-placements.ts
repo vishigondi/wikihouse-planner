@@ -93,17 +93,26 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
   const connections = home.connections || [];
 
   // ── Pass 0: Foundation + Floor ──────────────────────────────────────
+  const OUTDOOR_TYPES = new Set(['deck', 'porch', 'covered_porch', 'screened_porch']);
+
+  function getRoomAt(gx: number, gz: number): RoomLayout | undefined {
+    return groundRooms.find(r => gx >= r.gx && gx < r.gx + r.gw && gz >= r.gz && gz < r.gz + r.gd);
+  }
+
   for (let gx = bbox.minGx; gx < bbox.maxGx; gx++) {
     for (let gz = bbox.minGz; gz < bbox.maxGz; gz++) {
       if (!isOccupied(gx, gz, groundRooms)) continue;
       const { x, z } = gridToWorld(gx, gz, bbox);
+      const room = getRoomAt(gx, gz);
+      const isDeck = room && OUTDOOR_TYPES.has(room.type);
+
       placements.push({
         componentId: 'foundation',
         position: { x, y: Y_FOUNDATION, z },
         rotation: { x: 0, y: 0, z: 0 },
       });
       placements.push({
-        componentId: 'floor-std',
+        componentId: isDeck ? 'floor-deck' : 'floor-std',
         position: { x, y: Y_FLOOR, z },
         rotation: { x: 0, y: 0, z: 0 },
         zone: 'floor',
@@ -118,7 +127,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
   for (const room of groundRooms) {
     if (room.type === 'closet' || room.type === 'walk_in_closet' ||
         room.type === 'pantry' || room.type === 'hallway' ||
-        room.type === 'stair' || room.type === 'landing') continue;
+        room.type === 'stair' || room.type === 'landing' ||
+        OUTDOOR_TYPES.has(room.type)) continue; // no windows on outdoor rooms
 
     const midGx = Math.floor(room.gx + room.gw / 2);
     const midGz = Math.floor(room.gz + room.gd / 2);
@@ -183,12 +193,17 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     }
   }
 
-  // ── Pass 2: Exterior wall panels (skip where openings exist) ────────
+  // ── Pass 2: Exterior wall panels (skip openings + deck perimeters) ──
+
+  function isDeckCell(gx: number, gz: number): boolean {
+    const room = getRoomAt(gx, gz);
+    return !!room && OUTDOOR_TYPES.has(room.type);
+  }
 
   // Horizontal walls (N/S edges, rot_y=0)
   for (let gx = bbox.minGx; gx < bbox.maxGx; gx++) {
-    // North perimeter
-    if (isOccupied(gx, bbox.maxGz - 1, groundRooms)) {
+    // North perimeter — skip if deck
+    if (isOccupied(gx, bbox.maxGz - 1, groundRooms) && !isDeckCell(gx, bbox.maxGz - 1)) {
       const key = hKey(gx, bbox.maxGz);
       if (openings.has(key)) {
         placements.push({ ...openings.get(key)!, zone: 'openings' });
@@ -198,8 +213,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
       }
     }
-    // South perimeter
-    if (isOccupied(gx, bbox.minGz, groundRooms)) {
+    // South perimeter — skip if deck
+    if (isOccupied(gx, bbox.minGz, groundRooms) && !isDeckCell(gx, bbox.minGz)) {
       const key = hKey(gx, bbox.minGz);
       if (openings.has(key)) {
         placements.push({ ...openings.get(key)!, zone: 'openings' });
@@ -214,7 +229,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
   // Vertical walls (E/W edges, rot_y=90)
   for (let gz = bbox.minGz; gz < bbox.maxGz; gz++) {
     // West perimeter
-    if (isOccupied(bbox.minGx, gz, groundRooms)) {
+    if (isOccupied(bbox.minGx, gz, groundRooms) && !isDeckCell(bbox.minGx, gz)) {
       const key = vKey(bbox.minGx, gz);
       const { x } = gridToWorld(bbox.minGx, 0, bbox);
       const { z } = gridToWorld(0, gz, bbox);
@@ -225,7 +240,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       }
     }
     // East perimeter
-    if (isOccupied(bbox.maxGx - 1, gz, groundRooms)) {
+    if (isOccupied(bbox.maxGx - 1, gz, groundRooms) && !isDeckCell(bbox.maxGx - 1, gz)) {
       const key = vKey(bbox.maxGx, gz);
       const { x } = gridToWorld(bbox.maxGx, 0, bbox);
       const { z } = gridToWorld(0, gz, bbox);
