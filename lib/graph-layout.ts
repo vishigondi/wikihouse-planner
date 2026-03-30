@@ -235,37 +235,56 @@ export function graphLayout(plan: any, gridSize: number = GRID): RoomLayout[] {
       candidates.sort((a, b) => b.score - a.score);
       placed.set(curId, { gx: candidates[0].gx, gz: candidates[0].gz });
     } else {
-      // Fallback: find any non-overlapping position near the anchor
-      let found = false;
-      for (let dx = -10; dx <= 10 && !found; dx++) {
-        for (let dz = -10; dz <= 10 && !found; dz++) {
-          const gx = ap.gx + dx;
-          const gz = ap.gz + dz;
-          if (!overlaps(gx, gz, cur.gw, cur.gd, placed, rooms)) {
-            placed.set(curId, { gx, gz });
-            found = true;
+      // Fallback: find closest non-overlapping position to any placed room
+      // Search outward from building center, prefer adjacency to existing rooms
+      let bestPos: { gx: number; gz: number } | null = null;
+      let bestDist = Infinity;
+
+      // Compute current building center
+      const allP = [...placed.values()];
+      const centerX = allP.length > 0 ? allP.reduce((s, p) => s + p.gx, 0) / allP.length : 0;
+      const centerZ = allP.length > 0 ? allP.reduce((s, p) => s + p.gz, 0) / allP.length : 0;
+
+      for (let gx = -2; gx <= 20; gx++) {
+        for (let gz = -2; gz <= 20; gz++) {
+          if (overlaps(gx, gz, cur.gw, cur.gd, placed, rooms)) continue;
+          // Prefer positions close to center
+          const dist = Math.abs(gx - centerX) + Math.abs(gz - centerZ);
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestPos = { gx, gz };
           }
         }
       }
-      if (!found) {
-        // Last resort: place at expanding spiral from origin
-        placed.set(curId, { gx: placed.size * 3, gz: 0 });
+
+      if (bestPos) {
+        placed.set(curId, bestPos);
+      } else {
+        placed.set(curId, { gx: 0, gz: 0 });
       }
     }
 
     addNeighbors(curId);
   }
 
-  // Place any ground rooms not reached by BFS
+  // Place any ground rooms not reached by BFS — close to existing rooms
   for (const r of plan.rooms) {
     if (!placed.has(r.id) && groundRoomIds.has(r.id)) {
       const room = rooms.get(r.id)!;
-      for (let gx = 0; ; gx++) {
-        if (!overlaps(gx, 0, room.gw, room.gd, placed, rooms)) {
-          placed.set(r.id, { gx, gz: 0 });
-          break;
+      const allP = [...placed.values()];
+      const cx = allP.length > 0 ? Math.round(allP.reduce((s, p) => s + p.gx, 0) / allP.length) : 0;
+      const cz = allP.length > 0 ? Math.round(allP.reduce((s, p) => s + p.gz, 0) / allP.length) : 0;
+      let bestDist = Infinity;
+      let bestPos = { gx: 0, gz: 0 };
+      for (let gx = cx - 5; gx <= cx + 10; gx++) {
+        for (let gz = cz - 5; gz <= cz + 10; gz++) {
+          if (!overlaps(gx, gz, room.gw, room.gd, placed, rooms)) {
+            const d = Math.abs(gx - cx) + Math.abs(gz - cz);
+            if (d < bestDist) { bestDist = d; bestPos = { gx, gz }; }
+          }
         }
       }
+      placed.set(r.id, bestPos);
     }
   }
 

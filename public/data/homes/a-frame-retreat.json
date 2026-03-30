@@ -1805,20 +1805,6 @@
       "zone": "walls"
     },
     {
-      "componentId": "door-int",
-      "position": {
-        "x": 6.0,
-        "y": 3.5,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
       "componentId": "wall-ext",
       "position": {
         "x": 8.0,
@@ -1964,10 +1950,10 @@
       "zone": "walls"
     },
     {
-      "componentId": "door-int",
+      "componentId": "wall-int",
       "position": {
         "x": 8.0,
-        "y": 3.5,
+        "y": 5.5,
         "z": 10.0
       },
       "rotation": {
@@ -1975,7 +1961,7 @@
         "y": 0,
         "z": 0
       },
-      "zone": "openings"
+      "zone": "interior"
     },
     {
       "componentId": "wall-ext",
@@ -2225,25 +2211,6 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 4.0,
-        "y": 8.5,
-        "z": -10.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
         "x": -8.0,
         "y": 9.5,
         "z": 6.0
@@ -2263,63 +2230,6 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 8.0,
-        "y": 8.5,
-        "z": 10.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 2.0,
-        "y": 8.5,
-        "z": -8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 2.0,
-        "y": 8.5,
-        "z": -16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
         "x": -8.0,
         "y": 8.5,
         "z": 10.0
@@ -2341,7 +2251,7 @@
       "position": {
         "x": 4.0,
         "y": 8.5,
-        "z": 10.0
+        "z": -2.0
       },
       "rotation": {
         "x": 0,
@@ -2358,9 +2268,9 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 6.0,
+        "x": 2.0,
         "y": 8.5,
-        "z": 16.0
+        "z": -16.0
       },
       "rotation": {
         "x": 0,
@@ -2396,9 +2306,47 @@
     {
       "componentId": "wall-int",
       "position": {
+        "x": 2.0,
+        "y": 8.5,
+        "z": -8.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
         "x": 4.0,
         "y": 8.5,
-        "z": -2.0
+        "z": -10.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 4.0,
+        "y": 8.5,
+        "z": 10.0
       },
       "rotation": {
         "x": 0,
@@ -2859,36 +2807,9 @@
       "type": "walk_in_closet",
       "gx": 3,
       "gz": 7,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 3,
-          "z": 7.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 2",
-      "type": "walk_in_closet",
-      "gx": 3,
-      "gz": 8,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
+      "gw": 2,
+      "gd": 2,
+      "area": 64,
       "color": "#78716c",
       "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
       "fixtures": [
@@ -2897,61 +2818,7 @@
           "wall": "back",
           "x": 3,
           "z": 8.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 3",
-      "type": "walk_in_closet",
-      "gx": 4,
-      "gz": 7,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 4,
-          "z": 7.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 4",
-      "type": "walk_in_closet",
-      "gx": 4,
-      "gz": 8,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 4,
-          "z": 8.625,
-          "w": 1,
+          "w": 2,
           "d": 0.375,
           "desc": "Shelving along back wall"
         },
@@ -2996,16 +2863,6 @@
     },
     {
       "from": "Closet 1",
-      "to": "Closet 2",
-      "type": "open"
-    },
-    {
-      "from": "Closet 1",
-      "to": "Closet 3",
-      "type": "open"
-    },
-    {
-      "from": "Closet 1",
       "to": "Deck",
       "type": "door"
     },
@@ -3013,26 +2870,6 @@
       "from": "Closet 1",
       "to": "Loft Bedroom",
       "type": "wall"
-    },
-    {
-      "from": "Closet 2",
-      "to": "Closet 4",
-      "type": "door"
-    },
-    {
-      "from": "Closet 2",
-      "to": "Loft Bedroom",
-      "type": "wall"
-    },
-    {
-      "from": "Closet 3",
-      "to": "Closet 4",
-      "type": "open"
-    },
-    {
-      "from": "Closet 3",
-      "to": "Deck",
-      "type": "door"
     },
     {
       "from": "Deck",

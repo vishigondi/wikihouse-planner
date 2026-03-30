@@ -1896,44 +1896,6 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 4.0,
-        "y": 8.5,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 4.0,
-        "y": 8.5,
-        "z": -12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
         "x": -10.0,
         "y": 8.5,
         "z": 6.0
@@ -1972,6 +1934,25 @@
     {
       "componentId": "wall-int",
       "position": {
+        "x": 4.0,
+        "y": 8.5,
+        "z": -12.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
         "x": 6.0,
         "y": 8.5,
         "z": -6.0
@@ -1979,6 +1960,25 @@
       "rotation": {
         "x": 0,
         "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 4.0,
+        "y": 8.5,
+        "z": -4.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
         "z": 0
       },
       "zone": "interior",
@@ -2334,8 +2334,8 @@
       "gx": 4,
       "gz": 2,
       "gw": 2,
-      "gd": 1,
-      "area": 32,
+      "gd": 2,
+      "area": 64,
       "color": "#78716c",
       "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
       "fixtures": [
@@ -2343,7 +2343,7 @@
           "type": "shelves",
           "wall": "back",
           "x": 4,
-          "z": 2.625,
+          "z": 3.625,
           "w": 2,
           "d": 0.375,
           "desc": "Shelving along back wall"
@@ -2359,10 +2359,10 @@
       "label": "Closet 2",
       "type": "walk_in_closet",
       "gx": 4,
-      "gz": 3,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
+      "gz": 4,
+      "gw": 2,
+      "gd": 2,
+      "area": 64,
       "color": "#78716c",
       "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
       "fixtures": [
@@ -2370,8 +2370,8 @@
           "type": "shelves",
           "wall": "back",
           "x": 4,
-          "z": 3.625,
-          "w": 1,
+          "z": 5.625,
+          "w": 2,
           "d": 0.375,
           "desc": "Shelving along back wall"
         },
@@ -2386,64 +2386,10 @@
       "label": "Closet 3",
       "type": "walk_in_closet",
       "gx": 4,
-      "gz": 4,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 4,
-          "z": 4.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 4",
-      "type": "walk_in_closet",
-      "gx": 4,
-      "gz": 5,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 4,
-          "z": 5.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 5",
-      "type": "walk_in_closet",
-      "gx": 4,
       "gz": 6,
-      "gw": 1,
+      "gw": 2,
       "gd": 1,
-      "area": 16,
+      "area": 32,
       "color": "#78716c",
       "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
       "fixtures": [
@@ -2452,115 +2398,7 @@
           "wall": "back",
           "x": 4,
           "z": 6.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 6",
-      "type": "walk_in_closet",
-      "gx": 5,
-      "gz": 3,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 5,
-          "z": 3.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 7",
-      "type": "walk_in_closet",
-      "gx": 5,
-      "gz": 4,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 5,
-          "z": 4.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 8",
-      "type": "walk_in_closet",
-      "gx": 5,
-      "gz": 5,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 5,
-          "z": 5.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 9",
-      "type": "walk_in_closet",
-      "gx": 5,
-      "gz": 6,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 5,
-          "z": 6.625,
-          "w": 1,
+          "w": 2,
           "d": 0.375,
           "desc": "Shelving along back wall"
         },
@@ -2590,8 +2428,8 @@
     },
     {
       "from": "Closet 1",
-      "to": "Closet 6",
-      "type": "open"
+      "to": "Deck",
+      "type": "wall"
     },
     {
       "from": "Closet 1",
@@ -2605,68 +2443,18 @@
     },
     {
       "from": "Closet 2",
-      "to": "Closet 6",
-      "type": "open"
+      "to": "Deck",
+      "type": "wall"
     },
     {
       "from": "Closet 2",
-      "to": "Deck",
-      "type": "wall"
-    },
-    {
-      "from": "Closet 3",
-      "to": "Closet 4",
-      "type": "open"
-    },
-    {
-      "from": "Closet 3",
-      "to": "Closet 7",
-      "type": "open"
-    },
-    {
-      "from": "Closet 3",
-      "to": "Deck",
-      "type": "wall"
-    },
-    {
-      "from": "Closet 4",
-      "to": "Closet 5",
-      "type": "open"
-    },
-    {
-      "from": "Closet 4",
-      "to": "Closet 8",
-      "type": "open"
-    },
-    {
-      "from": "Closet 4",
       "to": "Loft Bedroom",
       "type": "wall"
     },
     {
-      "from": "Closet 5",
-      "to": "Closet 9",
-      "type": "open"
-    },
-    {
-      "from": "Closet 5",
+      "from": "Closet 3",
       "to": "Loft Bedroom",
       "type": "wall"
-    },
-    {
-      "from": "Closet 6",
-      "to": "Closet 7",
-      "type": "open"
-    },
-    {
-      "from": "Closet 7",
-      "to": "Closet 8",
-      "type": "open"
-    },
-    {
-      "from": "Closet 8",
-      "to": "Closet 9",
-      "type": "open"
     },
     {
       "from": "Deck",
