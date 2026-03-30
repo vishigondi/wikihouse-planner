@@ -45,7 +45,7 @@ function CameraControls({ home, onRef }: { home: DenHome; onRef: (api: SceneHand
       const hFov = 2 * Math.atan(Math.tan(halfAngle) * aspect);
       const fitDist = (diagonal / 2) / Math.tan(Math.min(halfAngle, hFov / 2));
       const dist = fitDist * 1.4;
-      cam.position.set(0, Math.max(dist, 40), 0.01);
+      cam.position.set(0, Math.max(dist, 20), 0.01);
       cam.fov = fov;
       cam.updateProjectionMatrix();
       ctrl.target.set(0, 0, 0);

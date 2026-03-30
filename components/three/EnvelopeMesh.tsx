@@ -10,13 +10,23 @@ interface Props {
   roofVisible: boolean;
 }
 
+const GRID = 4; // feet per grid unit — must match generate-placements.ts
+const WALL_EXT_H = 10; // wall-ext panel height from library.json — eave is here
+const OUTDOOR_TYPES = new Set(['deck', 'porch', 'covered_porch', 'screened_porch']);
+
+interface RoofStrip {
+  startGx: number;
+  endGx: number;
+  minGz: number;
+  maxGz: number;
+}
+
 /**
- * Roof-only geometry — the triangular/shed cap above the eave line.
- * Individual wall panels (ComponentMesh) handle all 4 exterior walls now.
- * EnvelopeMesh only adds:
- *   1. The roof cap surface (closed triangular prism, visible when roofVisible=true)
- *   2. The gable end triangles (the portion above eave height on east/west faces)
- *      which rectangular wall panels can't fill.
+ * Roof cross-section profile (ZY plane, centered at z=0).
+ *
+ * wallHeight = WALL_EXT_H (10ft) for all pitched roofs, so the
+ * roof surface starts exactly at the top of the 10ft wall panels.
+ * For a-frame, wallHeight = 2 (knee wall).  For flat, wallHeight = peakHeight.
  */
 function computeRoofProfile(
   roofStyle: string,
@@ -28,49 +38,40 @@ function computeRoofProfile(
 
   switch (roofStyle) {
     case 'a-frame': {
-      // A-frame: the whole section IS the roof (no separate wall zone)
+      // Full section from ground — no separate wall zone
       const knee = 2;
       return [
         { z: -halfD, y: 0 },
         { z: -halfD, y: knee },
-        { z: 0, y: peakHeight },
-        { z: halfD, y: knee },
-        { z: halfD, y: 0 },
+        { z: 0,      y: peakHeight },
+        { z: halfD,  y: knee },
+        { z: halfD,  y: 0 },
       ];
     }
-    case 'steep-gable': {
-      const eave = wallHeight * 0.6;
-      return [
-        { z: -halfD, y: eave },
-        { z: 0, y: peakHeight },
-        { z: halfD, y: eave },
-      ];
-    }
+    case 'steep-gable':
     case 'gable': {
-      // Roof triangle above the eave line
+      // Triangle above the eave line
       return [
         { z: -halfD, y: wallHeight },
-        { z: 0, y: peakHeight },
-        { z: halfD, y: wallHeight },
+        { z: 0,      y: peakHeight },
+        { z: halfD,  y: wallHeight },
       ];
     }
     case 'shed': {
-      // Shed cap: a right triangle connecting the two eave heights
-      // Left side is high, right side is low, close at the low eave height
-      const rise = peakHeight - wallHeight;
+      // Right-triangle cap: high side (left) to low side (right)
       return [
-        { z: -halfD, y: wallHeight + rise },  // left eave (high)
-        { z: halfD,  y: wallHeight },           // right eave (low)
-        { z: -halfD, y: wallHeight },           // base of triangle (close shape)
+        { z: -halfD, y: peakHeight },   // high eave
+        { z: halfD,  y: wallHeight },   // low eave
+        { z: -halfD, y: wallHeight },   // close shape at base
       ];
     }
     case 'flat':
     default: {
-      // Flat roof: a thin rectangular slab at the top of the walls
-      const slabThickness = 0.33;
+      // Thin slab on top of walls
+      const slabT = 0.33;
       return [
-        { z: -halfD, y: wallHeight + slabThickness },
-        { z: halfD,  y: wallHeight + slabThickness },
+        { z: -halfD, y: wallHeight + slabT },
+        { z: halfD,  y: wallHeight + slabT },
         { z: halfD,  y: wallHeight },
         { z: -halfD, y: wallHeight },
       ];
@@ -78,101 +79,100 @@ function computeRoofProfile(
   }
 }
 
-/** Build gable-end triangle geometry — the triangular portion ABOVE the eave.
- *  Rectangular wall panels cover the rectangular base; this fills the triangle. */
-function buildGableEnd(
-  profile: Array<{ y: number; z: number }>,
-  xPos: number,
-  faceDir: number, // +1 = face right (+X), -1 = face left (-X)
-): THREE.BufferGeometry {
-  const shape = new THREE.Shape();
-  shape.moveTo(profile[0].z, profile[0].y);
-  for (let i = 1; i < profile.length; i++) {
-    shape.lineTo(profile[i].z, profile[i].y);
-  }
-  shape.closePath();
-
-  const geo = new THREE.ShapeGeometry(shape);
-  // ShapeGeometry lies in XY plane facing +Z. Rotate to face along X, then translate.
-  geo.rotateY(faceDir > 0 ? -Math.PI / 2 : Math.PI / 2);
-  geo.translate(xPos, 0, 0);
-  return geo;
-}
-
+/**
+ * Roof-only geometry — the cap surface above the 10ft wall panels.
+ *
+ * Changes from previous version:
+ *   ✦ Removed gable end triangles — they conflicted with wall-ext panels
+ *     that already cover the east/west perimeter faces.
+ *   ✦ wallHeight fixed to WALL_EXT_H (10ft) so roof sits flush on walls.
+ *   ✦ Per-strip geometry: for L-shaped buildings each contiguous group of
+ *     X-columns with the same Z extent gets its own roof prism, so the roof
+ *     follows the actual footprint instead of the bounding-box rectangle.
+ */
 export default function EnvelopeMesh({ home, wallOpacity, roofVisible }: Props) {
-  const { width, depth } = home.footprint;
-  const roofStyle = home.roofStyle;
+  const roofStyle = home.roofStyle || 'gable';
   const peakHeight = home.height;
-  // Eave height = where vertical wall meets roof slope
-  const wallHeight = roofStyle === 'flat' ? peakHeight
-    : roofStyle === 'a-frame' ? 2
-    : peakHeight * 0.6;
 
-  const roofProfile = useMemo(() =>
-    computeRoofProfile(roofStyle, depth, wallHeight, peakHeight),
-    [roofStyle, depth, wallHeight, peakHeight]
-  );
+  // Eave height = wall panel height, except a-frame (knee) and flat (no ridge)
+  const wallHeight =
+    roofStyle === 'a-frame' ? 2
+    : roofStyle === 'flat'  ? peakHeight
+    : WALL_EXT_H;
 
-  // ── Roof cap — extruded along building length ───────────────────────
-  const { roofGeo, roofEdgeGeo } = useMemo(() => {
-    const profile = roofProfile;
-    if (profile.length < 2) return { roofGeo: null, roofEdgeGeo: null };
+  const roofGeometries = useMemo(() => {
+    // ── Mirror the coordinate system from generate-placements.ts ───────
+    const minFloor = Math.min(...home.rooms.map(r => r.floor ?? 0));
+    const groundRooms = home.rooms.filter(r => (r.floor ?? 0) === minFloor);
+    const interiorRooms = groundRooms.filter(r => !OUTDOOR_TYPES.has(r.type));
 
-    const shape = new THREE.Shape();
-    shape.moveTo(profile[0].z, profile[0].y);
-    for (let i = 1; i < profile.length; i++) {
-      shape.lineTo(profile[i].z, profile[i].y);
+    if (interiorRooms.length === 0) return [];
+
+    const globalMinGx = Math.min(...groundRooms.map(r => r.gx));
+    const globalMaxGx = Math.max(...groundRooms.map(r => r.gx + r.gw));
+    const globalMinGz = Math.min(...groundRooms.map(r => r.gz));
+    const globalMaxGz = Math.max(...groundRooms.map(r => r.gz + r.gd));
+    const totalW = (globalMaxGx - globalMinGx) * GRID;
+    const totalD = (globalMaxGz - globalMinGz) * GRID;
+
+    // World coords (same origin as generate-placements: centre of full bbox)
+    const gxW = (gx: number) => (gx - globalMinGx) * GRID - totalW / 2;
+    const gzW = (gz: number) => (gz - globalMinGz) * GRID - totalD / 2;
+
+    // ── Compute per-column Z ranges for interior rooms only ─────────────
+    const intMinGx = Math.min(...interiorRooms.map(r => r.gx));
+    const intMaxGx = Math.max(...interiorRooms.map(r => r.gx + r.gw));
+
+    const strips: RoofStrip[] = [];
+    for (let gx = intMinGx; gx < intMaxGx; gx++) {
+      const colRooms = interiorRooms.filter(r => gx >= r.gx && gx < r.gx + r.gw);
+      if (colRooms.length === 0) continue;
+      const minGz = Math.min(...colRooms.map(r => r.gz));
+      const maxGz = Math.max(...colRooms.map(r => r.gz + r.gd));
+      const last = strips[strips.length - 1];
+      if (last && last.minGz === minGz && last.maxGz === maxGz) {
+        last.endGx = gx + 1;
+      } else {
+        strips.push({ startGx: gx, endGx: gx + 1, minGz, maxGz });
+      }
     }
-    shape.closePath();
 
-    const geo = new THREE.ExtrudeGeometry(shape, {
-      depth: width,
-      bevelEnabled: false,
-    });
-    geo.rotateY(Math.PI / 2);
-    geo.translate(-width / 2, 0, 0);
+    // ── Build one ExtrudeGeometry per strip ─────────────────────────────
+    const results: Array<{ geo: THREE.ExtrudeGeometry; edges: THREE.EdgesGeometry }> = [];
 
-    const edges = new THREE.EdgesGeometry(geo, 15);
-    return { roofGeo: geo, roofEdgeGeo: edges };
-  }, [roofProfile, width]);
+    for (const strip of strips) {
+      const stripW = (strip.endGx - strip.startGx) * GRID;
+      const stripD = (strip.maxGz - strip.minGz) * GRID;
+      const profile = computeRoofProfile(roofStyle, stripD, wallHeight, peakHeight);
+      if (profile.length < 3) continue;
 
-  // ── Gable end triangles — fills the triangular zone above the eave ──
-  const { frontGableGeo, backGableGeo } = useMemo(() => {
-    const profile = roofProfile;
-    // A-frame includes the full section; gable/steep only need the triangle
-    // For a-frame, wall panels don't cover the angled portion, so we render
-    // the full profile. For others, render only the triangle above eave.
-    return {
-      frontGableGeo: buildGableEnd(profile, -width / 2, -1),
-      backGableGeo: buildGableEnd(profile, width / 2, 1),
-    };
-  }, [roofProfile, width]);
+      const shape = new THREE.Shape();
+      shape.moveTo(profile[0].z, profile[0].y);
+      for (let i = 1; i < profile.length; i++) shape.lineTo(profile[i].z, profile[i].y);
+      shape.closePath();
 
-  // Detect glass end walls (living room on end)
-  const { frontIsGlass, backIsGlass } = useMemo(() => {
-    let front = false;
-    let back = false;
-    const livingRoom = home.rooms.find(r =>
-      r.type === 'great_room' || r.type === 'living' || r.type === 'kitchen_open'
-    );
-    if (livingRoom) {
-      const rz = livingRoom.gz * 4;
-      const rzEnd = (livingRoom.gz + livingRoom.gd) * 4;
-      if (rz < depth * 0.3) front = true;
-      if (rzEnd > depth * 0.7) back = true;
+      const geo = new THREE.ExtrudeGeometry(shape, { depth: stripW, bevelEnabled: false });
+      // rotateY(PI/2): extrusion (orig +Z) → +X, shape-X (orig depth axis) → -Z
+      geo.rotateY(Math.PI / 2);
+
+      // World centre of this strip
+      const xCenter = (gxW(strip.startGx) + gxW(strip.endGx)) / 2;
+      const zCenter = (gzW(strip.minGz) + gzW(strip.maxGz)) / 2;
+      geo.translate(-stripW / 2 + xCenter, 0, zCenter);
+
+      results.push({ geo, edges: new THREE.EdgesGeometry(geo, 15) });
     }
-    return { frontIsGlass: front, backIsGlass: back };
-  }, [home.rooms, depth]);
 
-  const gableColor = '#f5f0e8';
-  const gableOpacity = wallOpacity;
+    return results;
+  }, [home.rooms, roofStyle, wallHeight, peakHeight]);
+
+  if (!roofVisible || roofGeometries.length === 0) return null;
 
   return (
     <group>
-      {/* Roof cap — only shown when roofVisible is true */}
-      {roofVisible && roofGeo && (
-        <>
-          <mesh geometry={roofGeo}>
+      {roofGeometries.map((item, i) => (
+        <group key={i}>
+          <mesh geometry={item.geo}>
             <meshStandardMaterial
               color="#d8d2c6"
               transparent
@@ -182,35 +182,11 @@ export default function EnvelopeMesh({ home, wallOpacity, roofVisible }: Props) 
               side={THREE.DoubleSide}
             />
           </mesh>
-          {roofEdgeGeo && (
-            <lineSegments geometry={roofEdgeGeo}>
-              <lineBasicMaterial color="#a09080" transparent opacity={0.3} />
-            </lineSegments>
-          )}
-        </>
-      )}
-
-      {/* Gable end triangles — always shown (fill the area above the eave) */}
-      <mesh geometry={frontGableGeo}>
-        <meshStandardMaterial
-          color={frontIsGlass ? '#c8dde8' : gableColor}
-          transparent
-          opacity={frontIsGlass ? 0.25 : gableOpacity}
-          roughness={frontIsGlass ? 0.1 : 0.95}
-          metalness={frontIsGlass ? 0.05 : 0.02}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      <mesh geometry={backGableGeo}>
-        <meshStandardMaterial
-          color={backIsGlass ? '#c8dde8' : gableColor}
-          transparent
-          opacity={backIsGlass ? 0.25 : gableOpacity}
-          roughness={backIsGlass ? 0.1 : 0.95}
-          metalness={backIsGlass ? 0.05 : 0.02}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
+          <lineSegments geometry={item.edges}>
+            <lineBasicMaterial color="#a09080" transparent opacity={0.3} />
+          </lineSegments>
+        </group>
+      ))}
     </group>
   );
 }

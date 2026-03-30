@@ -15,7 +15,7 @@ const Scene = dynamic(() => import('@/components/three/Scene'), { ssr: false });
 export default function Home() {
   const [selectedHomeId, setSelectedHomeId] = useState(homes[0]?.id ?? '');
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
-  const [wallOpacity, setWallOpacity] = useState(1.0);
+  const [wallOpacity, setWallOpacity] = useState(0.7);
   const [roofVisible, setRoofVisible] = useState(false);
   const [roomLabelsVisible, setRoomLabelsVisible] = useState(true);
   const [, setRefreshCount] = useState(0);
@@ -118,10 +118,10 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right: 3D viewport (top) + floor plan (bottom) — scrollable */}
-        <div className="flex-1 flex flex-col overflow-y-auto">
-          {/* 3D viewport — fixed height */}
-          <div className="relative" style={{ minHeight: '450px', height: '50vh' }}>
+        {/* Right: 3D viewport (top) + floor plan (bottom) — flex split, no page scroll */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* 3D viewport — top half, fills flex space */}
+          <div className="relative flex-1 min-h-[320px]">
             {currentHome && (
               <Scene
                 ref={sceneRef}
@@ -141,13 +141,13 @@ export default function Home() {
 
               <div className="flex gap-1">
                 <button
-                  onClick={() => { setRoofVisible(false); setWallOpacity(1); setRoomLabelsVisible(true); setTimeout(() => sceneRef.current?.setTopView(), 50); }}
+                  onClick={() => { setRoofVisible(false); setWallOpacity(0.55); setRoomLabelsVisible(true); setTimeout(() => sceneRef.current?.setTopView(), 50); }}
                   className={`px-2 py-0.5 text-[10px] rounded border ${!roofVisible ? 'bg-stone-800 text-white border-stone-800' : 'bg-stone-100 hover:bg-stone-200 text-stone-600 border-stone-200'}`}
                 >
                   Top
                 </button>
                 <button
-                  onClick={() => { setRoofVisible(true); setWallOpacity(1); setRoomLabelsVisible(true); setTimeout(() => sceneRef.current?.set3DView(), 50); }}
+                  onClick={() => { setRoofVisible(true); setWallOpacity(0.75); setRoomLabelsVisible(true); setTimeout(() => sceneRef.current?.set3DView(), 50); }}
                   className={`px-2 py-0.5 text-[10px] rounded border ${roofVisible ? 'bg-stone-800 text-white border-stone-800' : 'bg-stone-100 hover:bg-stone-200 text-stone-600 border-stone-200'}`}
                 >
                   3D
@@ -210,9 +210,9 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Floor plan — scrollable, never cut off */}
+          {/* Floor plan — bottom half, scrollable internally for large plans */}
           {currentHome && (
-            <div className="border-t border-stone-200 bg-[#fdfbf7] flex items-start justify-center p-4" style={{ minHeight: '400px' }}>
+            <div className="flex-1 min-h-0 border-t border-stone-200 bg-[#fdfbf7] overflow-auto flex items-start justify-center p-4">
               <FloorPlanView
                 rooms={currentHome.rooms}
                 footprint={currentHome.footprint}

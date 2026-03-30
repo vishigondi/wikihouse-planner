@@ -916,13 +916,13 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 6.0,
+        "x": 4.0,
         "y": 8.5,
-        "z": 2.0
+        "z": 4.0
       },
       "rotation": {
         "x": 0,
-        "y": 0,
+        "y": 90,
         "z": 0
       },
       "zone": "interior",
@@ -954,13 +954,13 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 4.0,
+        "x": 6.0,
         "y": 8.5,
-        "z": 4.0
+        "z": 2.0
       },
       "rotation": {
         "x": 0,
-        "y": 90,
+        "y": 0,
         "z": 0
       },
       "zone": "interior",

@@ -226,7 +226,7 @@ export default function RoomZones({ rooms, footprint, visible, loftHeight, conne
             />
           </mesh>
 
-          {/* Fixtures — flat colored shapes on the floor (no labels — room labels are enough) */}
+          {/* Fixtures — flat colored boxes on the floor with labels */}
           {zone.fixtures?.map((fix: RoomFixture, fi: number) => {
             const fColor = FIXTURE_COLORS[fix.type] || '#888';
             const fw = (fix.w || 1) * GRID;
@@ -236,7 +236,9 @@ export default function RoomZones({ rooms, footprint, visible, loftHeight, conne
             if (fix.x === undefined && fix.x !== 0) return null;
             if (fix.type === 'door_swing' || fix.type === 'pocket_door' || fix.type === 'bifold_door') return null;
             const isWindow = fix.type.includes('window') || fix.type.includes('glass');
+            // Thin flat — Den style is outlines not blocks
             const boxH = isWindow ? 0.1 : 0.2;
+            const label = fix.type.replace(/_/g, ' ').toUpperCase();
             return (
               <group key={fi}>
                 <mesh position={[fx, boxH / 2 + 0.5, fz]}>
@@ -248,6 +250,23 @@ export default function RoomZones({ rooms, footprint, visible, loftHeight, conne
                     roughness={0.6}
                   />
                 </mesh>
+                {/* Label on top of fixture */}
+                <Html
+                  position={[fx, boxH + 1.0, fz]}
+                  center
+                  distanceFactor={50}
+                  style={{ pointerEvents: 'none', userSelect: 'none' }}
+                >
+                  <div style={{
+                    color: '#6a6a6a',
+                    fontSize: '6px',
+                    fontFamily: 'monospace',
+                    whiteSpace: 'nowrap',
+                    letterSpacing: '0.3px',
+                  }}>
+                    {label}
+                  </div>
+                </Html>
               </group>
             );
           })}

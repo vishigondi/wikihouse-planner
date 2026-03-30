@@ -1,10 +1,10 @@
 {
   "id": "modern-loft-barnhouse",
   "model": "Modern Loft Barnhouse",
-  "sqft": 1008,
+  "sqft": 640,
   "footprint": {
-    "width": 28,
-    "depth": 44
+    "width": 20,
+    "depth": 36
   },
   "height": 18,
   "bedBath": "2/1",
@@ -14,342 +14,6 @@
     {
       "componentId": "foundation",
       "position": {
-        "x": -12.0,
-        "y": 0.25,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -12.0,
-        "y": 0.83,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -12.0,
-        "y": 0.25,
-        "z": -16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -12.0,
-        "y": 0.83,
-        "z": -16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -12.0,
-        "y": 0.25,
-        "z": -12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -12.0,
-        "y": 0.83,
-        "z": -12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -12.0,
-        "y": 0.25,
-        "z": -8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -12.0,
-        "y": 0.83,
-        "z": -8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -12.0,
-        "y": 0.25,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -12.0,
-        "y": 0.83,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -12.0,
-        "y": 0.25,
-        "z": 0.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -12.0,
-        "y": 0.83,
-        "z": 0.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -12.0,
-        "y": 0.25,
-        "z": 4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -12.0,
-        "y": 0.83,
-        "z": 4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -12.0,
-        "y": 0.25,
-        "z": 8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-deck",
-      "position": {
-        "x": -12.0,
-        "y": 0.83,
-        "z": 8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -12.0,
-        "y": 0.25,
-        "z": 12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-deck",
-      "position": {
-        "x": -12.0,
-        "y": 0.83,
-        "z": 12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -12.0,
-        "y": 0.25,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -12.0,
-        "y": 0.83,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -12.0,
-        "y": 0.25,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -12.0,
-        "y": 0.83,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -8.0,
-        "y": 0.25,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -8.0,
-        "y": 0.83,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
         "x": -8.0,
         "y": 0.25,
         "z": -16.0
@@ -558,7 +222,7 @@
       "zone": ""
     },
     {
-      "componentId": "floor-deck",
+      "componentId": "floor-std",
       "position": {
         "x": -8.0,
         "y": 0.83,
@@ -591,62 +255,6 @@
         "x": -8.0,
         "y": 0.83,
         "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -8.0,
-        "y": 0.25,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -8.0,
-        "y": 0.83,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -4.0,
-        "y": 0.25,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -4.0,
-        "y": 0.83,
-        "z": -20.0
       },
       "rotation": {
         "x": 0,
@@ -866,7 +474,7 @@
       "zone": ""
     },
     {
-      "componentId": "floor-deck",
+      "componentId": "floor-std",
       "position": {
         "x": -4.0,
         "y": 0.83,
@@ -899,62 +507,6 @@
         "x": -4.0,
         "y": 0.83,
         "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": -4.0,
-        "y": 0.25,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": -4.0,
-        "y": 0.83,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 0.0,
-        "y": 0.25,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 0.0,
-        "y": 0.83,
-        "z": -20.0
       },
       "rotation": {
         "x": 0,
@@ -1174,39 +726,11 @@
       "zone": ""
     },
     {
-      "componentId": "floor-deck",
-      "position": {
-        "x": 0.0,
-        "y": 0.83,
-        "z": 12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 0.0,
-        "y": 0.25,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
       "componentId": "floor-std",
       "position": {
         "x": 0.0,
         "y": 0.83,
-        "z": 16.0
+        "z": 12.0
       },
       "rotation": {
         "x": 0,
@@ -1220,7 +744,7 @@
       "position": {
         "x": 0.0,
         "y": 0.25,
-        "z": 20.0
+        "z": 16.0
       },
       "rotation": {
         "x": 0,
@@ -1234,35 +758,7 @@
       "position": {
         "x": 0.0,
         "y": 0.83,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 4.0,
-        "y": 0.25,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 4.0,
-        "y": 0.83,
-        "z": -20.0
+        "z": 16.0
       },
       "rotation": {
         "x": 0,
@@ -1482,7 +978,7 @@
       "zone": ""
     },
     {
-      "componentId": "floor-deck",
+      "componentId": "floor-std",
       "position": {
         "x": 4.0,
         "y": 0.83,
@@ -1515,62 +1011,6 @@
         "x": 4.0,
         "y": 0.83,
         "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 4.0,
-        "y": 0.25,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 4.0,
-        "y": 0.83,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 8.0,
-        "y": 0.25,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 8.0,
-        "y": 0.83,
-        "z": -20.0
       },
       "rotation": {
         "x": 0,
@@ -1790,7 +1230,7 @@
       "zone": ""
     },
     {
-      "componentId": "floor-deck",
+      "componentId": "floor-std",
       "position": {
         "x": 8.0,
         "y": 0.83,
@@ -1830,798 +1270,13 @@
         "z": 0
       },
       "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 8.0,
-        "y": 0.25,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 8.0,
-        "y": 0.83,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 12.0,
-        "y": 0.25,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 12.0,
-        "y": 0.83,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 12.0,
-        "y": 0.25,
-        "z": -16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 12.0,
-        "y": 0.83,
-        "z": -16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 12.0,
-        "y": 0.25,
-        "z": -12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 12.0,
-        "y": 0.83,
-        "z": -12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 12.0,
-        "y": 0.25,
-        "z": -8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 12.0,
-        "y": 0.83,
-        "z": -8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 12.0,
-        "y": 0.25,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 12.0,
-        "y": 0.83,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 12.0,
-        "y": 0.25,
-        "z": 0.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 12.0,
-        "y": 0.83,
-        "z": 0.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 12.0,
-        "y": 0.25,
-        "z": 4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 12.0,
-        "y": 0.83,
-        "z": 4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 12.0,
-        "y": 0.25,
-        "z": 8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-deck",
-      "position": {
-        "x": 12.0,
-        "y": 0.83,
-        "z": 8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 12.0,
-        "y": 0.25,
-        "z": 12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-deck",
-      "position": {
-        "x": 12.0,
-        "y": 0.83,
-        "z": 12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 12.0,
-        "y": 0.25,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 12.0,
-        "y": 0.83,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "foundation",
-      "position": {
-        "x": 12.0,
-        "y": 0.25,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": ""
-    },
-    {
-      "componentId": "floor-std",
-      "position": {
-        "x": 12.0,
-        "y": 0.83,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "floor"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -12.0,
-        "y": 2,
-        "z": -22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -14.0,
-        "y": 5.5,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -14.0,
-        "y": 5.5,
-        "z": -16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -14.0,
-        "y": 2,
-        "z": -12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -14.0,
-        "y": 5.5,
-        "z": -8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "door-sliding",
-      "position": {
-        "x": -14.0,
-        "y": 4.5,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "door-sliding",
-      "position": {
-        "x": -14.0,
-        "y": 4.5,
-        "z": 0.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "door-sliding",
-      "position": {
-        "x": -12.0,
-        "y": 4.5,
-        "z": 6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -14.0,
-        "y": 2,
-        "z": 4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -14.0,
-        "y": 5.5,
-        "z": 8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -12.0,
-        "y": 5.5,
-        "z": 14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -14.0,
-        "y": 5.5,
-        "z": 12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": -12.0,
-        "y": 3.5,
-        "z": 18.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -14.0,
-        "y": 5.5,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": -10.0,
-        "y": 3.5,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -12.0,
-        "y": 5.5,
-        "z": 22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -14.0,
-        "y": 5.5,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -8.0,
-        "y": 5.5,
-        "z": -22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -8.0,
-        "y": 5.5,
-        "z": 6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -8.0,
-        "y": 5.5,
-        "z": 14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -8.0,
-        "y": 5.5,
-        "z": 22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": -6.0,
-        "y": 3.5,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -4.0,
-        "y": 5.5,
-        "z": -22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": -2.0,
-        "y": 3.5,
-        "z": -12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": -2.0,
-        "y": 3.5,
-        "z": -8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -4.0,
-        "y": 5.5,
-        "z": 6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -4.0,
-        "y": 5.5,
-        "z": 14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": -4.0,
-        "y": 3.5,
-        "z": 18.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": -2.0,
-        "y": 3.5,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -4.0,
-        "y": 5.5,
-        "z": 22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": -2.0,
-        "y": 3.5,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
     },
     {
       "componentId": "door-ext",
       "position": {
-        "x": 0.0,
+        "x": -8.0,
         "y": 4.5,
-        "z": -22.0
+        "z": -18.0
       },
       "rotation": {
         "x": 0,
@@ -2631,25 +1286,100 @@
       "zone": "openings"
     },
     {
-      "componentId": "door-int",
+      "componentId": "wall-ext",
       "position": {
-        "x": 0.0,
-        "y": 3.5,
-        "z": -14.0
+        "x": -10.0,
+        "y": 5.5,
+        "z": -16.0
       },
       "rotation": {
         "x": 0,
-        "y": 0,
+        "y": 90,
         "z": 0
       },
-      "zone": "openings"
+      "zone": "walls"
     },
     {
-      "componentId": "door-int",
+      "componentId": "wall-ext",
       "position": {
-        "x": 2.0,
-        "y": 3.5,
+        "x": -10.0,
+        "y": 5.5,
         "z": -12.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": -10.0,
+        "y": 2,
+        "z": -8.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "walls",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": -10.0,
+        "y": 5.5,
+        "z": -4.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "door-sliding",
+      "position": {
+        "x": -10.0,
+        "y": 4.5,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "openings"
+    },
+    {
+      "componentId": "door-sliding",
+      "position": {
+        "x": -8.0,
+        "y": 4.5,
+        "z": 6.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "openings"
+    },
+    {
+      "componentId": "door-sliding",
+      "position": {
+        "x": -10.0,
+        "y": 4.5,
+        "z": 4.0
       },
       "rotation": {
         "x": 0,
@@ -2661,9 +1391,9 @@
     {
       "componentId": "door-int",
       "position": {
-        "x": 0.0,
+        "x": -8.0,
         "y": 3.5,
-        "z": -6.0
+        "z": 10.0
       },
       "rotation": {
         "x": 0,
@@ -2671,6 +1401,193 @@
         "z": 0
       },
       "zone": "openings"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": -10.0,
+        "y": 5.5,
+        "z": 8.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": -10.0,
+        "y": 5.5,
+        "z": 12.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -6.0,
+        "y": 5.5,
+        "z": 12.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": -8.0,
+        "y": 5.5,
+        "z": 18.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": -10.0,
+        "y": 5.5,
+        "z": 16.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -6.0,
+        "y": 5.5,
+        "z": 16.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": -4.0,
+        "y": 2,
+        "z": -18.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "walls",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -4.0,
+        "y": 5.5,
+        "z": 6.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior"
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -4.0,
+        "y": 5.5,
+        "z": 10.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": -4.0,
+        "y": 5.5,
+        "z": 18.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": 0.0,
+        "y": 5.5,
+        "z": -18.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "door-int",
+      "position": {
+        "x": 2.0,
+        "y": 3.5,
+        "z": -16.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "openings"
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 2.0,
+        "y": 5.5,
+        "z": -12.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior"
     },
     {
       "componentId": "door-int",
@@ -2687,10 +1604,10 @@
       "zone": "openings"
     },
     {
-      "componentId": "door-int",
+      "componentId": "wall-int",
       "position": {
         "x": 2.0,
-        "y": 3.5,
+        "y": 5.5,
         "z": -4.0
       },
       "rotation": {
@@ -2698,13 +1615,13 @@
         "y": 90,
         "z": 0
       },
-      "zone": "openings"
+      "zone": "interior"
     },
     {
-      "componentId": "wall-int",
+      "componentId": "door-int",
       "position": {
         "x": 2.0,
-        "y": 5.5,
+        "y": 3.5,
         "z": 0.0
       },
       "rotation": {
@@ -2712,7 +1629,7 @@
         "y": 90,
         "z": 0
       },
-      "zone": "interior"
+      "zone": "openings"
     },
     {
       "componentId": "wall-int",
@@ -2743,18 +1660,46 @@
       "zone": "interior"
     },
     {
-      "componentId": "door-int",
+      "componentId": "wall-int",
       "position": {
         "x": 0.0,
-        "y": 3.5,
-        "z": 14.0
+        "y": 5.5,
+        "z": 10.0
       },
       "rotation": {
         "x": 0,
         "y": 0,
         "z": 0
       },
-      "zone": "openings"
+      "zone": "interior"
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 2.0,
+        "y": 5.5,
+        "z": 12.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": 0.0,
+        "y": 5.5,
+        "z": 18.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "walls"
     },
     {
       "componentId": "wall-int",
@@ -2773,293 +1718,13 @@
     {
       "componentId": "wall-ext",
       "position": {
-        "x": 0.0,
-        "y": 5.5,
-        "z": 22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 2.0,
-        "y": 5.5,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
         "x": 4.0,
-        "y": 5.5,
-        "z": -22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": 6.0,
-        "y": 3.5,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": 4.0,
-        "y": 3.5,
-        "z": -14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 6.0,
-        "y": 5.5,
-        "z": -16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": 4.0,
-        "y": 3.5,
-        "z": -6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 4.0,
-        "y": 5.5,
-        "z": 6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 4.0,
-        "y": 5.5,
-        "z": 14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": 4.0,
-        "y": 5.5,
-        "z": 22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": 8.0,
-        "y": 5.5,
-        "z": -22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": 8.0,
-        "y": 3.5,
-        "z": -14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 8.0,
-        "y": 5.5,
-        "z": -6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 8.0,
-        "y": 5.5,
-        "z": 6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 8.0,
-        "y": 5.5,
-        "z": 14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": 8.0,
-        "y": 5.5,
-        "z": 22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": 12.0,
-        "y": 5.5,
-        "z": -22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": 14.0,
-        "y": 5.5,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 12.0,
-        "y": 5.5,
-        "z": -14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": 14.0,
-        "y": 5.5,
-        "z": -16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": 14.0,
         "y": 2,
-        "z": -12.0
+        "z": -18.0
       },
       "rotation": {
         "x": 0,
-        "y": 90,
+        "y": 0,
         "z": 0
       },
       "zone": "walls",
@@ -3070,11 +1735,123 @@
       }
     },
     {
+      "componentId": "door-int",
+      "position": {
+        "x": 4.0,
+        "y": 3.5,
+        "z": -10.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "openings"
+    },
+    {
+      "componentId": "door-int",
+      "position": {
+        "x": 4.0,
+        "y": 3.5,
+        "z": -2.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "openings"
+    },
+    {
       "componentId": "wall-int",
       "position": {
-        "x": 12.0,
+        "x": 4.0,
         "y": 5.5,
-        "z": -6.0
+        "z": 6.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior"
+    },
+    {
+      "componentId": "door-int",
+      "position": {
+        "x": 4.0,
+        "y": 3.5,
+        "z": 10.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "openings"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": 4.0,
+        "y": 5.5,
+        "z": 18.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "door-int",
+      "position": {
+        "x": 6.0,
+        "y": 3.5,
+        "z": 16.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "openings"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": 8.0,
+        "y": 5.5,
+        "z": -18.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": 10.0,
+        "y": 5.5,
+        "z": -16.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 8.0,
+        "y": 5.5,
+        "z": -10.0
       },
       "rotation": {
         "x": 0,
@@ -3086,7 +1863,21 @@
     {
       "componentId": "wall-ext",
       "position": {
-        "x": 14.0,
+        "x": 10.0,
+        "y": 5.5,
+        "z": -12.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": 10.0,
         "y": 5.5,
         "z": -8.0
       },
@@ -3098,11 +1889,39 @@
       "zone": "walls"
     },
     {
+      "componentId": "wall-int",
+      "position": {
+        "x": 8.0,
+        "y": 5.5,
+        "z": -2.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior"
+    },
+    {
       "componentId": "wall-ext",
       "position": {
-        "x": 14.0,
-        "y": 2,
+        "x": 10.0,
+        "y": 5.5,
         "z": -4.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": 10.0,
+        "y": 2,
+        "z": 0.0
       },
       "rotation": {
         "x": 0,
@@ -3117,23 +1936,9 @@
       }
     },
     {
-      "componentId": "wall-ext",
-      "position": {
-        "x": 14.0,
-        "y": 5.5,
-        "z": 0.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
       "componentId": "wall-int",
       "position": {
-        "x": 12.0,
+        "x": 8.0,
         "y": 5.5,
         "z": 6.0
       },
@@ -3147,7 +1952,7 @@
     {
       "componentId": "wall-ext",
       "position": {
-        "x": 14.0,
+        "x": 10.0,
         "y": 5.5,
         "z": 4.0
       },
@@ -3159,9 +1964,23 @@
       "zone": "walls"
     },
     {
+      "componentId": "door-int",
+      "position": {
+        "x": 8.0,
+        "y": 3.5,
+        "z": 10.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "openings"
+    },
+    {
       "componentId": "wall-ext",
       "position": {
-        "x": 14.0,
+        "x": 10.0,
         "y": 5.5,
         "z": 8.0
       },
@@ -3173,23 +1992,9 @@
       "zone": "walls"
     },
     {
-      "componentId": "wall-int",
-      "position": {
-        "x": 12.0,
-        "y": 5.5,
-        "z": 14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
       "componentId": "wall-ext",
       "position": {
-        "x": 14.0,
+        "x": 10.0,
         "y": 5.5,
         "z": 12.0
       },
@@ -3203,7 +2008,21 @@
     {
       "componentId": "wall-ext",
       "position": {
-        "x": 14.0,
+        "x": 8.0,
+        "y": 5.5,
+        "z": 18.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "walls"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": 10.0,
         "y": 5.5,
         "z": 16.0
       },
@@ -3217,70 +2036,9 @@
     {
       "componentId": "wall-ext",
       "position": {
-        "x": 12.0,
-        "y": 5.5,
-        "z": 22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": 14.0,
-        "y": 5.5,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls"
-    },
-    {
-      "componentId": "window-std",
-      "position": {
-        "x": -12.0,
-        "y": 5.5,
-        "z": -22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -12.0,
-        "y": 9,
-        "z": -22.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "walls",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": 0.0,
+        "x": -8.0,
         "y": 9.5,
-        "z": -22.0
+        "z": -18.0
       },
       "rotation": {
         "x": 0,
@@ -3297,13 +2055,13 @@
     {
       "componentId": "window-std",
       "position": {
-        "x": -14.0,
+        "x": -4.0,
         "y": 5.5,
-        "z": -12.0
+        "z": -18.0
       },
       "rotation": {
         "x": 0,
-        "y": 90,
+        "y": 0,
         "z": 0
       },
       "zone": "openings"
@@ -3311,13 +2069,13 @@
     {
       "componentId": "wall-ext",
       "position": {
-        "x": -14.0,
+        "x": -4.0,
         "y": 9,
-        "z": -12.0
+        "z": -18.0
       },
       "rotation": {
         "x": 0,
-        "y": 90,
+        "y": 0,
         "z": 0
       },
       "zone": "walls",
@@ -3330,9 +2088,42 @@
     {
       "componentId": "window-std",
       "position": {
-        "x": 14.0,
+        "x": 4.0,
         "y": 5.5,
-        "z": -12.0
+        "z": -18.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "openings"
+    },
+    {
+      "componentId": "wall-ext",
+      "position": {
+        "x": 4.0,
+        "y": 9,
+        "z": -18.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "walls",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "window-std",
+      "position": {
+        "x": -10.0,
+        "y": 5.5,
+        "z": -8.0
       },
       "rotation": {
         "x": 0,
@@ -3344,9 +2135,9 @@
     {
       "componentId": "wall-ext",
       "position": {
-        "x": 14.0,
+        "x": -10.0,
         "y": 9,
-        "z": -12.0
+        "z": -8.0
       },
       "rotation": {
         "x": 0,
@@ -3363,26 +2154,7 @@
     {
       "componentId": "wall-ext",
       "position": {
-        "x": -14.0,
-        "y": 9.5,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls",
-      "scale": {
-        "x": 1,
-        "y": 0.2,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": -14.0,
+        "x": -10.0,
         "y": 9.5,
         "z": 0.0
       },
@@ -3399,236 +2171,51 @@
       }
     },
     {
-      "componentId": "window-std",
-      "position": {
-        "x": -14.0,
-        "y": 5.5,
-        "z": 4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
       "componentId": "wall-ext",
-      "position": {
-        "x": -14.0,
-        "y": 9,
-        "z": 4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "window-std",
-      "position": {
-        "x": 14.0,
-        "y": 5.5,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "wall-ext",
-      "position": {
-        "x": 14.0,
-        "y": 9,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "walls",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 0.0,
-        "y": 8.5,
-        "z": -6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -12.0,
-        "y": 8.5,
-        "z": 18.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 4.0,
-        "y": 8.5,
-        "z": -14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -6.0,
-        "y": 8.5,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
       "position": {
         "x": -10.0,
-        "y": 8.5,
-        "z": 16.0
+        "y": 9.5,
+        "z": 4.0
       },
       "rotation": {
         "x": 0,
         "y": 90,
         "z": 0
       },
-      "zone": "interior",
+      "zone": "walls",
       "scale": {
         "x": 1,
-        "y": 0.3,
+        "y": 0.2,
         "z": 1
       }
     },
     {
-      "componentId": "wall-int",
+      "componentId": "window-std",
       "position": {
-        "x": -4.0,
-        "y": 8.5,
-        "z": 18.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 2.0,
-        "y": 8.5,
-        "z": -12.0
+        "x": 10.0,
+        "y": 5.5,
+        "z": 0.0
       },
       "rotation": {
         "x": 0,
         "y": 90,
         "z": 0
       },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
+      "zone": "openings"
     },
     {
-      "componentId": "wall-int",
+      "componentId": "wall-ext",
       "position": {
-        "x": 6.0,
-        "y": 8.5,
-        "z": -20.0
+        "x": 10.0,
+        "y": 9,
+        "z": 0.0
       },
       "rotation": {
         "x": 0,
         "y": 90,
         "z": 0
       },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 0.0,
-        "y": 8.5,
-        "z": -14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
+      "zone": "walls",
       "scale": {
         "x": 1,
         "y": 0.3,
@@ -3640,7 +2227,7 @@
       "position": {
         "x": 4.0,
         "y": 8.5,
-        "z": -6.0
+        "z": -10.0
       },
       "rotation": {
         "x": 0,
@@ -3657,83 +2244,7 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 2.0,
-        "y": 8.5,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 8.0,
-        "y": 8.5,
-        "z": -14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 2.0,
-        "y": 8.5,
-        "z": -8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -2.0,
-        "y": 8.5,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -12.0,
+        "x": -8.0,
         "y": 9.5,
         "z": 6.0
       },
@@ -3752,28 +2263,9 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": -2.0,
+        "x": 8.0,
         "y": 8.5,
-        "z": -12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 0.0,
-        "y": 8.5,
-        "z": 14.0
+        "z": 10.0
       },
       "rotation": {
         "x": 0,
@@ -3790,7 +2282,83 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": -2.0,
+        "x": 2.0,
+        "y": 8.5,
+        "z": -8.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 2.0,
+        "y": 8.5,
+        "z": -16.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -8.0,
+        "y": 8.5,
+        "z": 10.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 4.0,
+        "y": 8.5,
+        "z": 10.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 6.0,
         "y": 8.5,
         "z": 16.0
       },
@@ -3809,9 +2377,9 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": -2.0,
+        "x": 2.0,
         "y": 8.5,
-        "z": -8.0
+        "z": 0.0
       },
       "rotation": {
         "x": 0,
@@ -3826,39 +2394,30 @@
       }
     },
     {
-      "componentId": "roof-steep",
+      "componentId": "wall-int",
       "position": {
-        "x": -12.0,
-        "y": 21.5,
-        "z": -11.0
+        "x": 4.0,
+        "y": 8.5,
+        "z": -2.0
       },
       "rotation": {
-        "x": -45,
+        "x": 0,
         "y": 0,
         "z": 0
       },
-      "zone": "roof"
-    },
-    {
-      "componentId": "roof-steep",
-      "position": {
-        "x": -12.0,
-        "y": 21.5,
-        "z": 11.0
-      },
-      "rotation": {
-        "x": 45,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "roof"
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
     },
     {
       "componentId": "roof-steep",
       "position": {
         "x": -8.0,
-        "y": 21.5,
-        "z": -11.0
+        "y": 19.5,
+        "z": -9.0
       },
       "rotation": {
         "x": -45,
@@ -3871,8 +2430,8 @@
       "componentId": "roof-steep",
       "position": {
         "x": -8.0,
-        "y": 21.5,
-        "z": 11.0
+        "y": 19.5,
+        "z": 9.0
       },
       "rotation": {
         "x": 45,
@@ -3885,8 +2444,8 @@
       "componentId": "roof-steep",
       "position": {
         "x": -4.0,
-        "y": 21.5,
-        "z": -11.0
+        "y": 19.5,
+        "z": -9.0
       },
       "rotation": {
         "x": -45,
@@ -3899,8 +2458,8 @@
       "componentId": "roof-steep",
       "position": {
         "x": -4.0,
-        "y": 21.5,
-        "z": 11.0
+        "y": 19.5,
+        "z": 9.0
       },
       "rotation": {
         "x": 45,
@@ -3913,8 +2472,8 @@
       "componentId": "roof-steep",
       "position": {
         "x": 0.0,
-        "y": 21.5,
-        "z": -11.0
+        "y": 19.5,
+        "z": -9.0
       },
       "rotation": {
         "x": -45,
@@ -3927,8 +2486,8 @@
       "componentId": "roof-steep",
       "position": {
         "x": 0.0,
-        "y": 21.5,
-        "z": 11.0
+        "y": 19.5,
+        "z": 9.0
       },
       "rotation": {
         "x": 45,
@@ -3941,8 +2500,8 @@
       "componentId": "roof-steep",
       "position": {
         "x": 4.0,
-        "y": 21.5,
-        "z": -11.0
+        "y": 19.5,
+        "z": -9.0
       },
       "rotation": {
         "x": -45,
@@ -3955,8 +2514,8 @@
       "componentId": "roof-steep",
       "position": {
         "x": 4.0,
-        "y": 21.5,
-        "z": 11.0
+        "y": 19.5,
+        "z": 9.0
       },
       "rotation": {
         "x": 45,
@@ -3969,8 +2528,8 @@
       "componentId": "roof-steep",
       "position": {
         "x": 8.0,
-        "y": 21.5,
-        "z": -11.0
+        "y": 19.5,
+        "z": -9.0
       },
       "rotation": {
         "x": -45,
@@ -3983,36 +2542,8 @@
       "componentId": "roof-steep",
       "position": {
         "x": 8.0,
-        "y": 21.5,
-        "z": 11.0
-      },
-      "rotation": {
-        "x": 45,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "roof"
-    },
-    {
-      "componentId": "roof-steep",
-      "position": {
-        "x": 12.0,
-        "y": 21.5,
-        "z": -11.0
-      },
-      "rotation": {
-        "x": -45,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "roof"
-    },
-    {
-      "componentId": "roof-steep",
-      "position": {
-        "x": 12.0,
-        "y": 21.5,
-        "z": 11.0
+        "y": 19.5,
+        "z": 9.0
       },
       "rotation": {
         "x": 45,
@@ -4036,69 +2567,20 @@
   ],
   "rooms": [
     {
-      "label": "Kitchen",
-      "type": "kitchen",
-      "gx": 0,
-      "gz": 0,
-      "gw": 3,
-      "gd": 2,
-      "area": 96,
-      "color": "#f59e0b",
-      "constraints": "NKBA: work triangle 13-26ft. 48in aisle",
-      "fixtures": [
-        {
-          "type": "counter",
-          "wall": "front",
-          "x": 0,
-          "z": 0,
-          "w": 3,
-          "d": 0.5,
-          "desc": "Counter 24in deep along front wall"
-        },
-        {
-          "type": "stove",
-          "wall": "front",
-          "x": 1.1875,
-          "z": 0,
-          "w": 0.625,
-          "d": 0.5625,
-          "desc": "30in range/stove"
-        },
-        {
-          "type": "sink",
-          "wall": "front",
-          "x": 0.6000000000000001,
-          "z": 0,
-          "w": 0.4575,
-          "d": 0.5,
-          "desc": "22in \u00d7 33in double bowl sink"
-        },
-        {
-          "type": "window",
-          "wall": "front",
-          "x": 0,
-          "z": 0,
-          "w": 3,
-          "d": 1,
-          "desc": "Kitchen windows above counter"
-        }
-      ]
-    },
-    {
       "label": "Entry",
       "type": "entry",
-      "gx": 3,
+      "gx": 0,
       "gz": 0,
-      "gw": 2,
+      "gw": 1,
       "gd": 2,
-      "area": 64,
+      "area": 32,
       "color": "#e879f9",
       "constraints": "Genkan: exterior door + shoe storage. Deliberate threshold",
       "fixtures": [
         {
           "type": "bench",
           "wall": "left",
-          "x": 3,
+          "x": 0,
           "z": 0,
           "w": 1,
           "d": 2,
@@ -4107,29 +2589,96 @@
       ]
     },
     {
-      "label": "Closet",
-      "type": "walk_in_closet",
-      "gx": 5,
+      "label": "Kitchen",
+      "type": "kitchen",
+      "gx": 1,
       "gz": 0,
       "gw": 2,
       "gd": 2,
       "area": 64,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
+      "color": "#f59e0b",
+      "constraints": "NKBA: work triangle 13-26ft. 48in aisle",
       "fixtures": [
         {
-          "type": "shelves",
-          "wall": "back",
-          "x": 5,
-          "z": 1.625,
+          "type": "counter",
+          "wall": "front",
+          "x": 1,
+          "z": 0,
           "w": 2,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
+          "d": 0.5,
+          "desc": "Counter 24in deep along front wall"
         },
         {
-          "type": "bifold_door",
+          "type": "stove",
+          "wall": "front",
+          "x": 1.6875,
+          "z": 0,
+          "w": 0.625,
+          "d": 0.5625,
+          "desc": "30in range/stove"
+        },
+        {
+          "type": "sink",
+          "wall": "front",
+          "x": 1.4,
+          "z": 0,
+          "w": 0.4575,
+          "d": 0.5,
+          "desc": "22in \u00d7 33in double bowl sink"
+        },
+        {
+          "type": "window",
+          "wall": "front",
+          "x": 1,
+          "z": 0,
+          "w": 2,
+          "d": 1,
+          "desc": "Kitchen windows above counter"
+        }
+      ]
+    },
+    {
+      "label": "Bath",
+      "type": "bathroom_full",
+      "gx": 3,
+      "gz": 0,
+      "gw": 2,
+      "gd": 2,
+      "area": 64,
+      "color": "#06b6d4",
+      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance",
+      "fixtures": [
+        {
+          "type": "tub",
+          "wall": "back",
+          "x": 3,
+          "z": 0.75,
+          "w": 0.625,
+          "d": 1.25,
+          "desc": "30\u00d760in alcove bathtub"
+        },
+        {
+          "type": "vanity",
+          "wall": "front",
+          "x": 3,
+          "z": 0,
+          "w": 0.5,
+          "d": 0.4375,
+          "desc": "24\u00d721in vanity with sink"
+        },
+        {
+          "type": "toilet",
+          "wall": "left",
+          "x": 3,
+          "z": 0.5625,
+          "w": 0.4375,
+          "d": 0.5825,
+          "desc": "21\u00d728in toilet"
+        },
+        {
+          "type": "pocket_door",
           "wall": "entry",
-          "desc": "Closet bi-fold doors"
+          "desc": "Bathroom pocket door (space-saving)"
         }
       ]
     },
@@ -4165,40 +2714,13 @@
       ]
     },
     {
-      "label": "Closet 2",
+      "label": "Closet",
       "type": "walk_in_closet",
       "gx": 3,
       "gz": 2,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 3,
-          "z": 2.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 3",
-      "type": "walk_in_closet",
-      "gx": 3,
-      "gz": 3,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
+      "gw": 2,
+      "gd": 2,
+      "area": 64,
       "color": "#78716c",
       "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
       "fixtures": [
@@ -4207,7 +2729,7 @@
           "wall": "back",
           "x": 3,
           "z": 3.625,
-          "w": 1,
+          "w": 2,
           "d": 0.375,
           "desc": "Shelving along back wall"
         },
@@ -4219,79 +2741,16 @@
       ]
     },
     {
-      "label": "Bath",
-      "type": "bathroom_full",
-      "gx": 4,
-      "gz": 2,
-      "gw": 3,
-      "gd": 2,
-      "area": 96,
-      "color": "#06b6d4",
-      "constraints": "NKBA: tub/shower + toilet + vanity. 30in clearance",
-      "fixtures": [
-        {
-          "type": "tub",
-          "wall": "back",
-          "x": 4,
-          "z": 2.75,
-          "w": 0.625,
-          "d": 1.25,
-          "desc": "30\u00d760in alcove bathtub"
-        },
-        {
-          "type": "vanity",
-          "wall": "front",
-          "x": 4,
-          "z": 2,
-          "w": 0.5,
-          "d": 0.4375,
-          "desc": "24\u00d721in vanity with sink"
-        },
-        {
-          "type": "toilet",
-          "wall": "left",
-          "x": 4,
-          "z": 2.5625,
-          "w": 0.4375,
-          "d": 0.5825,
-          "desc": "21\u00d728in toilet"
-        },
-        {
-          "type": "pocket_door",
-          "wall": "entry",
-          "desc": "Bathroom pocket door (space-saving)"
-        }
-      ]
-    },
-    {
       "label": "Living Room",
       "type": "great_room",
       "gx": 0,
       "gz": 4,
-      "gw": 4,
-      "gd": 3,
-      "area": 192,
+      "gw": 3,
+      "gd": 2,
+      "area": 96,
       "color": "#4ade80",
       "constraints": "Combined living/dining. Open plan LDK heart",
       "fixtures": [
-        {
-          "type": "sofa",
-          "wall": "none",
-          "x": 1.125,
-          "z": 5.75,
-          "w": 1.75,
-          "d": 0.75,
-          "desc": "84in 3-seat sofa"
-        },
-        {
-          "type": "coffee_table",
-          "wall": "none",
-          "x": 1.5,
-          "z": 4.875,
-          "w": 1.0,
-          "d": 0.5,
-          "desc": "48\u00d724in coffee table"
-        },
         {
           "type": "window",
           "wall": "left",
@@ -4306,45 +2765,27 @@
     {
       "label": "Bedroom",
       "type": "bedroom",
-      "gx": 4,
+      "gx": 3,
       "gz": 4,
-      "gw": 3,
-      "gd": 3,
-      "area": 144,
+      "gw": 2,
+      "gd": 2,
+      "area": 64,
       "color": "#6366f1",
       "constraints": "IRC R304: \u226570sf (64 grid-relaxed). Queen 60\u00d780 + 24in clearance",
       "fixtures": [
         {
           "type": "bed",
           "wall": "back",
-          "x": 4.875,
-          "z": 5.3325,
+          "x": 3.375,
+          "z": 4.3325,
           "w": 1.25,
           "d": 1.6675,
           "desc": "Queen bed against back wall"
         },
         {
-          "type": "nightstand",
-          "wall": "back",
-          "x": 4.375,
-          "z": 5.3325,
-          "w": 0.5,
-          "d": 0.3325,
-          "desc": "Nightstand"
-        },
-        {
-          "type": "nightstand",
-          "wall": "back",
-          "x": 6.125,
-          "z": 5.3325,
-          "w": 0.5,
-          "d": 0.3325,
-          "desc": "Nightstand"
-        },
-        {
           "type": "window",
           "wall": "right",
-          "x": 6,
+          "x": 4,
           "z": 4,
           "w": 1,
           "d": 2,
@@ -4361,18 +2802,18 @@
       "label": "Deck",
       "type": "deck",
       "gx": 0,
-      "gz": 7,
-      "gw": 7,
-      "gd": 2,
-      "area": 224,
+      "gz": 6,
+      "gw": 5,
+      "gd": 1,
+      "area": 80,
       "color": "#a16207",
       "constraints": "Engawa/deck: covered outdoor transition. Nature connection"
     },
     {
       "label": "Stairs",
       "type": "stairs",
-      "gx": 3,
-      "gz": 9,
+      "gx": 0,
+      "gz": 7,
       "gw": 1,
       "gd": 2,
       "area": 32,
@@ -4382,8 +2823,8 @@
         {
           "type": "stairs",
           "wall": "none",
-          "x": 3.125,
-          "z": 9.0,
+          "x": 0.125,
+          "z": 7.0,
           "w": 0.75,
           "d": 2.0,
           "desc": "36in wide staircase"
@@ -4393,11 +2834,11 @@
     {
       "label": "Loft Bedroom",
       "type": "loft_bed",
-      "gx": 4,
-      "gz": 9,
-      "gw": 3,
+      "gx": 1,
+      "gz": 7,
+      "gw": 2,
       "gd": 2,
-      "area": 96,
+      "area": 64,
       "color": "#a5b4fc",
       "constraints": "Loft sleeping area. Code-compliant stair (IRC R311.7)",
       "floor": 1,
@@ -4405,8 +2846,8 @@
         {
           "type": "window",
           "wall": "back",
-          "x": 4,
-          "z": 10,
+          "x": 1,
+          "z": 8,
           "w": 2,
           "d": 1,
           "desc": "Window on back wall"
@@ -4416,8 +2857,8 @@
     {
       "label": "Closet 1",
       "type": "walk_in_closet",
-      "gx": 0,
-      "gz": 9,
+      "gx": 3,
+      "gz": 7,
       "gw": 1,
       "gd": 1,
       "area": 16,
@@ -4427,8 +2868,8 @@
         {
           "type": "shelves",
           "wall": "back",
-          "x": 0,
-          "z": 9.625,
+          "x": 3,
+          "z": 7.625,
           "w": 1,
           "d": 0.375,
           "desc": "Shelving along back wall"
@@ -4441,10 +2882,10 @@
       ]
     },
     {
-      "label": "Closet 2 (2)",
+      "label": "Closet 2",
       "type": "walk_in_closet",
-      "gx": 0,
-      "gz": 10,
+      "gx": 3,
+      "gz": 8,
       "gw": 1,
       "gd": 1,
       "area": 16,
@@ -4454,8 +2895,8 @@
         {
           "type": "shelves",
           "wall": "back",
-          "x": 0,
-          "z": 10.625,
+          "x": 3,
+          "z": 8.625,
           "w": 1,
           "d": 0.375,
           "desc": "Shelving along back wall"
@@ -4468,10 +2909,10 @@
       ]
     },
     {
-      "label": "Closet 3 (2)",
+      "label": "Closet 3",
       "type": "walk_in_closet",
-      "gx": 1,
-      "gz": 9,
+      "gx": 4,
+      "gz": 7,
       "gw": 1,
       "gd": 1,
       "area": 16,
@@ -4481,8 +2922,8 @@
         {
           "type": "shelves",
           "wall": "back",
-          "x": 1,
-          "z": 9.625,
+          "x": 4,
+          "z": 7.625,
           "w": 1,
           "d": 0.375,
           "desc": "Shelving along back wall"
@@ -4497,8 +2938,8 @@
     {
       "label": "Closet 4",
       "type": "walk_in_closet",
-      "gx": 1,
-      "gz": 10,
+      "gx": 4,
+      "gz": 8,
       "gw": 1,
       "gd": 1,
       "area": 16,
@@ -4508,62 +2949,8 @@
         {
           "type": "shelves",
           "wall": "back",
-          "x": 1,
-          "z": 10.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 5",
-      "type": "walk_in_closet",
-      "gx": 2,
-      "gz": 9,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 2,
-          "z": 9.625,
-          "w": 1,
-          "d": 0.375,
-          "desc": "Shelving along back wall"
-        },
-        {
-          "type": "bifold_door",
-          "wall": "entry",
-          "desc": "Closet bi-fold doors"
-        }
-      ]
-    },
-    {
-      "label": "Closet 6",
-      "type": "walk_in_closet",
-      "gx": 2,
-      "gz": 10,
-      "gw": 1,
-      "gd": 1,
-      "area": 16,
-      "color": "#78716c",
-      "constraints": "Walk-in: 24in rod depth + 36in clearance. Oshiire: hide everything",
-      "fixtures": [
-        {
-          "type": "shelves",
-          "wall": "back",
-          "x": 2,
-          "z": 10.625,
+          "x": 4,
+          "z": 8.625,
           "w": 1,
           "d": 0.375,
           "desc": "Shelving along back wall"
@@ -4579,27 +2966,17 @@
   "connections": [
     {
       "from": "Bath",
-      "to": "Bedroom",
-      "type": "door"
-    },
-    {
-      "from": "Bath",
       "to": "Closet",
       "type": "door"
     },
     {
       "from": "Bath",
-      "to": "Closet 2",
+      "to": "Kitchen",
       "type": "door"
     },
     {
-      "from": "Bath",
-      "to": "Closet 3",
-      "type": "door"
-    },
-    {
-      "from": "Bath",
-      "to": "Entry",
+      "from": "Bedroom",
+      "to": "Closet",
       "type": "door"
     },
     {
@@ -4614,92 +2991,47 @@
     },
     {
       "from": "Closet",
-      "to": "Entry",
+      "to": "Dining",
       "type": "door"
     },
     {
       "from": "Closet 1",
-      "to": "Closet 2 (2)",
-      "type": "door"
+      "to": "Closet 2",
+      "type": "open"
     },
     {
       "from": "Closet 1",
-      "to": "Closet 3 (2)",
-      "type": "door"
-    },
-    {
-      "from": "Closet 1",
-      "to": "Deck",
-      "type": "wall"
-    },
-    {
-      "from": "Closet 2",
       "to": "Closet 3",
       "type": "open"
     },
     {
+      "from": "Closet 1",
+      "to": "Deck",
+      "type": "door"
+    },
+    {
+      "from": "Closet 1",
+      "to": "Loft Bedroom",
+      "type": "wall"
+    },
+    {
       "from": "Closet 2",
-      "to": "Dining",
+      "to": "Closet 4",
       "type": "door"
     },
     {
       "from": "Closet 2",
-      "to": "Entry",
-      "type": "door"
+      "to": "Loft Bedroom",
+      "type": "wall"
     },
     {
-      "from": "Closet 2 (2)",
+      "from": "Closet 3",
       "to": "Closet 4",
       "type": "open"
     },
     {
       "from": "Closet 3",
-      "to": "Dining",
-      "type": "door"
-    },
-    {
-      "from": "Closet 3",
-      "to": "Living Room",
-      "type": "door"
-    },
-    {
-      "from": "Closet 3 (2)",
-      "to": "Closet 4",
-      "type": "open"
-    },
-    {
-      "from": "Closet 3 (2)",
-      "to": "Closet 5",
-      "type": "open"
-    },
-    {
-      "from": "Closet 3 (2)",
       "to": "Deck",
-      "type": "wall"
-    },
-    {
-      "from": "Closet 4",
-      "to": "Closet 6",
-      "type": "door"
-    },
-    {
-      "from": "Closet 5",
-      "to": "Closet 6",
-      "type": "door"
-    },
-    {
-      "from": "Closet 5",
-      "to": "Deck",
-      "type": "wall"
-    },
-    {
-      "from": "Closet 5",
-      "to": "Stairs",
-      "type": "door"
-    },
-    {
-      "from": "Closet 6",
-      "to": "Stairs",
       "type": "door"
     },
     {
@@ -4716,6 +3048,11 @@
       "from": "Deck",
       "to": "Stairs",
       "type": "door"
+    },
+    {
+      "from": "Dining",
+      "to": "Entry",
+      "type": "open"
     },
     {
       "from": "Dining",

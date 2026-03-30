@@ -2939,10 +2939,10 @@
       "zone": "walls"
     },
     {
-      "componentId": "wall-int",
+      "componentId": "door-int",
       "position": {
         "x": -16.0,
-        "y": 5.5,
+        "y": 3.5,
         "z": 14.0
       },
       "rotation": {
@@ -2950,7 +2950,7 @@
         "y": 0,
         "z": 0
       },
-      "zone": "interior"
+      "zone": "openings"
     },
     {
       "componentId": "wall-ext",
@@ -2967,20 +2967,6 @@
       "zone": "walls"
     },
     {
-      "componentId": "door-int",
-      "position": {
-        "x": -16.0,
-        "y": 3.5,
-        "z": 18.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
       "componentId": "wall-ext",
       "position": {
         "x": -18.0,
@@ -2993,20 +2979,6 @@
         "z": 0
       },
       "zone": "walls"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": -14.0,
-        "y": 3.5,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "openings"
     },
     {
       "componentId": "wall-ext",
@@ -3037,6 +3009,20 @@
       "zone": "walls"
     },
     {
+      "componentId": "door-int",
+      "position": {
+        "x": -14.0,
+        "y": 3.5,
+        "z": 20.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "openings"
+    },
+    {
       "componentId": "wall-ext",
       "position": {
         "x": -12.0,
@@ -3065,25 +3051,11 @@
       "zone": "interior"
     },
     {
-      "componentId": "wall-int",
-      "position": {
-        "x": -12.0,
-        "y": 5.5,
-        "z": 14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
       "componentId": "door-int",
       "position": {
         "x": -12.0,
         "y": 3.5,
-        "z": 18.0
+        "z": 14.0
       },
       "rotation": {
         "x": 0,
@@ -3105,6 +3077,20 @@
         "z": 0
       },
       "zone": "walls"
+    },
+    {
+      "componentId": "door-int",
+      "position": {
+        "x": -10.0,
+        "y": 3.5,
+        "z": 20.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "openings"
     },
     {
       "componentId": "wall-ext",
@@ -3163,43 +3149,15 @@
       "zone": "interior"
     },
     {
-      "componentId": "wall-int",
+      "componentId": "door-int",
       "position": {
         "x": -8.0,
-        "y": 5.5,
+        "y": 3.5,
         "z": 14.0
       },
       "rotation": {
         "x": 0,
         "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": -8.0,
-        "y": 3.5,
-        "z": 18.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "openings"
-    },
-    {
-      "componentId": "door-int",
-      "position": {
-        "x": -6.0,
-        "y": 3.5,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
         "z": 0
       },
       "zone": "openings"
@@ -3345,25 +3303,11 @@
       "zone": "interior"
     },
     {
-      "componentId": "wall-int",
-      "position": {
-        "x": -4.0,
-        "y": 5.5,
-        "z": 14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior"
-    },
-    {
       "componentId": "door-int",
       "position": {
         "x": -4.0,
         "y": 3.5,
-        "z": 18.0
+        "z": 14.0
       },
       "rotation": {
         "x": 0,
@@ -4509,25 +4453,6 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": -16.0,
-        "y": 8.5,
-        "z": 18.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
         "x": 2.0,
         "y": 8.5,
         "z": -20.0
@@ -4547,121 +4472,7 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": -4.0,
-        "y": 8.5,
-        "z": 18.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 16.0,
-        "y": 8.5,
-        "z": 18.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -14.0,
-        "y": 8.5,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
         "x": 10.0,
-        "y": 8.5,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -2.0,
-        "y": 8.5,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -6.0,
-        "y": 8.5,
-        "z": 16.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 2.0,
         "y": 8.5,
         "z": 0.0
       },
@@ -4680,177 +4491,6 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": -8.0,
-        "y": 8.5,
-        "z": 18.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 16.0,
-        "y": 8.5,
-        "z": 14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 0.0,
-        "y": 8.5,
-        "z": -6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -2.0,
-        "y": 8.5,
-        "z": -4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 12.0,
-        "y": 8.5,
-        "z": -14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 0.0,
-        "y": 8.5,
-        "z": -14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -4.0,
-        "y": 8.5,
-        "z": -14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 10.0,
-        "y": 8.5,
-        "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -2.0,
-        "y": 8.5,
-        "z": 20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
         "x": 2.0,
         "y": 8.5,
         "z": -4.0
@@ -4870,28 +4510,9 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 12.0,
+        "x": -8.0,
         "y": 8.5,
-        "z": -6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -12.0,
-        "y": 8.5,
-        "z": 18.0
+        "z": 14.0
       },
       "rotation": {
         "x": 0,
@@ -4910,83 +4531,7 @@
       "position": {
         "x": 10.0,
         "y": 8.5,
-        "z": -12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 4.0,
-        "y": 8.5,
-        "z": -14.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -4.0,
-        "y": 8.5,
-        "z": -6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -2.0,
-        "y": 8.5,
         "z": -20.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -6.0,
-        "y": 8.5,
-        "z": -12.0
       },
       "rotation": {
         "x": 0,
@@ -5022,7 +4567,349 @@
     {
       "componentId": "wall-int",
       "position": {
+        "x": -10.0,
+        "y": 8.5,
+        "z": 20.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 12.0,
+        "y": 8.5,
+        "z": -14.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 2.0,
+        "y": 8.5,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
         "x": 0.0,
+        "y": 8.5,
+        "z": -14.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -14.0,
+        "y": 8.5,
+        "z": 20.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -6.0,
+        "y": 8.5,
+        "z": -12.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 16.0,
+        "y": 8.5,
+        "z": 18.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -12.0,
+        "y": 8.5,
+        "z": 14.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 0.0,
+        "y": 8.5,
+        "z": -6.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -2.0,
+        "y": 8.5,
+        "z": 20.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 0.0,
+        "y": 8.5,
+        "z": 14.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -4.0,
+        "y": 8.5,
+        "z": 14.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -4.0,
+        "y": 8.5,
+        "z": -6.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -16.0,
+        "y": 8.5,
+        "z": 14.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -2.0,
+        "y": 8.5,
+        "z": -20.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 12.0,
+        "y": 8.5,
+        "z": -6.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -2.0,
+        "y": 8.5,
+        "z": -4.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 4.0,
+        "y": 8.5,
+        "z": -14.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 16.0,
         "y": 8.5,
         "z": 14.0
       },
@@ -5043,7 +4930,64 @@
       "position": {
         "x": 10.0,
         "y": 8.5,
-        "z": 0.0
+        "z": -12.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -4.0,
+        "y": 8.5,
+        "z": -14.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -2.0,
+        "y": 8.5,
+        "z": 16.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 10.0,
+        "y": 8.5,
+        "z": -4.0
       },
       "rotation": {
         "x": 0,
@@ -6149,17 +6093,17 @@
     {
       "from": "Closet 1",
       "to": "Closet 2 (2)",
-      "type": "door"
+      "type": "open"
     },
     {
       "from": "Closet 1",
       "to": "Closet 3 (2)",
-      "type": "door"
+      "type": "open"
     },
     {
       "from": "Closet 1",
       "to": "Deck",
-      "type": "wall"
+      "type": "door"
     },
     {
       "from": "Closet 10",
@@ -6189,7 +6133,7 @@
     {
       "from": "Closet 2 (2)",
       "to": "Closet 4 (2)",
-      "type": "open"
+      "type": "door"
     },
     {
       "from": "Closet 3",
@@ -6209,7 +6153,7 @@
     {
       "from": "Closet 3 (2)",
       "to": "Closet 4 (2)",
-      "type": "door"
+      "type": "open"
     },
     {
       "from": "Closet 3 (2)",
@@ -6219,7 +6163,7 @@
     {
       "from": "Closet 3 (2)",
       "to": "Deck",
-      "type": "wall"
+      "type": "door"
     },
     {
       "from": "Closet 4",
@@ -6239,22 +6183,22 @@
     {
       "from": "Closet 4 (2)",
       "to": "Closet 6",
-      "type": "open"
+      "type": "door"
     },
     {
       "from": "Closet 5",
       "to": "Closet 6",
-      "type": "door"
+      "type": "open"
     },
     {
       "from": "Closet 5",
       "to": "Closet 7",
-      "type": "door"
+      "type": "open"
     },
     {
       "from": "Closet 5",
       "to": "Deck",
-      "type": "wall"
+      "type": "door"
     },
     {
       "from": "Closet 6",
@@ -6264,12 +6208,12 @@
     {
       "from": "Closet 7",
       "to": "Closet 8",
-      "type": "door"
+      "type": "open"
     },
     {
       "from": "Closet 7",
       "to": "Deck",
-      "type": "wall"
+      "type": "door"
     },
     {
       "from": "Closet 7",
