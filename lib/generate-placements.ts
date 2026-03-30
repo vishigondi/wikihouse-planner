@@ -242,7 +242,14 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       if (belowOccupied || aboveOccupied) {
         const key = hKey(gx, gz);
         if (openings.has(key)) {
-          placements.push({ ...openings.get(key)!, zone: 'openings' });
+          const opening = openings.get(key)!;
+          placements.push({ ...opening, zone: 'openings' });
+          // Header above doors (doors are 7ft in a 10ft wall)
+          if (opening.componentId.includes('door')) {
+            const { x } = gridToWorld(gx, 0, bbox);
+            const { z } = gridToWorld(0, gz, bbox);
+            placements.push({ componentId: 'wall-ext', position: { x, y: 8.5, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
+          }
         } else {
           const { x } = gridToWorld(gx, 0, bbox);
           const { z } = gridToWorld(0, gz, bbox);
@@ -261,7 +268,13 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       if (leftOccupied || rightOccupied) {
         const key = vKey(gx, gz);
         if (openings.has(key)) {
-          placements.push({ ...openings.get(key)!, zone: 'openings' });
+          const opening = openings.get(key)!;
+          placements.push({ ...opening, zone: 'openings' });
+          if (opening.componentId.includes('door')) {
+            const { x } = gridToWorld(gx, 0, bbox);
+            const { z } = gridToWorld(0, gz, bbox);
+            placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: 8.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
+          }
         } else {
           const { x } = gridToWorld(gx, 0, bbox);
           const { z } = gridToWorld(0, gz, bbox);
@@ -296,7 +309,10 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
           for (let gx = startX; gx < endX; gx++) {
             const key = hKey(gx, sharedZ);
             if (openings.has(key)) {
-              // Door opening — already placed in pass 1
+              // Door opening + header panel above door (fills 7ft-9ft gap)
+              const { x } = gridToWorld(gx, 0, bbox);
+              const { z } = gridToWorld(0, sharedZ, bbox);
+              placements.push({ componentId: 'wall-int', position: { x, y: 8, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'interior', scale: { x: 1, y: 0.22, z: 1 } });
             } else {
               const { x } = gridToWorld(gx, 0, bbox);
               const { z } = gridToWorld(0, sharedZ, bbox);
@@ -314,7 +330,10 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
           for (let gz = startZ; gz < endZ; gz++) {
             const key = vKey(sharedX, gz);
             if (openings.has(key)) {
-              // Door opening — already placed
+              // Door opening + header panel above door
+              const { x } = gridToWorld(sharedX, 0, bbox);
+              const { z } = gridToWorld(0, gz, bbox);
+              placements.push({ componentId: 'wall-int', position: { x: x - GRID / 2, y: 8, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'interior', scale: { x: 1, y: 0.22, z: 1 } });
             } else {
               const { x } = gridToWorld(sharedX, 0, bbox);
               const { z } = gridToWorld(0, gz, bbox);
