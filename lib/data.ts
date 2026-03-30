@@ -137,11 +137,13 @@ export async function refreshData(): Promise<void> {
       const manifest = await manifestRes.json();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const spatialHomes = manifest.plans.map((p: any) => spatialToDenHome(p));
-      const spatialIds = new Set(spatialHomes.map((h: DenHome) => h.id));
+      const libIds = new Set(lib.homes.map(h => h.id));
 
-      // Keep existing homes not in manifest (e.g. townhomes)
-      const kept = lib.homes.filter(h => !spatialIds.has(h.id));
-      homes = [...kept, ...spatialHomes].sort((a, b) => a.sqft - b.sqft);
+      // library.json is authority for plans it knows about (algorithm.py output).
+      // Manifest only adds plans NOT in library.json (Den reference plans).
+      const libWithPlacements = lib.homes.map(h => ({ ...h, placements: generatePlacements(h) }));
+      const manifestOnly = spatialHomes.filter((h: DenHome) => !libIds.has(h.id));
+      homes = [...libWithPlacements, ...manifestOnly].sort((a, b) => a.sqft - b.sqft);
       console.log(`Loaded ${spatialHomes.length} plans from SpatialIR manifest (${homes.length} total)`);
     }
 
