@@ -1739,6 +1739,25 @@
     {
       "componentId": "wall-int",
       "position": {
+        "x": 4.0,
+        "y": 8.5,
+        "z": -2.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
         "x": 10.0,
         "y": 8.5,
         "z": 8.0
@@ -1758,19 +1777,19 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 4.0,
-        "y": 8.5,
-        "z": -10.0
+        "x": -2.0,
+        "y": 9.5,
+        "z": 8.0
       },
       "rotation": {
         "x": 0,
-        "y": 90,
+        "y": 0,
         "z": 0
       },
       "zone": "interior",
       "scale": {
         "x": 1,
-        "y": 0.3,
+        "y": 0.2,
         "z": 1
       }
     },
@@ -1779,7 +1798,7 @@
       "position": {
         "x": 4.0,
         "y": 8.5,
-        "z": -2.0
+        "z": -10.0
       },
       "rotation": {
         "x": 0,
@@ -1828,25 +1847,6 @@
       "scale": {
         "x": 1,
         "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -2.0,
-        "y": 9.5,
-        "z": 8.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.2,
         "z": 1
       }
     },

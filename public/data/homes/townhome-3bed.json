@@ -3747,44 +3747,6 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": -16.0,
-        "y": 8.5,
-        "z": -12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -14.0,
-        "y": 8.5,
-        "z": -6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
         "x": 18.0,
         "y": 8.5,
         "z": -6.0
@@ -3804,9 +3766,66 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": -14.0,
-        "y": 9.5,
-        "z": 6.0
+        "x": 8.0,
+        "y": 8.5,
+        "z": -4.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 16.0,
+        "y": 8.5,
+        "z": 4.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -16.0,
+        "y": 8.5,
+        "z": -12.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 22.0,
+        "y": 8.5,
+        "z": -6.0
       },
       "rotation": {
         "x": 0,
@@ -3816,16 +3835,54 @@
       "zone": "interior",
       "scale": {
         "x": 1,
-        "y": 0.2,
+        "y": 0.3,
         "z": 1
       }
     },
     {
       "componentId": "wall-int",
       "position": {
-        "x": -16.0,
+        "x": 4.0,
         "y": 8.5,
-        "z": -4.0
+        "z": -12.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -22.0,
+        "y": 8.5,
+        "z": 2.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 12.0,
+        "y": 8.5,
+        "z": -12.0
       },
       "rotation": {
         "x": 0,
@@ -3861,26 +3918,7 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 2.0,
-        "y": 9.5,
-        "z": 6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.2,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 4.0,
+        "x": -12.0,
         "y": 8.5,
         "z": -12.0
       },
@@ -3899,13 +3937,13 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 12.0,
+        "x": -14.0,
         "y": 8.5,
-        "z": -12.0
+        "z": -6.0
       },
       "rotation": {
         "x": 0,
-        "y": 90,
+        "y": 0,
         "z": 0
       },
       "zone": "interior",
@@ -3919,25 +3957,6 @@
       "componentId": "wall-int",
       "position": {
         "x": -16.0,
-        "y": 8.5,
-        "z": 4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 8.0,
         "y": 8.5,
         "z": -4.0
       },
@@ -3975,13 +3994,89 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 10.0,
+        "x": -22.0,
         "y": 8.5,
-        "z": 2.0
+        "z": -6.0
       },
       "rotation": {
         "x": 0,
         "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 8.0,
+        "y": 8.5,
+        "z": 4.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -14.0,
+        "y": 9.5,
+        "z": 6.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.2,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": 2.0,
+        "y": 9.5,
+        "z": 6.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zone": "interior",
+      "scale": {
+        "x": 1,
+        "y": 0.2,
+        "z": 1
+      }
+    },
+    {
+      "componentId": "wall-int",
+      "position": {
+        "x": -16.0,
+        "y": 8.5,
+        "z": 4.0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 90,
         "z": 0
       },
       "zone": "interior",
@@ -4015,63 +4110,6 @@
       "position": {
         "x": 10.0,
         "y": 8.5,
-        "z": -6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 8.0,
-        "y": 8.5,
-        "z": 4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -22.0,
-        "y": 8.5,
-        "z": -6.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -22.0,
-        "y": 8.5,
         "z": 2.0
       },
       "rotation": {
@@ -4089,45 +4127,7 @@
     {
       "componentId": "wall-int",
       "position": {
-        "x": 16.0,
-        "y": 8.5,
-        "z": 4.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": -12.0,
-        "y": 8.5,
-        "z": -12.0
-      },
-      "rotation": {
-        "x": 0,
-        "y": 90,
-        "z": 0
-      },
-      "zone": "interior",
-      "scale": {
-        "x": 1,
-        "y": 0.3,
-        "z": 1
-      }
-    },
-    {
-      "componentId": "wall-int",
-      "position": {
-        "x": 22.0,
+        "x": 10.0,
         "y": 8.5,
         "z": -6.0
       },
@@ -4600,14 +4600,14 @@
     },
     {
       "label": "Kitchen",
-      "type": "kitchen_open",
+      "type": "kitchen",
       "gx": 3,
       "gz": 0,
       "gw": 3,
       "gd": 2,
       "area": 96,
-      "color": "#fbbf24",
-      "constraints": "NKBA: island + work triangle + dining. 48in around island",
+      "color": "#f59e0b",
+      "constraints": "NKBA: work triangle 13-26ft. 48in aisle",
       "fixtures": [
         {
           "type": "counter",

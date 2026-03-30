@@ -141,7 +141,12 @@ export async function refreshData(): Promise<void> {
 
       // library.json is authority for plans it knows about (algorithm.py output).
       // Manifest only adds plans NOT in library.json (Den reference plans).
-      const libWithPlacements = lib.homes.map(h => ({ ...h, placements: generatePlacements(h) }));
+      const libWithPlacements = lib.homes.map(h => {
+        // Use existing placements if already generated (avoid re-generation on refresh)
+        const existing = homes.find(eh => eh.id === h.id);
+        if (existing && existing.placements.length > 0) return existing;
+        return { ...h, placements: generatePlacements(h) };
+      });
       const manifestOnly = spatialHomes.filter((h: DenHome) => !libIds.has(h.id));
       homes = [...libWithPlacements, ...manifestOnly].sort((a, b) => a.sqft - b.sqft);
       console.log(`Loaded ${spatialHomes.length} plans from SpatialIR manifest (${homes.length} total)`);

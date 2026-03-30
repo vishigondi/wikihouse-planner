@@ -259,6 +259,7 @@
       "panelType": "cedar-deck"
     },
     "usedInHomes": [
+      "the-outpost",
       "essential-retreat",
       "a-frame-weekender",
       "barnhouse-retreat",
@@ -298,7 +299,9 @@
       "panelType": "solid-timber-door"
     },
     "usedInHomes": [
+      "the-outpost",
       "essential-retreat",
+      "a-frame-weekender",
       "barnhouse-retreat",
       "modern-loft-barnhouse",
       "barnhouse-2-1",
@@ -336,6 +339,7 @@
       "panelType": "shoji-glass-sliding"
     },
     "usedInHomes": [
+      "the-outpost",
       "essential-retreat",
       "a-frame-weekender",
       "barnhouse-retreat",

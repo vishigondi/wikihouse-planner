@@ -129,6 +129,11 @@ const Scene = forwardRef<SceneHandle, Props>(function Scene({
         gl.setClearColor('#f5f0eb');
         gl.domElement.addEventListener('webglcontextlost', (e) => {
           e.preventDefault();
+          console.warn('WebGL context lost — will attempt restore');
+        });
+        gl.domElement.addEventListener('webglcontextrestored', () => {
+          console.log('WebGL context restored');
+          gl.setClearColor('#f5f0eb');
         });
       }}
       onClick={(e) => {
