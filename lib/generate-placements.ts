@@ -170,6 +170,26 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         const { z } = gridToWorld(0, room.gz, bbox);
         openings.set(key, { key, componentId: 'window-std', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 } });
       }
+      continue;
+    }
+    // East facade
+    if (room.gx + room.gw >= bbox.maxGx || !isOccupied(room.gx + room.gw, midGz, groundRooms)) {
+      const key = vKey(room.gx + room.gw, midGz);
+      if (!openings.has(key)) {
+        const { x } = gridToWorld(room.gx + room.gw, 0, bbox);
+        const { z } = gridToWorld(0, midGz, bbox);
+        openings.set(key, { key, componentId: 'window-std', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 } });
+      }
+      continue;
+    }
+    // West facade
+    if (room.gx <= bbox.minGx || !isOccupied(room.gx - 1, midGz, groundRooms)) {
+      const key = vKey(room.gx, midGz);
+      if (!openings.has(key)) {
+        const { x } = gridToWorld(room.gx, 0, bbox);
+        const { z } = gridToWorld(0, midGz, bbox);
+        openings.set(key, { key, componentId: 'window-std', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 } });
+      }
     }
   }
 
@@ -244,10 +264,14 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         if (openings.has(key)) {
           const opening = openings.get(key)!;
           placements.push({ ...opening, zone: 'openings' });
-          // Header above doors (doors are 7ft in a 10ft wall)
+          const { x } = gridToWorld(gx, 0, bbox);
+          const { z } = gridToWorld(0, gz, bbox);
           if (opening.componentId.includes('door')) {
-            const { x } = gridToWorld(gx, 0, bbox);
-            const { z } = gridToWorld(0, gz, bbox);
+            // Header above door (7ft door in 10ft wall)
+            placements.push({ componentId: 'wall-ext', position: { x, y: 8.5, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
+          } else if (opening.componentId.includes('window')) {
+            // Sill below window + head above (4ft window centered at 5ft in 10ft wall)
+            placements.push({ componentId: 'wall-ext', position: { x, y: 1.5, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
             placements.push({ componentId: 'wall-ext', position: { x, y: 8.5, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
           }
         } else {
@@ -270,9 +294,12 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         if (openings.has(key)) {
           const opening = openings.get(key)!;
           placements.push({ ...opening, zone: 'openings' });
+          const { x } = gridToWorld(gx, 0, bbox);
+          const { z } = gridToWorld(0, gz, bbox);
           if (opening.componentId.includes('door')) {
-            const { x } = gridToWorld(gx, 0, bbox);
-            const { z } = gridToWorld(0, gz, bbox);
+            placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: 8.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
+          } else if (opening.componentId.includes('window')) {
+            placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: 1.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
             placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: 8.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
           }
         } else {

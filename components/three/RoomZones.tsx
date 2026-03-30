@@ -212,7 +212,7 @@ export default function RoomZones({ rooms, footprint, visible, loftHeight, conne
           ? loftHeight
           : (zone.floor && zone.floor > 0 ? zone.floor * 8 : 0);
         const yPos = floorElev + 0.05;
-        const labelY = floorElev + 0.1;
+        const labelY = floorElev + 4.5; // mid-wall height for readability
         return (
         <group key={i} position={[zone.cx, yPos, zone.cz]}>
           {/* Room floor — light gray like isometric floor plan */}
