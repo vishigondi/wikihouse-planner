@@ -141,9 +141,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     for (const room of loftRooms) {
       for (let gx = room.gx; gx < room.gx + room.gw; gx++) {
         for (let gz = room.gz; gz < room.gz + room.gd; gz++) {
-          const { x: xEdge, z: zEdge } = gridToWorld(gx, gz, bbox); // use main bbox for positioning
-          const x = xEdge + GRID / 2;
-          const z = zEdge + GRID / 2;
+          const { x, z } = gridToWorld(gx, gz, bbox); // cell center
           placements.push({
             componentId: 'floor-std',
             position: { x, y: loftHeight + Y_FLOOR, z },
