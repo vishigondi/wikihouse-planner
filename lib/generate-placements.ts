@@ -170,8 +170,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     if (room.gz + room.gd >= bbox.maxGz || !isOccupied(midGx, room.gz + room.gd, groundRooms)) {
       const key = hKey(midGx, room.gz + room.gd);
       if (!openings.has(key)) {
-        const { x } = gridToWorld(midGx, 0, bbox);
-        const { z } = gridToWorld(0, room.gz + room.gd, bbox);
+        const { x } = gridEdgeToWorld(midGx, 0, bbox);
+        const { z } = gridEdgeToWorld(0, room.gz + room.gd, bbox);
         openings.set(key, { key, componentId: 'window-std', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 } });
       }
       continue;
@@ -180,8 +180,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     if (room.gz <= bbox.minGz || !isOccupied(midGx, room.gz - 1, groundRooms)) {
       const key = hKey(midGx, room.gz);
       if (!openings.has(key)) {
-        const { x } = gridToWorld(midGx, 0, bbox);
-        const { z } = gridToWorld(0, room.gz, bbox);
+        const { x } = gridEdgeToWorld(midGx, 0, bbox);
+        const { z } = gridEdgeToWorld(0, room.gz, bbox);
         openings.set(key, { key, componentId: 'window-std', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 } });
       }
       continue;
@@ -190,8 +190,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     if (room.gx + room.gw >= bbox.maxGx || !isOccupied(room.gx + room.gw, midGz, groundRooms)) {
       const key = vKey(room.gx + room.gw, midGz);
       if (!openings.has(key)) {
-        const { x } = gridToWorld(room.gx + room.gw, 0, bbox);
-        const { z } = gridToWorld(0, midGz, bbox);
+        const { x } = gridEdgeToWorld(room.gx + room.gw, 0, bbox);
+        const { z } = gridEdgeToWorld(0, midGz, bbox);
         openings.set(key, { key, componentId: 'window-std', position: { x: x, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 } });
       }
       continue;
@@ -200,8 +200,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     if (room.gx <= bbox.minGx || !isOccupied(room.gx - 1, midGz, groundRooms)) {
       const key = vKey(room.gx, midGz);
       if (!openings.has(key)) {
-        const { x } = gridToWorld(room.gx, 0, bbox);
-        const { z } = gridToWorld(0, midGz, bbox);
+        const { x } = gridEdgeToWorld(room.gx, 0, bbox);
+        const { z } = gridEdgeToWorld(0, midGz, bbox);
         openings.set(key, { key, componentId: 'window-std', position: { x: x, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 } });
       }
     }
@@ -211,8 +211,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
   const entryRoom = groundRooms.find(r => r.type === 'entry');
   if (entryRoom) {
     const key = hKey(entryRoom.gx, entryRoom.gz);
-    const { x } = gridToWorld(entryRoom.gx, 0, bbox);
-    const { z } = gridToWorld(0, entryRoom.gz, bbox);
+    const { x } = gridEdgeToWorld(entryRoom.gx, 0, bbox);
+    const { z } = gridEdgeToWorld(0, entryRoom.gz, bbox);
     openings.set(key, { key, componentId: 'door-ext', position: { x, y: 3.5, z }, rotation: { x: 0, y: 0, z: 0 } });
   }
 
@@ -233,15 +233,15 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       const sharedZ = roomA.gz + roomA.gd === roomB.gz ? roomA.gz + roomA.gd : roomB.gz + roomB.gd;
       const midX = Math.floor((Math.max(roomA.gx, roomB.gx) + Math.min(roomA.gx + roomA.gw, roomB.gx + roomB.gw)) / 2);
       const key = hKey(midX, sharedZ);
-      const { x } = gridToWorld(midX, 0, bbox);
-      const { z } = gridToWorld(0, sharedZ, bbox);
+      const { x } = gridEdgeToWorld(midX, 0, bbox);
+      const { z } = gridEdgeToWorld(0, sharedZ, bbox);
       openings.set(key, { key, componentId: doorComp, position: { x, y: 3.5, z }, rotation: { x: 0, y: 0, z: 0 } });
     } else if (sharedVert) {
       const sharedX = roomA.gx + roomA.gw === roomB.gx ? roomA.gx + roomA.gw : roomB.gx + roomB.gw;
       const midZ = Math.floor((Math.max(roomA.gz, roomB.gz) + Math.min(roomA.gz + roomA.gd, roomB.gz + roomB.gd)) / 2);
       const key = vKey(sharedX, midZ);
-      const { x } = gridToWorld(sharedX, 0, bbox);
-      const { z } = gridToWorld(0, midZ, bbox);
+      const { x } = gridEdgeToWorld(sharedX, 0, bbox);
+      const { z } = gridEdgeToWorld(0, midZ, bbox);
       openings.set(key, { key, componentId: doorComp, position: { x: x, y: 3.5, z }, rotation: { x: 0, y: 90, z: 0 } });
     }
   }
@@ -278,8 +278,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         if (openings.has(key)) {
           const opening = openings.get(key)!;
           placements.push({ ...opening, zone: 'openings' });
-          const { x } = gridToWorld(gx, 0, bbox);
-          const { z } = gridToWorld(0, gz, bbox);
+          const { x } = gridEdgeToWorld(gx, 0, bbox);
+          const { z } = gridEdgeToWorld(0, gz, bbox);
           if (opening.componentId.includes('door')) {
             // Header above door (7ft door in 10ft wall)
             placements.push({ componentId: 'wall-ext', position: { x, y: 8.5, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
@@ -289,8 +289,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
             placements.push({ componentId: 'wall-ext', position: { x, y: 8.5, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
           }
         } else {
-          const { x } = gridToWorld(gx, 0, bbox);
-          const { z } = gridToWorld(0, gz, bbox);
+          const { x } = gridEdgeToWorld(gx, 0, bbox);
+          const { z } = gridEdgeToWorld(0, gz, bbox);
           placements.push({ componentId: 'wall-ext', position: { x, y: yWall, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
         }
       }
@@ -308,8 +308,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         if (openings.has(key)) {
           const opening = openings.get(key)!;
           placements.push({ ...opening, zone: 'openings' });
-          const { x } = gridToWorld(gx, 0, bbox);
-          const { z } = gridToWorld(0, gz, bbox);
+          const { x } = gridEdgeToWorld(gx, 0, bbox);
+          const { z } = gridEdgeToWorld(0, gz, bbox);
           if (opening.componentId.includes('door')) {
             placements.push({ componentId: 'wall-ext', position: { x: x, y: 8.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
           } else if (opening.componentId.includes('window')) {
@@ -317,8 +317,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
             placements.push({ componentId: 'wall-ext', position: { x: x, y: 8.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
           }
         } else {
-          const { x } = gridToWorld(gx, 0, bbox);
-          const { z } = gridToWorld(0, gz, bbox);
+          const { x } = gridEdgeToWorld(gx, 0, bbox);
+          const { z } = gridEdgeToWorld(0, gz, bbox);
           placements.push({ componentId: 'wall-ext', position: { x: x, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
         }
       }
@@ -351,12 +351,12 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
             const key = hKey(gx, sharedZ);
             if (openings.has(key)) {
               // Door opening + header panel above door (fills 7ft-9ft gap)
-              const { x } = gridToWorld(gx, 0, bbox);
-              const { z } = gridToWorld(0, sharedZ, bbox);
+              const { x } = gridEdgeToWorld(gx, 0, bbox);
+              const { z } = gridEdgeToWorld(0, sharedZ, bbox);
               placements.push({ componentId: 'wall-int', position: { x, y: 8, z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'interior', scale: { x: 1, y: 0.22, z: 1 } });
             } else {
-              const { x } = gridToWorld(gx, 0, bbox);
-              const { z } = gridToWorld(0, sharedZ, bbox);
+              const { x } = gridEdgeToWorld(gx, 0, bbox);
+              const { z } = gridEdgeToWorld(0, sharedZ, bbox);
               placements.push({ componentId: 'wall-int', position: { x, y: intWallY(), z }, rotation: { x: 0, y: 0, z: 0 }, zone: 'interior' });
             }
           }
@@ -372,12 +372,12 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
             const key = vKey(sharedX, gz);
             if (openings.has(key)) {
               // Door opening + header panel above door
-              const { x } = gridToWorld(sharedX, 0, bbox);
-              const { z } = gridToWorld(0, gz, bbox);
+              const { x } = gridEdgeToWorld(sharedX, 0, bbox);
+              const { z } = gridEdgeToWorld(0, gz, bbox);
               placements.push({ componentId: 'wall-int', position: { x: x, y: 8, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'interior', scale: { x: 1, y: 0.22, z: 1 } });
             } else {
-              const { x } = gridToWorld(sharedX, 0, bbox);
-              const { z } = gridToWorld(0, gz, bbox);
+              const { x } = gridEdgeToWorld(sharedX, 0, bbox);
+              const { z } = gridEdgeToWorld(0, gz, bbox);
               placements.push({ componentId: 'wall-int', position: { x: x, y: intWallY(), z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'interior' });
             }
           }
