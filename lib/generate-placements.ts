@@ -104,7 +104,10 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
   for (let gx = bbox.minGx; gx < bbox.maxGx; gx++) {
     for (let gz = bbox.minGz; gz < bbox.maxGz; gz++) {
       if (!isOccupied(gx, gz, groundRooms)) continue;
-      const { x, z } = gridToWorld(gx, gz, bbox);
+      // Floor/foundation panels are 4'x4' boxes — center them in the cell, not at the edge
+      const { x: xEdge, z: zEdge } = gridToWorld(gx, gz, bbox);
+      const x = xEdge + GRID / 2;
+      const z = zEdge + GRID / 2;
       const room = getRoomAt(gx, gz);
       const isDeck = room && OUTDOOR_TYPES.has(room.type);
 
@@ -130,7 +133,9 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     for (const room of loftRooms) {
       for (let gx = room.gx; gx < room.gx + room.gw; gx++) {
         for (let gz = room.gz; gz < room.gz + room.gd; gz++) {
-          const { x, z } = gridToWorld(gx, gz, bbox); // use main bbox for positioning
+          const { x: xEdge, z: zEdge } = gridToWorld(gx, gz, bbox); // use main bbox for positioning
+          const x = xEdge + GRID / 2;
+          const z = zEdge + GRID / 2;
           placements.push({
             componentId: 'floor-std',
             position: { x, y: loftHeight + Y_FLOOR, z },

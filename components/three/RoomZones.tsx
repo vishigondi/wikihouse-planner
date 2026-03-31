@@ -208,9 +208,10 @@ export default function RoomZones({ rooms, footprint, visible, loftHeight, conne
       {/* Room zones */}
       {zones.map((zone, i) => {
         // Handle all floor levels: 0=ground, 0.5=split (+4ft), 1=loft (loftHeight)
+        // floor=0.5 is a ground-level bedroom wing — elevation 0, not 4ft
         const floorElev = zone.floor && zone.floor >= 1 && loftHeight
           ? loftHeight
-          : (zone.floor && zone.floor > 0 ? zone.floor * 8 : 0);
+          : 0;
         const yPos = floorElev + 0.05;
         const labelY = floorElev + 4.5; // mid-wall height for readability
         return (

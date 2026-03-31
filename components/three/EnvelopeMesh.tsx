@@ -102,8 +102,8 @@ export default function EnvelopeMesh({ home, wallOpacity, roofVisible }: Props) 
 
   const roofGeometries = useMemo(() => {
     // ── Mirror the coordinate system from generate-placements.ts ───────
-    const minFloor = Math.min(...home.rooms.map(r => r.floor ?? 0));
-    const groundRooms = home.rooms.filter(r => (r.floor ?? 0) === minFloor);
+    // floor=0.5 is a ground-level bedroom wing — include it for roof footprint
+    const groundRooms = home.rooms.filter(r => (r.floor ?? 0) < 1);
     const interiorRooms = groundRooms.filter(r => !OUTDOOR_TYPES.has(r.type));
 
     if (interiorRooms.length === 0) return [];
