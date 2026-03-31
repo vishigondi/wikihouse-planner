@@ -163,8 +163,9 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
         room.type === 'stair' || room.type === 'landing' ||
         OUTDOOR_TYPES.has(room.type)) continue; // no windows on outdoor rooms
 
-    const midGx = Math.floor(room.gx + room.gw / 2);
-    const midGz = Math.floor(room.gz + room.gd / 2);
+    // Clamp window midpoint away from building corners to avoid overlap with perpendicular walls
+    const midGx = Math.max(bbox.minGx + 1, Math.min(bbox.maxGx - 2, Math.floor(room.gx + room.gw / 2)));
+    const midGz = Math.max(bbox.minGz + 1, Math.min(bbox.maxGz - 2, Math.floor(room.gz + room.gd / 2)));
 
     // North facade
     if (room.gz + room.gd >= bbox.maxGz || !isOccupied(midGx, room.gz + room.gd, groundRooms)) {
