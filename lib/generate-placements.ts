@@ -178,7 +178,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       if (!openings.has(key)) {
         const { x } = gridToWorld(room.gx + room.gw, 0, bbox);
         const { z } = gridToWorld(0, midGz, bbox);
-        openings.set(key, { key, componentId: 'window-std', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 } });
+        openings.set(key, { key, componentId: 'window-std', position: { x: x, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 } });
       }
       continue;
     }
@@ -188,7 +188,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       if (!openings.has(key)) {
         const { x } = gridToWorld(room.gx, 0, bbox);
         const { z } = gridToWorld(0, midGz, bbox);
-        openings.set(key, { key, componentId: 'window-std', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 } });
+        openings.set(key, { key, componentId: 'window-std', position: { x: x, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 } });
       }
     }
   }
@@ -228,7 +228,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
       const key = vKey(sharedX, midZ);
       const { x } = gridToWorld(sharedX, 0, bbox);
       const { z } = gridToWorld(0, midZ, bbox);
-      openings.set(key, { key, componentId: doorComp, position: { x: x - GRID / 2, y: 3.5, z }, rotation: { x: 0, y: 90, z: 0 } });
+      openings.set(key, { key, componentId: doorComp, position: { x: x, y: 3.5, z }, rotation: { x: 0, y: 90, z: 0 } });
     }
   }
 
@@ -297,15 +297,15 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
           const { x } = gridToWorld(gx, 0, bbox);
           const { z } = gridToWorld(0, gz, bbox);
           if (opening.componentId.includes('door')) {
-            placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: 8.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
+            placements.push({ componentId: 'wall-ext', position: { x: x, y: 8.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
           } else if (opening.componentId.includes('window')) {
-            placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: 1.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
-            placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: 8.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
+            placements.push({ componentId: 'wall-ext', position: { x: x, y: 1.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
+            placements.push({ componentId: 'wall-ext', position: { x: x, y: 8.5, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', scale: { x: 1, y: 0.3, z: 1 } });
           }
         } else {
           const { x } = gridToWorld(gx, 0, bbox);
           const { z } = gridToWorld(0, gz, bbox);
-          placements.push({ componentId: 'wall-ext', position: { x: x - GRID / 2, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
+          placements.push({ componentId: 'wall-ext', position: { x: x, y: yWall, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'walls', ...(extWallScale ? { scale: extWallScale } : {}) });
         }
       }
     }
@@ -360,11 +360,11 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
               // Door opening + header panel above door
               const { x } = gridToWorld(sharedX, 0, bbox);
               const { z } = gridToWorld(0, gz, bbox);
-              placements.push({ componentId: 'wall-int', position: { x: x - GRID / 2, y: 8, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'interior', scale: { x: 1, y: 0.22, z: 1 } });
+              placements.push({ componentId: 'wall-int', position: { x: x, y: 8, z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'interior', scale: { x: 1, y: 0.22, z: 1 } });
             } else {
               const { x } = gridToWorld(sharedX, 0, bbox);
               const { z } = gridToWorld(0, gz, bbox);
-              placements.push({ componentId: 'wall-int', position: { x: x - GRID / 2, y: intWallY(), z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'interior' });
+              placements.push({ componentId: 'wall-int', position: { x: x, y: intWallY(), z }, rotation: { x: 0, y: 90, z: 0 }, zone: 'interior' });
             }
           }
         }
