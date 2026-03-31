@@ -60,7 +60,18 @@ function getBBox(rooms: RoomLayout[]): BBox {
   };
 }
 
+/** Convert grid coordinate to world position. Returns the CENTER of the cell. */
 function gridToWorld(gx: number, gz: number, bbox: BBox): { x: number; z: number } {
+  const totalW = (bbox.maxGx - bbox.minGx) * GRID;
+  const totalD = (bbox.maxGz - bbox.minGz) * GRID;
+  return {
+    x: (gx - bbox.minGx) * GRID - totalW / 2 + GRID / 2,
+    z: (gz - bbox.minGz) * GRID - totalD / 2 + GRID / 2,
+  };
+}
+
+/** Convert grid EDGE coordinate to world position (for walls between cells). */
+function gridEdgeToWorld(gx: number, gz: number, bbox: BBox): { x: number; z: number } {
   const totalW = (bbox.maxGx - bbox.minGx) * GRID;
   const totalD = (bbox.maxGz - bbox.minGz) * GRID;
   return {
@@ -104,10 +115,7 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
   for (let gx = bbox.minGx; gx < bbox.maxGx; gx++) {
     for (let gz = bbox.minGz; gz < bbox.maxGz; gz++) {
       if (!isOccupied(gx, gz, groundRooms)) continue;
-      // Floor/foundation panels are 4'x4' boxes — center them in the cell, not at the edge
-      const { x: xEdge, z: zEdge } = gridToWorld(gx, gz, bbox);
-      const x = xEdge + GRID / 2;
-      const z = zEdge + GRID / 2;
+      const { x, z } = gridToWorld(gx, gz, bbox); // cell center
       const room = getRoomAt(gx, gz);
       const isDeck = room && OUTDOOR_TYPES.has(room.type);
 
