@@ -147,7 +147,23 @@ export async function refreshData(): Promise<void> {
         if (existing && existing.placements.length > 0) return existing;
         return { ...h, placements: generatePlacements(h) };
       });
-      const manifestOnly = spatialHomes.filter((h: DenHome) => !libIds.has(h.id));
+      // Only include manifest plans that have position data (hasPositions path).
+      // Plans without positions use graphLayout BFS which produces scattered renders.
+      const manifestOnly = spatialHomes.filter((h: DenHome) => {
+        if (libIds.has(h.id)) return false; // library.json wins
+        // Check if this plan's rooms were placed via positions (not BFS scatter)
+        // Plans from graphLayout have rooms at scattered coordinates with low coverage
+        const groundRooms = h.rooms.filter(r => !r.floor || r.floor === 0);
+        if (groundRooms.length === 0) return false;
+        const minGx = Math.min(...groundRooms.map(r => r.gx));
+        const maxGx = Math.max(...groundRooms.map(r => r.gx + r.gw));
+        const minGz = Math.min(...groundRooms.map(r => r.gz));
+        const maxGz = Math.max(...groundRooms.map(r => r.gz + r.gd));
+        const bboxCells = (maxGx - minGx) * (maxGz - minGz);
+        const filledCells = groundRooms.reduce((s, r) => s + r.gw * r.gd, 0);
+        const coverage = filledCells / Math.max(bboxCells, 1);
+        return coverage >= 0.5; // only show plans with >50% grid coverage
+      });
       homes = [...libWithPlacements, ...manifestOnly].sort((a, b) => a.sqft - b.sqft);
       console.log(`Loaded ${spatialHomes.length} plans from SpatialIR manifest (${homes.length} total)`);
     }
