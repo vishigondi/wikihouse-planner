@@ -50,7 +50,7 @@ interface Opening {
 }
 
 function getBBox(rooms: RoomLayout[]): BBox {
-  const ground = rooms.filter(r => !r.floor || r.floor === 0);
+  const ground = rooms.filter(r => (r.floor ?? 0) < 1);
   if (ground.length === 0) return { minGx: 0, maxGx: 1, minGz: 0, maxGz: 1 };
   return {
     minGx: Math.min(...ground.map(r => r.gx)),
@@ -84,7 +84,9 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
   const rooms = home.rooms;
   // Use the minimum floor level as "ground" (some plans use level 1 as main floor)
   const minFloor = Math.min(...rooms.map(r => r.floor ?? 0));
-  const groundRooms = rooms.filter(r => (r.floor ?? 0) === minFloor);
+  // floor=0.5 is used for bedroom wings that are physically at ground level.
+  // Include all rooms with floor < 1 as "ground" for wall/opening generation.
+  const groundRooms = rooms.filter(r => (r.floor ?? 0) < 1);
   const bbox = getBBox(rooms);
   const isAFrame = (home.roofStyle || 'gable') === 'a-frame';
   const yWall = wallY(home.roofStyle || 'gable');
@@ -122,7 +124,8 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
 
   // ── Pass 0b: Loft floor panels (at loftHeight elevation) ───────────
   const loftHeight = home.loftHeight || 8;
-  const loftRooms = rooms.filter(r => (r.floor ?? 0) > minFloor);
+  // True lofts are floor >= 1 (elevated, above ground level)
+  const loftRooms = rooms.filter(r => (r.floor ?? 0) >= 1);
   if (loftRooms.length > 0) {
     for (const room of loftRooms) {
       for (let gx = room.gx; gx < room.gx + room.gw; gx++) {

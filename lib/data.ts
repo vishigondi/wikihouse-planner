@@ -107,7 +107,8 @@ function spatialToDenHome(plan: any): DenHome {
   };
 
   // Fix footprint to match actual room bounding box — prevents roof/room mismatch
-  const groundRooms = rooms.filter(r => !r.floor || r.floor === 0);
+  // Include floor=0.5 bedroom wings (physically at ground level)
+  const groundRooms = rooms.filter(r => (r.floor ?? 0) < 1);
   if (groundRooms.length > 0) {
     const minGx = Math.min(...groundRooms.map(r => r.gx));
     const maxGx = Math.max(...groundRooms.map(r => r.gx + r.gw));
@@ -153,7 +154,7 @@ export async function refreshData(): Promise<void> {
         if (libIds.has(h.id)) return false; // library.json wins
         // Check if this plan's rooms were placed via positions (not BFS scatter)
         // Plans from graphLayout have rooms at scattered coordinates with low coverage
-        const groundRooms = h.rooms.filter(r => !r.floor || r.floor === 0);
+        const groundRooms = h.rooms.filter(r => (r.floor ?? 0) < 1);
         if (groundRooms.length === 0) return false;
         const minGx = Math.min(...groundRooms.map(r => r.gx));
         const maxGx = Math.max(...groundRooms.map(r => r.gx + r.gw));
