@@ -386,6 +386,37 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
     }
   }
 
+  // ── Pass 4: Corner posts — fill gaps where H and V walls meet ────────
+  // At each exterior corner, place a small post (0.5ft × wallHeight × 0.5ft)
+  // to close the gap between perpendicular wall panels.
+  const cornerSet = new Set<string>();
+  for (let gx = bbox.minGx; gx <= bbox.maxGx; gx++) {
+    for (let gz = bbox.minGz; gz <= bbox.maxGz; gz++) {
+      // A corner exists where occupancy changes in both X and Z directions
+      const tl = isOccupied(gx - 1, gz, groundRooms) && !isDeckCell(gx - 1, gz);
+      const tr = isOccupied(gx, gz, groundRooms) && !isDeckCell(gx, gz);
+      const bl = isOccupied(gx - 1, gz - 1, groundRooms) && !isDeckCell(gx - 1, gz - 1);
+      const br = isOccupied(gx, gz - 1, groundRooms) && !isDeckCell(gx, gz - 1);
+      // Corner if exactly 1 or 3 of the 4 quadrants are occupied (convex or concave corner)
+      const count = [tl, tr, bl, br].filter(Boolean).length;
+      if (count === 1 || count === 3) {
+        const key = `${gx},${gz}`;
+        if (!cornerSet.has(key)) {
+          cornerSet.add(key);
+          const { x } = gridEdgeToWorld(gx, 0, bbox);
+          const { z } = gridEdgeToWorld(0, gz, bbox);
+          placements.push({
+            componentId: 'wall-ext',
+            position: { x, y: yWall, z },
+            rotation: { x: 0, y: 0, z: 0 },
+            zone: 'walls',
+            scale: { x: 0.12, y: 1, z: 0.12 }, // thin post
+          });
+        }
+      }
+    }
+  }
+
   // Roof is handled by EnvelopeMesh — no placement boxes needed.
 
   return placements;
