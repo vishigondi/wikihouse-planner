@@ -138,8 +138,10 @@ export default function EnvelopeMesh({ home, wallOpacity, roofVisible }: Props) 
     }
 
     // ── Merge strips when too many (>3 = BFS scatter, not a real shape). ──
-    // Multiple parallel ridge lines are fine — just prevent scatter noise.
-    if (strips.length > 3) {
+    // A-frame and steep-gable roofs always merge — a single ridge is canonical.
+    // Multiple parallel ridges only make visual sense for gable/shed additions.
+    const alwaysUnify = roofStyle === 'a-frame' || roofStyle === 'steep-gable';
+    if (alwaysUnify || strips.length > 3) {
       // Collapse all strips into one unified roof
       const minGz = Math.min(...strips.map(s => s.minGz));
       const maxGz = Math.max(...strips.map(s => s.maxGz));
