@@ -137,8 +137,10 @@ export default function EnvelopeMesh({ home, wallOpacity, roofVisible }: Props) 
       }
     }
 
-    // ── Merge strips if too many (>3 = BFS scatter, not a real L-shape) ──
-    if (strips.length > 3) {
+    // ── Merge strips: A-frame/steep-gable always get ONE unified ridge.
+    //    Other styles merge when too many strips (>3 = BFS scatter). ──
+    const alwaysUnify = roofStyle === 'a-frame' || roofStyle === 'steep-gable';
+    if (alwaysUnify || strips.length > 3) {
       // Collapse all strips into one unified roof
       const minGz = Math.min(...strips.map(s => s.minGz));
       const maxGz = Math.max(...strips.map(s => s.maxGz));
