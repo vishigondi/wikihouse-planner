@@ -163,7 +163,7 @@ export async function refreshData(): Promise<void> {
         const bboxCells = (maxGx - minGx) * (maxGz - minGz);
         const filledCells = groundRooms.reduce((s, r) => s + r.gw * r.gd, 0);
         const coverage = filledCells / Math.max(bboxCells, 1);
-        return coverage >= 0.5; // only show plans with >50% grid coverage
+        return coverage >= 0.65; // only show plans with >65% grid coverage (tight packing)
       });
       homes = [...libWithPlacements, ...manifestOnly].sort((a, b) => a.sqft - b.sqft);
       console.log(`Loaded ${spatialHomes.length} plans from SpatialIR manifest (${homes.length} total)`);
