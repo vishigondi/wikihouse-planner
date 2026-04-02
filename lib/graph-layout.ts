@@ -245,8 +245,17 @@ export function graphLayout(plan: any, gridSize: number = GRID): RoomLayout[] {
       const centerX = allP.length > 0 ? allP.reduce((s, p) => s + p.gx, 0) / allP.length : 0;
       const centerZ = allP.length > 0 ? allP.reduce((s, p) => s + p.gz, 0) / allP.length : 0;
 
-      for (let gx = -2; gx <= 20; gx++) {
-        for (let gz = -2; gz <= 20; gz++) {
+      // Search range relative to current building extent + margin
+      const margin = 3;
+      const allGx = [...placed.values()].map(p => p.gx);
+      const allGz = [...placed.values()].map(p => p.gz);
+      const searchMinX = Math.min(...allGx) - margin;
+      const searchMaxX = Math.max(...allGx) + margin + 5;
+      const searchMinZ = Math.min(...allGz) - margin;
+      const searchMaxZ = Math.max(...allGz) + margin + 5;
+
+      for (let gx = searchMinX; gx <= searchMaxX; gx++) {
+        for (let gz = searchMinZ; gz <= searchMaxZ; gz++) {
           if (overlaps(gx, gz, cur.gw, cur.gd, placed, rooms)) continue;
           // Prefer positions close to center
           const dist = Math.abs(gx - centerX) + Math.abs(gz - centerZ);

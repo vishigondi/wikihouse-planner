@@ -124,6 +124,7 @@ export default function Home() {
           <div className="relative flex-1 min-h-[320px]">
             {currentHome && (
               <Scene
+                key={currentHome.id}
                 ref={sceneRef}
                 home={currentHome}
                 components={components}

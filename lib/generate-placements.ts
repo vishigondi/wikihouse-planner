@@ -23,7 +23,8 @@ const WALL_EXT_Y = WALL_EXT_H / 2;   // = 5.0 — center at half-height
 const WALL_INT_Y = WALL_INT_H / 2;   // = 4.5
 
 // A-frame knee wall is shorter (foot of the A, ~2ft knee + slope starts)
-const WALL_EXT_Y_AFRAME = 3.0;
+// A-frame knee wall: 10ft panel × 0.3 scale = 3ft tall, centered at 1.5ft so base touches ground
+const WALL_EXT_Y_AFRAME = 1.5;
 
 function wallY(roofStyle: string): number {
   return roofStyle === 'a-frame' ? WALL_EXT_Y_AFRAME : WALL_EXT_Y;
@@ -211,12 +212,33 @@ export function generatePlacements(home: DenHome): ComponentPlacement[] {
   }
 
   // Entry door
+  // Entry door — place on whichever exterior face the entry room touches
   const entryRoom = groundRooms.find(r => r.type === 'entry');
   if (entryRoom) {
-    const key = hKey(entryRoom.gx, entryRoom.gz);
-    const x = cellX(entryRoom.gx);
-    const z = edgeZ(entryRoom.gz);
-    openings.set(key, { key, componentId: 'door-ext', position: { x, y: 3.5, z }, rotation: { x: 0, y: 0, z: 0 } });
+    const e = entryRoom;
+    const distS = e.gz - bbox.minGz;
+    const distN = bbox.maxGz - (e.gz + e.gd);
+    const distW = e.gx - bbox.minGx;
+    const distE = bbox.maxGx - (e.gx + e.gw);
+    const minDist = Math.min(distS, distN, distW, distE);
+
+    if (minDist === distS) {
+      // South face
+      const key = hKey(e.gx, e.gz);
+      openings.set(key, { key, componentId: 'door-ext', position: { x: cellX(e.gx), y: 3.5, z: edgeZ(e.gz) }, rotation: { x: 0, y: 0, z: 0 } });
+    } else if (minDist === distN) {
+      // North face
+      const key = hKey(e.gx, e.gz + e.gd);
+      openings.set(key, { key, componentId: 'door-ext', position: { x: cellX(e.gx), y: 3.5, z: edgeZ(e.gz + e.gd) }, rotation: { x: 0, y: 0, z: 0 } });
+    } else if (minDist === distW) {
+      // West face
+      const key = vKey(e.gx, e.gz);
+      openings.set(key, { key, componentId: 'door-ext', position: { x: edgeX(e.gx), y: 3.5, z: cellZ(e.gz) }, rotation: { x: 0, y: 90, z: 0 } });
+    } else {
+      // East face
+      const key = vKey(e.gx + e.gw, e.gz);
+      openings.set(key, { key, componentId: 'door-ext', position: { x: edgeX(e.gx + e.gw), y: 3.5, z: cellZ(e.gz) }, rotation: { x: 0, y: 90, z: 0 } });
+    }
   }
 
   // Interior doors (from connections)

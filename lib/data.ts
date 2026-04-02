@@ -1,6 +1,8 @@
 import type { ModularComponent, DenHome, ComponentLibrary, RoomLayout, RoomConnection } from './types';
 import { generatePlacements } from './generate-placements';
 import { logValidation } from './conversion-validator';
+
+const validatedPlans = new Set<string>();
 import { graphLayout } from './graph-layout';
 
 // Static import as fallback (available immediately on first render)
@@ -95,7 +97,7 @@ function spatialToDenHome(plan: any): DenHome {
     model: plan.name,
     sqft: plan.totalArea,
     footprint: plan.footprint,
-    height: roofStyle === 'a-frame' ? 21 : roofStyle === 'steep-gable' ? 18 : 16,
+    height: plan.height ?? (roofStyle === 'a-frame' ? 21 : roofStyle === 'steep-gable' ? 18 : 16),
     bedBath: plan.bedsBaths,
     roofStyle,
     hasLoft: (plan.levels || 1) > 1,
@@ -123,8 +125,11 @@ function spatialToDenHome(plan: any): DenHome {
   // Auto-generate 3D placements from room grid
   home.placements = generatePlacements(home);
 
-  // Validate conversion integrity
-  logValidation(home);
+  // Validate conversion integrity (once per plan, not on every refresh)
+  if (!validatedPlans.has(home.id)) {
+    logValidation(home);
+    validatedPlans.add(home.id);
+  }
 
   return home;
 }
