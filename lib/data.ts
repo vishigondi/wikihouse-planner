@@ -1,12 +1,10 @@
 import type { ModularComponent, DenHome, ComponentLibrary, RoomLayout, RoomConnection } from './types';
 import { generatePlacements } from './generate-placements';
 import { logValidation } from './conversion-validator';
+import { graphLayout } from './graph-layout';
+import libraryData from '@/public/data/library.json';
 
 const validatedPlans = new Set<string>();
-import { graphLayout } from './graph-layout';
-
-// Static import as fallback (available immediately on first render)
-import libraryData from '@/public/data/library.json';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const lib = libraryData as any as ComponentLibrary;
