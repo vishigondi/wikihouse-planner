@@ -177,7 +177,11 @@ const Scene = forwardRef<SceneHandle, Props>(function Scene({
       />
 
       {/* Orbit controls with API */}
-      <CameraControls home={home} onRef={(api) => { apiRef.current = api; api.set3DView(); }} />
+      <CameraControls home={home} onRef={(api) => {
+        apiRef.current = api;
+        // Defer until Three.js has completed first render (ctrl.object populated)
+        requestAnimationFrame(() => api.set3DView());
+      }} />
     </Canvas>
   );
 });
