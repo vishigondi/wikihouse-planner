@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
+import { useRef, useImperativeHandle, forwardRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid } from '@react-three/drei';
 import type { DenHome, ModularComponent } from '@/lib/types';
@@ -111,12 +111,6 @@ const Scene = forwardRef<SceneHandle, Props>(function Scene({
     set3DView: () => apiRef.current?.set3DView(),
   }));
 
-  // Reset camera to 3D view on mount (ensures correct framing after home change)
-  useEffect(() => {
-    const timer = setTimeout(() => apiRef.current?.set3DView(), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <Canvas
       camera={{
@@ -183,7 +177,7 @@ const Scene = forwardRef<SceneHandle, Props>(function Scene({
       />
 
       {/* Orbit controls with API */}
-      <CameraControls home={home} onRef={(api) => { apiRef.current = api; }} />
+      <CameraControls home={home} onRef={(api) => { apiRef.current = api; api.set3DView(); }} />
     </Canvas>
   );
 });
