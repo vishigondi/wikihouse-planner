@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useImperativeHandle, forwardRef } from 'react';
+import { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid } from '@react-three/drei';
 import type { DenHome, ModularComponent } from '@/lib/types';
@@ -25,6 +25,8 @@ export interface SceneHandle {
 /* Inner component that has access to Three.js context */
 function CameraControls({ home, onRef }: { home: DenHome; onRef: (api: SceneHandle) => void }) {
   const controlsRef = useRef<any>(null);
+  // Keep a stable ref to the latest api so useEffect can access it without re-running
+  const latestApiRef = useRef<SceneHandle | null>(null);
   const w = home.footprint.width;
   const d = home.footprint.depth;
   const h = home.height;
@@ -69,10 +71,16 @@ function CameraControls({ home, onRef }: { home: DenHome; onRef: (api: SceneHand
     },
   };
 
-  // Pass API up on mount
-  if (controlsRef.current) {
-    onRef(api);
-  }
+  // Keep latestApiRef current on every render (used by the effect below)
+  latestApiRef.current = api;
+
+  // Run AFTER React commits: OrbitControls ref callback has already fired,
+  // so controlsRef.current is guaranteed non-null. This is the reliable place
+  // to snap the camera to the correct 3D position after a plan switch.
+  useEffect(() => {
+    latestApiRef.current?.set3DView();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // empty deps — runs once after mount (Canvas remounts on plan change via key=)
 
   return (
     <OrbitControls
@@ -176,11 +184,9 @@ const Scene = forwardRef<SceneHandle, Props>(function Scene({
         roomLabelsVisible={roomLabelsVisible}
       />
 
-      {/* Orbit controls with API */}
+      {/* Orbit controls with API — set3DView() is called via useEffect inside CameraControls */}
       <CameraControls home={home} onRef={(api) => {
         apiRef.current = api;
-        // Defer until Three.js has completed first render (ctrl.object populated)
-        requestAnimationFrame(() => api.set3DView());
       }} />
     </Canvas>
   );
