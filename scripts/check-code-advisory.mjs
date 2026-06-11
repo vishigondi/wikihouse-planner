@@ -159,6 +159,7 @@ for (const relativePath of PLANS) {
   const ruleIdsInReport = new Set(report.findings.map((item) => item.ruleId));
   const lotRules = ['ZON-SETBACK', 'ZON-COVERAGE'];
   check(`${artifact.planId}: lot rules reported`, lotRules.every((ruleId) => ruleIdsInReport.has(ruleId)), true);
+  check(`${artifact.planId}: lot rules evaluate to pass`, lotRules.every((ruleId) => statusOf(report, ruleId) === 'pass'), true);
   check(`${artifact.planId}: grid rule reported`, ruleIdsInReport.has('WH-GRID-4FT'), true);
 }
 
