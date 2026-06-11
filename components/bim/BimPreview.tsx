@@ -1180,6 +1180,7 @@ export default function BimPreview({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const worldRef = useRef<{ world: { camera: OBC.SimpleCamera }; model: SemanticBimModel; home: DenHome } | null>(null);
   const [selected, setSelected] = useState<SemanticBimElement | null>(null);
+  const [contextLost, setContextLost] = useState(false);
   const model = useMemo(() => buildableBimFromHome(home), [home]);
   const summary = useMemo(() => buildableBimSummary(model), [model]);
   const assetSummary = useMemo(() => localBimAssetSummary(), []);
@@ -1242,6 +1243,15 @@ export default function BimPreview({
       setSelected(hit ?? null);
     };
     world.renderer.three.domElement.addEventListener('pointerdown', onPointerDown);
+    // GPU context can drop in long-lived tabs; without handling, the canvas
+    // goes permanently blank with no message. Surface a recovery overlay.
+    const onContextLost = (event: Event) => {
+      event.preventDefault();
+      setContextLost(true);
+    };
+    const onContextRestored = () => setContextLost(false);
+    world.renderer.three.domElement.addEventListener('webglcontextlost', onContextLost);
+    world.renderer.three.domElement.addEventListener('webglcontextrestored', onContextRestored);
     world.renderer.three.domElement.dataset.bimElementCount = String(model.elements.length);
     world.renderer.three.domElement.dataset.bimRenderedElementCount = String(root.children.length);
     world.renderer.three.domElement.dataset.bimRenderedCategoryCounts = JSON.stringify(root.userData.renderedCounts ?? {});
@@ -1256,6 +1266,8 @@ export default function BimPreview({
     return () => {
       worldRef.current = null;
       world.renderer?.three.domElement.removeEventListener('pointerdown', onPointerDown);
+      world.renderer?.three.domElement.removeEventListener('webglcontextlost', onContextLost);
+      world.renderer?.three.domElement.removeEventListener('webglcontextrestored', onContextRestored);
       components.dispose();
       container.innerHTML = '';
     };
@@ -1264,6 +1276,18 @@ export default function BimPreview({
   return (
     <div className="relative h-full min-h-[480px] overflow-hidden bg-[#f5f0e8]">
       <div ref={containerRef} className="h-full w-full" />
+      {contextLost && (
+        <div data-context-lost className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-[#f5f0e8]/95">
+          <div className="text-xs text-stone-600">The 3D view lost its graphics context.</div>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="border border-stone-800 bg-stone-800 px-4 py-2 text-xs text-white hover:bg-stone-700"
+          >
+            Reload 3D View
+          </button>
+        </div>
+      )}
       {!productMode && <div data-testid="bim-camera-controls" className="absolute right-3 top-36 z-10 border border-stone-200 bg-white/90 p-2 text-[10px] shadow-sm backdrop-blur">
         <div className="mb-1 font-semibold uppercase tracking-wide text-stone-500">BIM Camera</div>
         <div className="grid grid-cols-2 gap-1">
