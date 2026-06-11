@@ -3,6 +3,12 @@ import { buildableBimFromHome } from '@/lib/bim/buildable-bim';
 import { BIM_COMPONENT_CATALOG } from '@/lib/bim/component-registry';
 import type { SemanticBimCategory, SemanticBimElement } from '@/lib/bim/semantic-bim';
 import { REPAIR_LAYER_PATHS, type RepairLayer } from '@/lib/repair/targeted-repair';
+import {
+  codeAdvisoryReport,
+  type CodeAdvisoryInput,
+  type CodeAdvisoryLot,
+  type CodeAdvisoryReport,
+} from '@/lib/standards/code-advisory';
 
 export const STANDARD_REGISTRY_VERSION = 'paired_floorplan_standards_v1';
 
@@ -16,7 +22,8 @@ export type StandardPackId =
   | 'roof-envelope'
   | 'accessibility-optional'
   | 'manufacturing-panel-grid'
-  | 'export-ifc-experimental';
+  | 'export-ifc-experimental'
+  | 'code-advisory-dimensional';
 
 export type StandardSeverity = 'pass' | 'warning' | 'blocked';
 
@@ -91,6 +98,7 @@ export interface StandardsValidationResult {
   channels: Record<ValidationChannel, StandardsPackResult[]>;
   packs: StandardsPackResult[];
   issues: BcfStyleIssue[];
+  codeAdvisory: CodeAdvisoryReport;
 }
 
 const ROLE_DEFINITIONS: StandardsRoleDefinition[] = [
@@ -235,7 +243,80 @@ export function standardsRegistrySummary() {
       'accessibility-optional',
       'manufacturing-panel-grid',
       'export-ifc-experimental',
+      'code-advisory-dimensional',
     ] as StandardPackId[],
+  };
+}
+
+const GRID_UNIT_FT = 4;
+
+function lotFromArtifact(artifactJson: unknown): CodeAdvisoryLot | null {
+  if (!artifactJson || typeof artifactJson !== 'object') return null;
+  const lot = (artifactJson as Record<string, unknown>).lot;
+  if (!lot || typeof lot !== 'object') return null;
+  const record = lot as Record<string, unknown>;
+  const widthFt = Number(record.widthFt ?? record.width);
+  const depthFt = Number(record.depthFt ?? record.depth);
+  if (!Number.isFinite(widthFt) || !Number.isFinite(depthFt) || widthFt <= 0 || depthFt <= 0) return null;
+  const setbacks = (record.setbacksFt ?? record.setbacks) as Record<string, unknown> | undefined;
+  const setback = (key: string) => {
+    const value = Number(setbacks?.[key]);
+    return Number.isFinite(value) && value >= 0 ? value : undefined;
+  };
+  const maxCoverage = Number(record.maxCoverageRatio);
+  return {
+    widthFt,
+    depthFt,
+    setbacksFt: setbacks
+      ? { front: setback('front'), rear: setback('rear'), left: setback('left'), right: setback('right') }
+      : undefined,
+    maxCoverageRatio: Number.isFinite(maxCoverage) && maxCoverage > 0 && maxCoverage <= 1 ? maxCoverage : undefined,
+  };
+}
+
+export function codeAdvisoryInputFromHome(home: DenHome): CodeAdvisoryInput {
+  const faceRoomIdByFaceId = new Map(
+    (home.spaceFaces ?? []).map((face) => [face.id, face.roomId ?? face.id]),
+  );
+  const rooms = home.rooms.map((room, index) => {
+    const id = (room.spaceFaceId && faceRoomIdByFaceId.get(room.spaceFaceId))
+      || room.spaceFaceId
+      || `${room.label || room.type || 'room'}-${room.floor ?? 0}-${index}`;
+    const hasRect = Number.isFinite(room.gw) && Number.isFinite(room.gd) && room.gw > 0 && room.gd > 0;
+    return {
+      id,
+      label: room.label,
+      type: room.type,
+      floor: room.floor,
+      widthFt: hasRect ? room.gw * GRID_UNIT_FT : undefined,
+      depthFt: hasRect ? room.gd * GRID_UNIT_FT : undefined,
+      parts: (room.parts ?? [])
+        .filter((part) => Number.isFinite(part.gw) && Number.isFinite(part.gd) && part.gw > 0 && part.gd > 0)
+        .map((part) => ({ widthFt: part.gw * GRID_UNIT_FT, depthFt: part.gd * GRID_UNIT_FT })),
+      grid: hasRect
+        ? { gx: room.gx, gz: room.gz, gw: room.gw, gd: room.gd, unitFt: GRID_UNIT_FT }
+        : undefined,
+      physicalBoundary: room.physicalBoundary,
+      semanticZone: room.semanticZone,
+    };
+  });
+  const openings = (home.sourceOpenings ?? []).map((opening) => ({
+    id: opening.id,
+    kind: opening.kind,
+    openingType: opening.openingType,
+    roomIds: opening.roomIds,
+    fromRoomId: opening.fromRoomId,
+    toRoomId: opening.toRoomId,
+    opensIntoRoomId: opening.opensIntoRoomId,
+  }));
+  return {
+    planId: home.id,
+    // Paired-artifact footprints are normalized to feet by lib/data.ts.
+    footprintWidthFt: home.footprint?.width,
+    footprintDepthFt: home.footprint?.depth,
+    rooms,
+    openings,
+    lot: lotFromArtifact(home.pairedArtifactJson),
   };
 }
 
@@ -461,11 +542,13 @@ export function validateStandards(home: DenHome): StandardsValidationResult {
         fullEdgeRenderExtraRate > 0.08
       );
     if (blockedBySemanticDrift) {
-      const message = `Source proposal and deterministic render drift exceeds configured brochure threshold: primitive source miss ${(sourceMissRate * 100).toFixed(1)}%, primitive render extra ${(renderExtraRate * 100).toFixed(1)}%, edge miss ${(edgeSourceMissRate * 100).toFixed(1)}%, edge extra ${(edgeRenderExtraRate * 100).toFixed(1)}%, full source miss ${(fullSourceMissRate * 100).toFixed(1)}%, full render extra ${(fullRenderExtraRate * 100).toFixed(1)}%, full edge miss ${(fullEdgeSourceMissRate * 100).toFixed(1)}%, full edge extra ${(fullEdgeRenderExtraRate * 100).toFixed(1)}%`;
-      addPackMessage(packs, 'design-basic', 'design', 'blocked', message);
+      // Drift vs the GPT proposal image is advisory: paired semantic JSON is
+      // the source of truth, so image-imitation distance never blocks.
+      const message = `Source proposal and deterministic render drift exceeds the advisory target: primitive source miss ${(sourceMissRate * 100).toFixed(1)}%, primitive render extra ${(renderExtraRate * 100).toFixed(1)}%, edge miss ${(edgeSourceMissRate * 100).toFixed(1)}%, edge extra ${(edgeRenderExtraRate * 100).toFixed(1)}%, full source miss ${(fullSourceMissRate * 100).toFixed(1)}%, full render extra ${(fullRenderExtraRate * 100).toFixed(1)}%, full edge miss ${(fullEdgeSourceMissRate * 100).toFixed(1)}%, full edge extra ${(fullEdgeRenderExtraRate * 100).toFixed(1)}%`;
+      addPackMessage(packs, 'design-basic', 'design', 'warning', message);
       pushIssue(issues, {
         standardPack: 'design-basic',
-        severity: 'blocked',
+        severity: 'warning',
         channel: 'design',
         semanticElementIds: [],
         sourceAnchorIds: [],
@@ -533,6 +616,29 @@ export function validateStandards(home: DenHome): StandardsValidationResult {
   const accessibilityMessage = 'Accessibility checks are optional/advisory until a target accessibility profile is selected';
   addPackMessage(packs, 'accessibility-optional', 'accessibility', 'warning', accessibilityMessage);
 
+  const codeAdvisory = codeAdvisoryReport(codeAdvisoryInputFromHome(home));
+  ensurePack('code-advisory-dimensional', 'codeAdvisory');
+  for (const item of codeAdvisory.findings) {
+    if (item.status === 'pass') continue;
+    const where = item.subjectLabel ? `${item.subjectLabel}: ` : '';
+    const message = `[${item.ruleId}] ${where}${item.detail} (${item.citation})`;
+    addPackMessage(packs, 'code-advisory-dimensional', 'codeAdvisory', 'warning', message);
+    if (item.status === 'fail') {
+      pushIssue(issues, {
+        standardPack: 'code-advisory-dimensional',
+        severity: 'warning',
+        channel: 'codeAdvisory',
+        semanticElementIds: item.subjectId ? [item.subjectId] : [],
+        sourceAnchorIds: [],
+        layer: 'level frames',
+        description: message,
+        expected: item.citation,
+        actual: item.detail,
+        camera: { view: 'plan', targetElementIds: item.subjectId ? [item.subjectId] : [] },
+      });
+    }
+  }
+
   const packList = [...packs.values()];
   for (const pack of packList) finalizePack(pack);
   const channels: StandardsValidationResult['channels'] = {
@@ -551,5 +657,6 @@ export function validateStandards(home: DenHome): StandardsValidationResult {
     channels,
     packs: packList,
     issues,
+    codeAdvisory,
   };
 }

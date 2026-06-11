@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "check:code": "node scripts/check-code-advisory.mjs",
     "paired:smoke": "node scripts/check-den-seeds.mjs",
     "paired:geometry": "node scripts/check-paired-geometry.mjs",
     "paired:roof": "node scripts/import-roof-elevation.mjs",
