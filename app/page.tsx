@@ -1752,6 +1752,37 @@ function ProductWorkflowPanel({
   const canPromote = audit.blockers.length === 0 && home?.pairedArtifactInfo?.promotionEligible === true;
   const [briefText, setBriefText] = useState('');
   const [briefUnparsed, setBriefUnparsed] = useState<string[]>([]);
+  const [generateStatus, setGenerateStatus] = useState('');
+  const [hasGenerationKey, setHasGenerationKey] = useState<boolean | null>(null);
+  useEffect(() => {
+    fetch('/api/generate-plan')
+      .then((res) => res.json())
+      .then((body) => setHasGenerationKey(Boolean(body.hasKey)))
+      .catch(() => setHasGenerationKey(false));
+  }, []);
+  const onGeneratePlan = async () => {
+    if (!briefText.trim()) {
+      setGenerateStatus('Type a brief first.');
+      return;
+    }
+    setGenerateStatus(hasGenerationKey ? 'Generating via OpenAI...' : 'Generating from deterministic template (no OPENAI_API_KEY)...');
+    try {
+      const res = await fetch('/api/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brief: briefText }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setGenerateStatus(`Generation failed: ${body.error ?? res.status}${body.errors ? ` - ${body.errors.slice(0, 3).join('; ')}` : ''}`);
+        return;
+      }
+      setGenerateStatus(`Generated ${body.planId} (${body.mode}). Loading...`);
+      window.location.href = body.url;
+    } catch (error) {
+      setGenerateStatus(`Generation failed: ${(error as Error).message}`);
+    }
+  };
 
   return (
     <div className="border-t border-stone-200 p-3">
@@ -1804,6 +1835,24 @@ function ProductWorkflowPanel({
         {briefUnparsed.length > 0 && (
           <div className="border border-amber-200 bg-amber-50 p-1.5 text-amber-800" data-brief-unparsed>
             Not understood (add manually below): {briefUnparsed.join('; ')}
+          </div>
+        )}
+        <button
+          type="button"
+          data-generate-plan
+          onClick={onGeneratePlan}
+          className="w-full border border-emerald-800 bg-emerald-800 px-2 py-1 text-white hover:bg-emerald-700"
+        >
+          Generate Plan From Brief
+        </button>
+        {hasGenerationKey === false && (
+          <div className="text-[9px] leading-snug text-stone-400">
+            No OPENAI_API_KEY in .env.local - Generate uses the deterministic template until one is added.
+          </div>
+        )}
+        {generateStatus && (
+          <div className="border border-stone-200 bg-stone-50 p-1.5 text-stone-600" data-generate-status>
+            {generateStatus}
           </div>
         )}
         <label className="block">
