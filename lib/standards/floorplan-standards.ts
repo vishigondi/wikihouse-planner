@@ -251,7 +251,7 @@ export function standardsRegistrySummary() {
 
 const GRID_UNIT_FT = 4;
 
-function lotFromArtifact(artifactJson: unknown): CodeAdvisoryLot | null {
+export function lotFromArtifact(artifactJson: unknown): CodeAdvisoryLot | null {
   if (!artifactJson || typeof artifactJson !== 'object') return null;
   const lot = (artifactJson as Record<string, unknown>).lot;
   if (!lot || typeof lot !== 'object') return null;
@@ -357,6 +357,13 @@ export function codeAdvisoryInputFromHome(home: DenHome): CodeAdvisoryInput {
     openings,
     lot: lotFromArtifact(home.pairedArtifactJson),
   };
+}
+
+/** Constraint report with an optional what-if lot override (null = no lot). */
+export function codeAdvisoryReportForHome(home: DenHome, lotOverride?: CodeAdvisoryLot | null): CodeAdvisoryReport {
+  const input = codeAdvisoryInputFromHome(home);
+  if (lotOverride !== undefined) input.lot = lotOverride;
+  return codeAdvisoryReport(input);
 }
 
 export function validateStandards(home: DenHome): StandardsValidationResult {

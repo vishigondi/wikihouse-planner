@@ -15,8 +15,8 @@ import { exportExperimentalIfc } from '@/lib/bim/export-ifc';
 import { bimAssetRegistrySummary } from '@/lib/bim/component-registry';
 import { localBimAssetSummary, localVisualAssetAttributions } from '@/lib/bim/component-assets';
 import { buildableBimFromHome, buildableBimSummary } from '@/lib/bim/buildable-bim';
-import { standardsRegistrySummary, validateStandards } from '@/lib/standards/floorplan-standards';
-import { CODE_ADVISORY_RULES, type CodeAdvisoryFinding, type CodeAdvisoryReport } from '@/lib/standards/code-advisory';
+import { standardsRegistrySummary, validateStandards, codeAdvisoryReportForHome, lotFromArtifact } from '@/lib/standards/floorplan-standards';
+import { CODE_ADVISORY_RULES, type CodeAdvisoryFinding } from '@/lib/standards/code-advisory';
 import { parseBrief, briefToPromptFields } from '@/lib/brief';
 import { countDrawingPrimitives, diffSourceToSemanticDrawingPrimitives, extractSourceDrawingPrimitives } from '@/lib/drawing-primitives';
 import {
@@ -1896,7 +1896,46 @@ function ProductWorkflowPanel({
   );
 }
 
-function ConstraintReportPanel({ report }: { report: CodeAdvisoryReport }) {
+function ConstraintReportPanel({ home }: { home: DenHome }) {
+  const artifactLot = useMemo(() => lotFromArtifact(home.pairedArtifactJson), [home.pairedArtifactJson]);
+  const [lotDraft, setLotDraft] = useState<{
+    widthFt: string; depthFt: string; front: string; rear: string; left: string; right: string; coveragePct: string;
+  } | null>(null);
+  const draft = lotDraft ?? {
+    widthFt: artifactLot ? String(artifactLot.widthFt) : '',
+    depthFt: artifactLot ? String(artifactLot.depthFt) : '',
+    front: String(artifactLot?.setbacksFt?.front ?? ''),
+    rear: String(artifactLot?.setbacksFt?.rear ?? ''),
+    left: String(artifactLot?.setbacksFt?.left ?? ''),
+    right: String(artifactLot?.setbacksFt?.right ?? ''),
+    coveragePct: artifactLot?.maxCoverageRatio ? String(Math.round(artifactLot.maxCoverageRatio * 100)) : '35',
+  };
+  const draftLot = useMemo(() => {
+    const widthFt = Number(draft.widthFt);
+    const depthFt = Number(draft.depthFt);
+    if (!Number.isFinite(widthFt) || !Number.isFinite(depthFt) || widthFt <= 0 || depthFt <= 0) return null;
+    const setback = (value: string) => {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) && parsed >= 0 && value !== '' ? parsed : undefined;
+    };
+    const coverage = Number(draft.coveragePct);
+    return {
+      widthFt,
+      depthFt,
+      setbacksFt: { front: setback(draft.front), rear: setback(draft.rear), left: setback(draft.left), right: setback(draft.right) },
+      maxCoverageRatio: Number.isFinite(coverage) && coverage > 0 && coverage <= 100 ? coverage / 100 : undefined,
+    };
+  }, [draft.widthFt, draft.depthFt, draft.front, draft.rear, draft.left, draft.right, draft.coveragePct]);
+  const report = useMemo(() => codeAdvisoryReportForHome(home, draftLot), [home, draftLot]);
+  const lotEdited = lotDraft !== null;
+  const updateDraft = (key: keyof typeof draft, value: string) => setLotDraft({ ...draft, [key]: value });
+  const exportWithLot = () => {
+    const artifact: Record<string, unknown> = (home.pairedArtifactJson && typeof home.pairedArtifactJson === 'object')
+      ? { ...(home.pairedArtifactJson as Record<string, unknown>) }
+      : { planId: home.id };
+    artifact.lot = draftLot;
+    downloadJson(`${home.id}-${home.pairedProposalId ?? 'draft'}-with-lot.paired.json`, artifact);
+  };
   const findingsByRule = new Map<string, CodeAdvisoryFinding[]>();
   for (const item of report.findings) {
     const list = findingsByRule.get(item.ruleId) ?? [];
@@ -1905,6 +1944,17 @@ function ConstraintReportPanel({ report }: { report: CodeAdvisoryReport }) {
   }
   const statusClass = (status: string) =>
     status === 'fail' ? 'text-red-700' : status === 'pass' ? 'text-emerald-700' : 'text-stone-400';
+  const lotField = (label: string, key: keyof typeof draft) => (
+    <label className="block">
+      <span className="mb-0.5 block text-[9px] text-stone-400">{label}</span>
+      <input
+        value={draft[key]}
+        onChange={(event) => updateDraft(key, event.target.value)}
+        data-lot-field={key}
+        className="w-full border border-stone-200 bg-white px-1.5 py-0.5 font-mono text-[10px] text-stone-700"
+      />
+    </label>
+  );
   return (
     <section className="border border-stone-200 bg-white p-3" data-constraint-report={report.reportVersion}>
       <div className="mb-2 flex items-center justify-between gap-2">
@@ -1912,6 +1962,35 @@ function ConstraintReportPanel({ report }: { report: CodeAdvisoryReport }) {
         <span className="font-mono text-[10px] text-stone-500">
           {report.summary.pass} pass / {report.summary.fail} fail / {report.summary.notEvaluated} not evaluated
         </span>
+      </div>
+      <div className="mb-2 border border-stone-200 bg-stone-50 p-2" data-lot-editor>
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
+            Lot {lotEdited ? '(what-if, not saved)' : artifactLot ? '(from artifact)' : '(none in artifact)'}
+          </span>
+          <div className="flex gap-1">
+            {lotEdited && (
+              <button type="button" onClick={() => setLotDraft(null)} className="border border-stone-300 bg-white px-1.5 py-0.5 text-[9px] text-stone-600 hover:bg-stone-100">
+                reset
+              </button>
+            )}
+            <button type="button" onClick={exportWithLot} data-lot-export className="border border-stone-300 bg-white px-1.5 py-0.5 text-[9px] text-stone-600 hover:bg-stone-100">
+              export JSON with lot
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-4 gap-1">
+          {lotField('lot W ft', 'widthFt')}
+          {lotField('lot D ft', 'depthFt')}
+          {lotField('front sb', 'front')}
+          {lotField('rear sb', 'rear')}
+          {lotField('left sb', 'left')}
+          {lotField('right sb', 'right')}
+          {lotField('max cov %', 'coveragePct')}
+        </div>
+        <div className="mt-1 text-[9px] leading-snug text-stone-400">
+          Edits re-run setback/coverage rules live. The artifact is unchanged until the exported JSON is re-imported.
+        </div>
       </div>
       <div className="space-y-2">
         {CODE_ADVISORY_RULES.map((rule) => {
@@ -3190,7 +3269,7 @@ function SemanticReviewPanel({ home }: { home: DenHome }) {
           {!buildableSummary.blockers.length && !buildableSummary.warnings.length && <div className="border border-emerald-100 bg-emerald-50 p-2 text-emerald-700">No BIM blockers or warnings.</div>}
         </div>
         <div className="mt-4">
-          <ConstraintReportPanel report={standards.codeAdvisory} />
+          <ConstraintReportPanel home={home} />
         </div>
         <div className="mt-4">
           <ValidationSummary groups={groups} />
