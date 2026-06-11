@@ -554,13 +554,18 @@ function productAudit(home: DenHome | null, renderedBounds: RenderedModelBounds 
   const exportLane = lanes.find((lane) => lane.id === 'export') ?? emptyLaneSummary('export');
   const blockers = [...design.blockers, ...presentation.blockers, ...brochure.blockers];
   const warnings = [...design.warnings, ...presentation.warnings, ...brochure.warnings];
-  const status: ArtifactLifecycle = blockers.length
+  // The headline lifecycle reflects the design itself. Brochure blockers
+  // (e.g. a missing sales image on a JSON-only plan) keep the brochure lane
+  // blocked and gate promotion, but they do not label the whole plan blocked.
+  const designBlockers = [...design.blockers, ...presentation.blockers];
+  const status: ArtifactLifecycle = designBlockers.length
     ? 'blocked'
     : home?.pairedArtifactInfo?.promotionEligible
       ? 'promoted'
       : 'review';
   return {
     blockers: [...new Set(blockers)],
+    designBlockers: [...new Set(designBlockers)],
     warnings: [...new Set(warnings)],
     status,
     designQuality: design,
@@ -3527,7 +3532,7 @@ function ProductGallery({
     const normalizedQuery = query.trim().toLowerCase();
     return homes.filter((home) => {
       const audit = productAudit(home, null);
-      const lifecycle = audit.blockers.length ? 'blocked' : (lifecycleStates[home.id] ?? audit.status);
+      const lifecycle = audit.designBlockers.length ? 'blocked' : (lifecycleStates[home.id] ?? audit.status);
       const { beds, baths } = bedBathParts(home);
       const levels = String(Math.max(1, new Set(home.rooms.map((room) => room.floor ?? 0)).size));
       const haystack = [
@@ -3629,7 +3634,7 @@ function ProductGallery({
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {filteredHomes.map((home) => {
           const audit = productAudit(home, null);
-          const lifecycle = audit.blockers.length ? 'blocked' : (lifecycleStates[home.id] ?? audit.status);
+          const lifecycle = audit.designBlockers.length ? 'blocked' : (lifecycleStates[home.id] ?? audit.status);
           const thumbnail = home.pairedArtifactInfo?.deterministicRenderUrl ?? home.pairedArtifactInfo?.sourceImageUrl;
           const qualityLabel = audit.brochureQuality.status === 'pass' && audit.designQuality.status === 'pass' && audit.presentationQuality.status === 'pass'
             ? 'Brochure Ready'
@@ -3788,7 +3793,7 @@ export default function Home() {
   const currentGeometryAudit = useMemo(() => liveGeometryAudit(displayHome), [displayHome]);
   const currentProductAudit = useMemo(() => productAudit(displayHome, renderedBounds), [displayHome, renderedBounds]);
   const currentValidationGroups = useMemo(() => validationGroups(displayHome, renderedBounds), [displayHome, renderedBounds]);
-  const currentLifecycle = currentProductAudit.blockers.length ? 'blocked' : (lifecycleStates[selectedHomeId] ?? currentProductAudit.status);
+  const currentLifecycle = currentProductAudit.designBlockers.length ? 'blocked' : (lifecycleStates[selectedHomeId] ?? currentProductAudit.status);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -4113,7 +4118,7 @@ export default function Home() {
     const packet = {
       artifactVersion: 'paired_floorplan_product_packet_v2',
       exportedAt: new Date().toISOString(),
-      lifecycle: audit.blockers.length ? 'blocked' : currentLifecycle === 'promoted' ? 'exported' : currentLifecycle,
+      lifecycle: audit.designBlockers.length ? 'blocked' : currentLifecycle === 'promoted' ? 'exported' : currentLifecycle,
       request: promptRequest,
       generationPrompt: buildGenerationPrompt(promptRequest, displayHome),
       feedbackPrompt: buildFeedbackPrompt(displayHome, audit),
