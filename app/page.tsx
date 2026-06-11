@@ -3769,7 +3769,24 @@ function ProductGallery({
                     {thumbnail ? (
                       <img src={thumbnail} alt={`${home.model} plan thumbnail`} className="max-h-full w-full object-contain transition duration-300 group-hover:scale-[1.015]" />
                     ) : (
-                      <div className="font-mono text-[10px] text-stone-300">No floorplan</div>
+                      // JSON-only plans have no proposal image but always have
+                      // the live deterministic render - show the plan, not a
+                      // "missing" placeholder.
+                      <div data-live-thumbnail className="h-full w-full overflow-hidden p-1 [&_svg]:h-full [&_svg]:w-full">
+                        <FloorPlanView
+                          rooms={home.rooms}
+                          footprint={home.footprint}
+                          connections={home.connections}
+                          sourceWalls={home.sourceWalls}
+                          sourceOpenings={home.sourceOpenings}
+                          spaceFaces={home.spaceFaces}
+                          dimensionLines={home.dimensionLines}
+                          dimensionFrame={home.dimensionFrame}
+                          floorFrames={home.floorFrames}
+                          traceMode={home.pairedArtifact}
+                          drawingStyleProfile={home.drawingStyleProfile}
+                        />
+                      </div>
                     )}
                   </div>
                   <div className="grid min-w-0 grid-rows-[1fr_auto] overflow-hidden border border-stone-100 bg-[#f7f3ec]">
