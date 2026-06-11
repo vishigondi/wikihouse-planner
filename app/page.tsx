@@ -2203,11 +2203,13 @@ function WorkflowActionBar({
   lifecycle,
   groups,
   onOpen,
+  showAllChips = true,
 }: {
   home: DenHome | null;
   lifecycle: ArtifactLifecycle;
   groups: ValidationGroup[];
   onOpen: (dialog: WorkflowDialog, layer?: RepairLayer) => void;
+  showAllChips?: boolean;
 }) {
   const lanes = readinessLanes(groups);
   const design = lanes.find((lane) => lane.id === 'design') ?? emptyLaneSummary('design');
@@ -2245,9 +2247,18 @@ function WorkflowActionBar({
         </div>
       </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
+        {!showAllChips && (
+          <div className="flex items-center gap-1 border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] uppercase tracking-wide text-emerald-800">
+            {groups.filter((group) => group.status === 'pass').length} gates pass
+          </div>
+        )}
         {groups.map((group) => {
           const hasIssues = group.blockers.length > 0 || group.warnings.length > 0;
           const repairLayer = repairLayerForValidationGroup(group);
+          // Passing gates collapse behind the summary count unless Review
+          // Tools is open; chips stay in the DOM (hidden) so QA scripts can
+          // keep reading the data-validation-* attributes.
+          const collapsed = !showAllChips && group.status === 'pass';
           return (
             <div
               key={group.id}
@@ -2258,7 +2269,7 @@ function WorkflowActionBar({
               data-validation-blockers={group.blockers.join('\n')}
               data-validation-warnings={group.warnings.join('\n')}
               data-validation-action={group.action}
-              className="flex items-center gap-1 border border-stone-200 bg-white px-2 py-1 text-[9px] uppercase tracking-wide"
+              className={`${collapsed ? 'hidden ' : ''}flex items-center gap-1 border border-stone-200 bg-white px-2 py-1 text-[9px] uppercase tracking-wide`}
             >
               <span className="text-stone-500">{group.label}</span>
               {hasIssues && (
@@ -4440,6 +4451,7 @@ export default function Home() {
         lifecycle={currentLifecycle}
         groups={currentValidationGroups}
         onOpen={openWorkflowDialog}
+        showAllChips={reviewToolsVisible}
       />
 
       <div className="flex items-start">
