@@ -354,13 +354,28 @@ function normalizedSourceOpeningOverride(opening: SourceOpeningSegment): SourceO
   };
 }
 
-function sourceDimensionLines(artifact: PairedArtifact, toFtSpan: (span: Span, floor?: number) => Span): SourceDimensionLine[] {
+function sourceDimensionLines(
+  artifact: PairedArtifact,
+  toFtSpan: (span: Span, floor?: number) => Span,
+  footprint: { width: number; depth: number },
+): SourceDimensionLine[] {
   return (artifact.dimensionLines ?? [])
     .map((line): SourceDimensionLine | undefined => {
       if (!line.span) return undefined;
       const floor = line.floor ?? 0;
-      const span = toFtSpan(line.span, floor);
+      let span = toFtSpan(line.span, floor);
       if (![span.x1, span.z1, span.x2, span.z2].every(Number.isFinite)) return undefined;
+      // Some artifacts carry dimension spans in source-image pixels; mapped
+      // as feet they land far outside the plan. The label is the semantic
+      // truth, so keep it and re-anchor the line to the level frame.
+      const maxExtent = Math.max(footprint.width, footprint.depth) * 1.5 + 8;
+      const outOfRange = [span.x1, span.z1, span.x2, span.z2].some((value) => value < -maxExtent || value > maxExtent);
+      if (outOfRange) {
+        const horizontal = Math.abs(line.span.x2 - line.span.x1) >= Math.abs(line.span.z2 - line.span.z1);
+        span = horizontal
+          ? { x1: 0, z1: -2, x2: footprint.width, z2: -2 }
+          : { x1: -2, z1: 0, x2: -2, z2: footprint.depth };
+      }
       return {
         id: line.id,
         floor,
@@ -1880,7 +1895,7 @@ function pairedToDenHome(
     sourceWalls,
   );
   const spaceFaces = sourceSpaceFaces(artifact, coords.toFtPoint, roomLabelById);
-  const dimensionLines = sourceDimensionLines(artifact, coords.toFtSpan);
+  const dimensionLines = sourceDimensionLines(artifact, coords.toFtSpan, footprint);
   const floorFrames = coords.frames.map((frame) => ({
     floor: frame.floor,
     gx: 0,
