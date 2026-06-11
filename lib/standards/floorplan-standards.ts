@@ -275,20 +275,139 @@ export function lotFromArtifact(artifactJson: unknown): CodeAdvisoryLot | null {
   };
 }
 
+interface RoofPlaneEquation {
+  a: number;
+  b: number;
+  c: number;
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+}
+
+function roofPlaneEquation(points: Array<{ x: number; y: number; z: number }>): RoofPlaneEquation | null {
+  if (!points || points.length < 3) return null;
+  // Fit y = a*x + b*z + c from three non-collinear points.
+  for (let i = 0; i < points.length - 2; i += 1) {
+    const [p, q, r] = [points[i], points[i + 1], points[i + 2]];
+    const d = (q.x - p.x) * (r.z - p.z) - (r.x - p.x) * (q.z - p.z);
+    if (Math.abs(d) < 1e-9) continue;
+    const a = ((q.y - p.y) * (r.z - p.z) - (r.y - p.y) * (q.z - p.z)) / d;
+    const b = ((q.x - p.x) * (r.y - p.y) - (r.x - p.x) * (q.y - p.y)) / d;
+    const c = p.y - a * p.x - b * p.z;
+    return {
+      a,
+      b,
+      c,
+      minX: Math.min(...points.map((pt) => pt.x)),
+      maxX: Math.max(...points.map((pt) => pt.x)),
+      minZ: Math.min(...points.map((pt) => pt.z)),
+      maxZ: Math.max(...points.map((pt) => pt.z)),
+    };
+  }
+  return null;
+}
+
+const CEILING_SAMPLE_STEP_FT = 0.5;
+
+function ceilingProfileForRect(
+  rect: { x0: number; z0: number; x1: number; z1: number },
+  floorElevationFt: number,
+  planes: RoofPlaneEquation[],
+  fallbackCeilingY: number,
+  loftClamp: { rect: { x0: number; z0: number; x1: number; z1: number }; floorY: number } | null,
+): NonNullable<import('@/lib/standards/code-advisory').CodeAdvisoryRoom['ceiling']> | undefined {
+  const widthFt = rect.x1 - rect.x0;
+  const depthFt = rect.z1 - rect.z0;
+  if (widthFt <= 0 || depthFt <= 0) return undefined;
+  let minFt = Infinity;
+  let maxFt = -Infinity;
+  let cells5 = 0;
+  let cells7 = 0;
+  let cells = 0;
+  for (let x = rect.x0 + CEILING_SAMPLE_STEP_FT / 2; x < rect.x1; x += CEILING_SAMPLE_STEP_FT) {
+    for (let z = rect.z0 + CEILING_SAMPLE_STEP_FT / 2; z < rect.z1; z += CEILING_SAMPLE_STEP_FT) {
+      let ceilingY = Infinity;
+      for (const plane of planes) {
+        if (x < plane.minX - 1e-6 || x > plane.maxX + 1e-6 || z < plane.minZ - 1e-6 || z > plane.maxZ + 1e-6) continue;
+        ceilingY = Math.min(ceilingY, plane.a * x + plane.b * z + plane.c);
+      }
+      if (!Number.isFinite(ceilingY)) ceilingY = fallbackCeilingY;
+      if (loftClamp && x >= loftClamp.rect.x0 && x <= loftClamp.rect.x1 && z >= loftClamp.rect.z0 && z <= loftClamp.rect.z1) {
+        ceilingY = Math.min(ceilingY, loftClamp.floorY);
+      }
+      const height = ceilingY - floorElevationFt;
+      minFt = Math.min(minFt, height);
+      maxFt = Math.max(maxFt, height);
+      cells += 1;
+      const cellArea = CEILING_SAMPLE_STEP_FT * CEILING_SAMPLE_STEP_FT;
+      if (height >= 5) cells5 += cellArea;
+      if (height >= 7) cells7 += cellArea;
+    }
+  }
+  if (!cells) return undefined;
+  return {
+    // Loft rectangles can extend past where the roof drops below the loft
+    // floor; clamp so the profile reads as 0 ft, not negative.
+    minFt: Math.max(0, minFt),
+    maxFt: Math.max(0, maxFt),
+    areaAtOrAbove5FtSqFt: cells5,
+    areaAtOrAbove7FtSqFt: cells7,
+    source: 'roof-planes',
+  };
+}
+
 export function codeAdvisoryInputFromHome(home: DenHome): CodeAdvisoryInput {
   const faceRoomIdByFaceId = new Map(
     (home.spaceFaces ?? []).map((face) => [face.id, face.roomId ?? face.id]),
   );
+  // Ceiling derivation context: validated roof planes in feet, loft floor
+  // elevation, and the loft frame (to clamp ground-floor rooms beneath it).
+  const roofValidated = home.roofSemantics?.status === 'validated';
+  const planeEquations = roofValidated
+    ? (home.roofSemantics?.planes ?? [])
+        .map((plane) => roofPlaneEquation((plane.points ?? []) as Array<{ x: number; y: number; z: number }>))
+        .filter((plane): plane is RoofPlaneEquation => plane !== null)
+    : [];
+  const loftFloorY = home.loftHeight ?? 8;
+  const loftFrame = (home.floorFrames ?? []).find((frame) => frame.floor === 1);
+  const loftClampRect = home.hasLoft && loftFrame
+    ? {
+      rect: {
+        x0: loftFrame.gx * GRID_UNIT_FT,
+        z0: loftFrame.gz * GRID_UNIT_FT,
+        x1: (loftFrame.gx + loftFrame.gw) * GRID_UNIT_FT,
+        z1: (loftFrame.gz + loftFrame.gd) * GRID_UNIT_FT,
+      },
+      floorY: loftFloorY,
+    }
+    : null;
   const rooms = home.rooms.map((room, index) => {
     const id = (room.spaceFaceId && faceRoomIdByFaceId.get(room.spaceFaceId))
       || room.spaceFaceId
       || `${room.label || room.type || 'room'}-${room.floor ?? 0}-${index}`;
     const hasRect = Number.isFinite(room.gw) && Number.isFinite(room.gd) && room.gw > 0 && room.gd > 0;
+    const floorIndex = room.floor ?? 0;
+    const ceiling = hasRect && planeEquations.length
+      ? ceilingProfileForRect(
+        {
+          x0: room.gx * GRID_UNIT_FT,
+          z0: room.gz * GRID_UNIT_FT,
+          x1: (room.gx + room.gw) * GRID_UNIT_FT,
+          z1: (room.gz + room.gd) * GRID_UNIT_FT,
+        },
+        floorIndex >= 1 ? loftFloorY : 0,
+        planeEquations,
+        Math.max(home.height, loftFloorY + 1),
+        floorIndex === 0 ? loftClampRect : null,
+      )
+      : undefined;
     return {
       id,
       label: room.label,
       type: room.type,
       floor: room.floor,
+      ceiling,
       widthFt: hasRect ? room.gw * GRID_UNIT_FT : undefined,
       depthFt: hasRect ? room.gd * GRID_UNIT_FT : undefined,
       parts: (room.parts ?? [])

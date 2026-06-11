@@ -39,6 +39,11 @@ export const CODE_ADVISORY_RULES: CodeAdvisoryRule[] = [
     category: 'room-minimums',
   },
   {
+    ruleId: 'IRC-R305.1',
+    citation: 'IRC §R305.1 — Habitable space ceiling height not less than 7 ft (bathrooms/laundry 6 ft 8 in); sloped ceilings: at least 50% of the required floor area at 7 ft or more, and no portion below 5 ft counts toward required area.',
+    category: 'room-minimums',
+  },
+  {
     ruleId: 'IRC-R310.1',
     citation: 'IRC §R310.1 — Every sleeping room shall have at least one emergency escape and rescue opening (egress window or exterior door).',
     category: 'egress',
@@ -158,6 +163,17 @@ export interface CodeAdvisoryRoom {
   grid?: { gx: number; gz: number; gw: number; gd: number; unitFt: number };
   physicalBoundary?: boolean;
   semanticZone?: boolean;
+  /**
+   * Ceiling profile derived from roof/loft geometry (all in feet, areas in
+   * sq ft over this room's footprint). Omit when no validated geometry.
+   */
+  ceiling?: {
+    minFt: number;
+    maxFt: number;
+    areaAtOrAbove7FtSqFt: number;
+    areaAtOrAbove5FtSqFt: number;
+    source: string;
+  };
 }
 
 export interface CodeAdvisoryOpening {
@@ -214,6 +230,10 @@ const EXTERIOR_PATTERN = /exterior|outside|outdoor|deck|porch|patio|yard/i;
 
 const MIN_HABITABLE_AREA_SQFT = 70;
 const MIN_HABITABLE_DIMENSION_FT = 7;
+const MIN_CEILING_HABITABLE_FT = 7;
+const MIN_CEILING_BATH_FT = 6 + 8 / 12;
+const SLOPED_CEILING_FLAT_TOLERANCE_FT = 0.1;
+const BATH_LIKE_PATTERN = /bath|laundry|toilet|wc\b|powder/i;
 const DEFAULT_MAX_COVERAGE_RATIO = 0.35;
 const GRID_TOLERANCE_FT = 0.05;
 const SETBACK_TOLERANCE_FT = 0.05;
@@ -323,13 +343,22 @@ export function codeAdvisoryReport(input: CodeAdvisoryInput): CodeAdvisoryReport
   // --- Room minimums (IRC R304) ---
   const habitable = input.rooms.filter(isHabitableRoom);
   for (const room of habitable) {
-    const area = roomAreaSqFt(room);
+    const rawArea = roomAreaSqFt(room);
+    // Sloped-ceiling feedback (R305.1): portions below 5 ft do not count
+    // toward required floor area, so the effective area is capped by the
+    // >=5 ft ceiling area when a derived ceiling profile exists.
+    const area = rawArea !== undefined && room.ceiling
+      ? Math.min(rawArea, room.ceiling.areaAtOrAbove5FtSqFt)
+      : rawArea;
+    const excludedNote = rawArea !== undefined && area !== undefined && rawArea - area > 0.5
+      ? ` (${(rawArea - area).toFixed(1)} sq ft under the 5 ft ceiling cutoff excluded)`
+      : '';
     if (area === undefined) {
       findings.push(finding('IRC-R304.1', 'not-evaluated', 'Room has no usable geometry in the semantic JSON.', subject(room)));
     } else if (area + 1e-6 < MIN_HABITABLE_AREA_SQFT) {
-      findings.push(finding('IRC-R304.1', 'fail', `Floor area ${area.toFixed(1)} sq ft is below the ${MIN_HABITABLE_AREA_SQFT} sq ft minimum.`, subject(room)));
+      findings.push(finding('IRC-R304.1', 'fail', `Floor area ${area.toFixed(1)} sq ft${excludedNote} is below the ${MIN_HABITABLE_AREA_SQFT} sq ft minimum.`, subject(room)));
     } else {
-      findings.push(finding('IRC-R304.1', 'pass', `Floor area ${area.toFixed(1)} sq ft meets the ${MIN_HABITABLE_AREA_SQFT} sq ft minimum.`, subject(room)));
+      findings.push(finding('IRC-R304.1', 'pass', `Floor area ${area.toFixed(1)} sq ft${excludedNote} meets the ${MIN_HABITABLE_AREA_SQFT} sq ft minimum.`, subject(room)));
     }
 
     if (KITCHEN_PATTERN.test(roomText(room))) continue;
@@ -340,6 +369,44 @@ export function codeAdvisoryReport(input: CodeAdvisoryInput): CodeAdvisoryReport
       findings.push(finding('IRC-R304.2', 'fail', `Minimum horizontal dimension ${minDim.toFixed(1)} ft is below the ${MIN_HABITABLE_DIMENSION_FT} ft minimum.`, subject(room)));
     } else {
       findings.push(finding('IRC-R304.2', 'pass', `Minimum horizontal dimension ${minDim.toFixed(1)} ft meets the ${MIN_HABITABLE_DIMENSION_FT} ft minimum.`, subject(room)));
+    }
+  }
+
+  // --- Ceiling height (IRC R305) ---
+  const ceilingRooms = input.rooms.filter((room) => isHabitableRoom(room) || BATH_LIKE_PATTERN.test(roomText(room)));
+  for (const room of ceilingRooms) {
+    const ceiling = room.ceiling;
+    const isBathLike = BATH_LIKE_PATTERN.test(roomText(room)) && !isHabitableRoom(room);
+    if (!ceiling) {
+      findings.push(finding('IRC-R305.1', 'not-evaluated', 'No validated roof/loft geometry to derive a ceiling profile for this room.', subject(room)));
+      continue;
+    }
+    if (isBathLike) {
+      if (ceiling.minFt + 1e-6 >= MIN_CEILING_BATH_FT) {
+        findings.push(finding('IRC-R305.1', 'pass', `Bathroom/laundry ceiling ${ceiling.minFt.toFixed(1)} ft meets the 6 ft 8 in minimum.`, subject(room)));
+      } else {
+        findings.push(finding('IRC-R305.1', 'fail', `Bathroom/laundry ceiling ${ceiling.minFt.toFixed(1)} ft is below the 6 ft 8 in minimum.`, subject(room)));
+      }
+      continue;
+    }
+    const sloped = ceiling.maxFt - ceiling.minFt > SLOPED_CEILING_FLAT_TOLERANCE_FT;
+    if (!sloped) {
+      if (ceiling.minFt + 1e-6 >= MIN_CEILING_HABITABLE_FT) {
+        findings.push(finding('IRC-R305.1', 'pass', `Flat ceiling ${ceiling.minFt.toFixed(1)} ft meets the ${MIN_CEILING_HABITABLE_FT} ft minimum.`, subject(room)));
+      } else {
+        findings.push(finding('IRC-R305.1', 'fail', `Flat ceiling ${ceiling.minFt.toFixed(1)} ft is below the ${MIN_CEILING_HABITABLE_FT} ft minimum.`, subject(room)));
+      }
+      continue;
+    }
+    // Sloped ceiling: the required floor area (70 sq ft) must exist at >=5 ft,
+    // and at least half of it (35 sq ft) at >=7 ft.
+    const requiredAt5 = MIN_HABITABLE_AREA_SQFT;
+    const requiredAt7 = MIN_HABITABLE_AREA_SQFT / 2;
+    const summary = `sloped ceiling ${ceiling.minFt.toFixed(1)}-${ceiling.maxFt.toFixed(1)} ft; ${ceiling.areaAtOrAbove5FtSqFt.toFixed(1)} sq ft at >=5 ft, ${ceiling.areaAtOrAbove7FtSqFt.toFixed(1)} sq ft at >=7 ft`;
+    if (ceiling.areaAtOrAbove5FtSqFt + 1e-6 >= requiredAt5 && ceiling.areaAtOrAbove7FtSqFt + 1e-6 >= requiredAt7) {
+      findings.push(finding('IRC-R305.1', 'pass', `Sloped-ceiling provision met (${summary}; requires ${requiredAt5} sq ft at >=5 ft and ${requiredAt7} sq ft at >=7 ft).`, subject(room)));
+    } else {
+      findings.push(finding('IRC-R305.1', 'fail', `Sloped-ceiling provision not met (${summary}; requires ${requiredAt5} sq ft at >=5 ft and ${requiredAt7} sq ft at >=7 ft).`, subject(room)));
     }
   }
 

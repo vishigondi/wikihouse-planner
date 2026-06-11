@@ -140,6 +140,34 @@ check('model-irc default keeps generic citation',
   good.findings.find((f) => f.ruleId === 'IRC-R304.1').citation.includes('IRC §R304.1'), true);
 check('model jurisdiction on default reports', good.jurisdiction.id, 'model-irc');
 
+// --- Part 1f: ceiling heights (R305) from derived profiles --------------------
+console.log('fixture: R305 ceiling heights');
+const ceil = (minFt, maxFt, at5, at7) => ({ minFt, maxFt, areaAtOrAbove5FtSqFt: at5, areaAtOrAbove7FtSqFt: at7, source: 'test' });
+const r305 = codeAdvisoryReport({
+  planId: 'fixture-r305',
+  rooms: [
+    { id: 'loft-ok', label: 'Loft Bedroom', type: 'bedroom', widthFt: 12, depthFt: 10, ceiling: ceil(3, 12, 80, 40) },
+    { id: 'loft-low7', label: 'Cramped Loft', type: 'bedroom', widthFt: 12, depthFt: 10, ceiling: ceil(3, 8, 80, 20) },
+    { id: 'loft-low5', label: 'Crawl Loft', type: 'bedroom', widthFt: 12, depthFt: 10, ceiling: ceil(2, 12, 60, 40) },
+    { id: 'flat-ok', label: 'Living Room', type: 'living', widthFt: 16, depthFt: 12, ceiling: ceil(8, 8, 192, 192) },
+    { id: 'flat-low', label: 'Den', type: 'den', widthFt: 12, depthFt: 10, ceiling: ceil(6.5, 6.5, 120, 0) },
+    { id: 'bath-ok', label: 'Bath', type: 'bathroom', widthFt: 6, depthFt: 8, ceiling: ceil(6.7, 6.7, 48, 0) },
+    { id: 'bath-low', label: 'Low Bath', type: 'bathroom', widthFt: 6, depthFt: 8, ceiling: ceil(6.4, 6.4, 48, 0) },
+    { id: 'no-roof', label: 'Bedroom NoRoof', type: 'bedroom', widthFt: 12, depthFt: 10 },
+  ],
+  openings: [],
+});
+check('sloped loft passes 50% provision', statusOf(r305, 'IRC-R305.1', 'loft-ok'), 'pass');
+check('sloped loft failing 7ft area fails', statusOf(r305, 'IRC-R305.1', 'loft-low7'), 'fail');
+check('sloped loft failing 5ft area fails', statusOf(r305, 'IRC-R305.1', 'loft-low5'), 'fail');
+check('R304 area capped by 5ft cutoff fails too', statusOf(r305, 'IRC-R304.1', 'loft-low5'), 'fail');
+check('R304 area capped but sufficient passes', statusOf(r305, 'IRC-R304.1', 'loft-ok'), 'pass');
+check('flat ceiling 8ft passes', statusOf(r305, 'IRC-R305.1', 'flat-ok'), 'pass');
+check('flat ceiling 6.5ft fails', statusOf(r305, 'IRC-R305.1', 'flat-low'), 'fail');
+check('bath 6ft8in passes', statusOf(r305, 'IRC-R305.1', 'bath-ok'), 'pass');
+check('bath below 6ft8in fails', statusOf(r305, 'IRC-R305.1', 'bath-low'), 'fail');
+check('no roof geometry not-evaluated', statusOf(r305, 'IRC-R305.1', 'no-roof'), 'not-evaluated');
+
 // --- Part 2: real paired regression set -------------------------------------
 const PLANS = [
   'public/data/den-image-loop/a-frame-22/paired/a-frame-22-proposal-paired-v10.paired.json',
@@ -206,12 +234,19 @@ for (const relativePath of PLANS) {
   if (ALL_PASS_PLANS.has(artifact.planId)) {
     check(`${artifact.planId}: zero failed findings`, report.summary.fail, 0);
     for (const rule of CODE_ADVISORY_RULES) {
+      // R305 needs roof-derived ceiling profiles, which only the app adapter
+      // computes; offline it must simply never fail. In-app evaluation is
+      // covered by the headless sweep.
+      if (rule.ruleId === 'IRC-R305.1') {
+        check(`${artifact.planId}: ${rule.ruleId} never fails offline`, ['pass', 'not-evaluated'].includes(statusOf(report, rule.ruleId)), true);
+        continue;
+      }
       check(`${artifact.planId}: ${rule.ruleId} passes outright`, statusOf(report, rule.ruleId), 'pass');
     }
   }
 }
 
-check('rule registry has 6 rules', CODE_ADVISORY_RULES.length, 6);
+check('rule registry has 7 rules', CODE_ADVISORY_RULES.length, 7);
 
 if (failures) {
   console.error(`\n${failures} check(s) failed`);
