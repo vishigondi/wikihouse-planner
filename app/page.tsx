@@ -3363,7 +3363,14 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
           <figure className="border border-stone-200 bg-white p-3 shadow-sm">
             <figcaption className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-stone-500">GPT Proposal</figcaption>
             <div className="flex h-[min(72vh,760px)] items-center justify-center overflow-hidden bg-white">
-              <img src={info.sourceImageUrl} alt={`${home.model} GPT proposal`} className="max-h-full max-w-full object-contain" />
+              {info.sourceImageUrl ? (
+                <img src={info.sourceImageUrl} alt={`${home.model} GPT proposal`} className="max-h-full max-w-full object-contain" />
+              ) : (
+                <div className="px-8 text-center text-[11px] leading-relaxed text-stone-400">
+                  <div className="mb-1 font-semibold uppercase tracking-wide">No proposal image</div>
+                  This plan was authored as semantic JSON only. The deterministic render on the right is the design — a GPT proposal image is optional reference art.
+                </div>
+              )}
             </div>
           </figure>
           <figure className="border border-stone-200 bg-white p-3 shadow-sm">

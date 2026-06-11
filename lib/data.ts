@@ -1643,7 +1643,7 @@ function artifactInfo(planId: string, option: ProposalAvailability): PairedPlanA
     planId,
     proposalId: option.id,
     artifactVersion: option.artifactVersion ?? 'paired_gpt_floorplan_v1',
-    sourceImageUrl: `/data/den-image-loop/${planId}/${option.imageUrl}`,
+    sourceImageUrl: option.imageUrl ? `/data/den-image-loop/${planId}/${option.imageUrl}` : '',
     deterministicRenderUrl: option.deterministicRenderUrl ? `/data/den-image-loop/${planId}/${option.deterministicRenderUrl}` : undefined,
     pairedJsonUrl: `/data/den-image-loop/${planId}/${option.pairedJsonUrl}`,
     drawingStyleProfileUrl: drawingStyleProfileUrl ? `/data/den-image-loop/${planId}/${drawingStyleProfileUrl}` : undefined,
