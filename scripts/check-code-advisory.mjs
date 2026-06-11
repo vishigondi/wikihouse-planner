@@ -109,6 +109,37 @@ const noLot = codeAdvisoryReport({ planId: 'fixture-no-lot', footprintWidthFt: 2
 check('setbacks not-evaluated without lot', statusOf(noLot, 'ZON-SETBACK'), 'not-evaluated');
 check('coverage not-evaluated without lot', statusOf(noLot, 'ZON-COVERAGE'), 'not-evaluated');
 
+// --- Part 1e: Cherokee County NC jurisdiction pack ----------------------------
+console.log('fixture: nc-cherokee-county jurisdiction pack');
+const cherokee = codeAdvisoryReport({
+  planId: 'fixture-cherokee',
+  jurisdictionId: 'nc-cherokee-county',
+  footprintWidthFt: 24,
+  footprintDepthFt: 32,
+  lot: goodLot,
+  rooms: [{ id: 'bed-1', label: 'Bedroom 1', type: 'bedroom', widthFt: 12, depthFt: 10 }],
+  openings: [{ id: 'win-bed-1', kind: 'window', roomIds: ['bed-1', 'exterior'] }],
+});
+check('jurisdiction label', cherokee.jurisdiction.label.includes('Cherokee County'), true);
+check('code edition cites NCRC 2018', cherokee.jurisdiction.codeEdition.includes('2018 North Carolina Residential Code'), true);
+check('transition note present', Boolean(cherokee.jurisdiction.transitionNote), true);
+check('R304.1 citation is NCRC', statusOf(cherokee, 'IRC-R304.1', 'bed-1') === 'pass'
+  && cherokee.findings.find((f) => f.ruleId === 'IRC-R304.1').citation.includes('NCRC 2018'), true);
+check('site advisories present', ['NC-SEPTIC-18E', 'NC-FLOOD-SFHA', 'NC-TOWN-LIMITS']
+  .every((ruleId) => cherokee.findings.some((f) => f.ruleId === ruleId && f.status === 'not-evaluated')), true);
+
+const cherokeeNoLot = codeAdvisoryReport({
+  planId: 'fixture-cherokee-no-lot',
+  jurisdictionId: 'nc-cherokee-county',
+  rooms: [],
+  openings: [],
+});
+check('no-lot detail explains unzoned county',
+  cherokeeNoLot.findings.find((f) => f.ruleId === 'ZON-SETBACK').detail.includes('no county-wide zoning'), true);
+check('model-irc default keeps generic citation',
+  good.findings.find((f) => f.ruleId === 'IRC-R304.1').citation.includes('IRC §R304.1'), true);
+check('model jurisdiction on default reports', good.jurisdiction.id, 'model-irc');
+
 // --- Part 2: real paired regression set -------------------------------------
 const PLANS = [
   'public/data/den-image-loop/a-frame-22/paired/a-frame-22-proposal-paired-v10.paired.json',

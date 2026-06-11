@@ -62,6 +62,87 @@ export const CODE_ADVISORY_RULES: CodeAdvisoryRule[] = [
 
 const RULE_BY_ID = new Map(CODE_ADVISORY_RULES.map((rule) => [rule.ruleId, rule]));
 
+// --- Jurisdiction packs -------------------------------------------------------
+// Every citation override and site advisory must trace to a primary source;
+// anything not verifiable from one becomes a "verify with the authority"
+// advisory rather than an invented number.
+
+export interface JurisdictionSiteAdvisory {
+  ruleId: string;
+  category: CodeAdvisoryCategory;
+  citation: string;
+  detail: string;
+}
+
+export interface JurisdictionPack {
+  id: string;
+  label: string;
+  /** Human-readable in-force code edition line for the report header. */
+  codeEdition: string;
+  transitionNote?: string;
+  /** ruleId -> jurisdiction-specific citation text. */
+  citationByRule: Record<string, string>;
+  /** Standing site checks that cannot be decided from plan JSON. */
+  siteAdvisories: JurisdictionSiteAdvisory[];
+  /** Replaces the generic "no lot specified" detail for ZON rules. */
+  zoningStatus?: string;
+}
+
+export const JURISDICTION_PACKS: JurisdictionPack[] = [
+  {
+    id: 'model-irc',
+    label: 'Model IRC (jurisdiction-neutral)',
+    codeEdition: 'International Residential Code (model text)',
+    citationByRule: {},
+    siteAdvisories: [],
+  },
+  {
+    id: 'nc-cherokee-county',
+    label: 'Cherokee County, NC (unincorporated)',
+    // Primary sources, retrieved 2026-06-11: NC OSFM "Codes - Current and Past"
+    // (2018 Residential Code effective Jan 1 2019); NCRC 2018 (IRC 2015 base).
+    codeEdition: '2018 North Carolina Residential Code (IRC 2015 base), in force since Jan 1, 2019',
+    transitionNote:
+      'The 2024 NC State Building Code adoption was delayed past April 2026 (Disaster Recovery Act of 2025). Confirm the in-force edition with Cherokee County Building Code Enforcement (828-837-5527) before permitting.',
+    citationByRule: {
+      'IRC-R304.1': 'NCRC 2018 §R304.1 — Habitable rooms shall have a floor area of not less than 70 sq ft (kitchens excepted).',
+      'IRC-R304.2': 'NCRC 2018 §R304.2 — Habitable rooms shall be not less than 7 ft in any horizontal dimension (kitchens excepted).',
+      'IRC-R305.1': 'NCRC 2018 §R305.1 — Habitable space ceiling height not less than 7 ft; bathrooms/laundry 6 ft 8 in; sloped ceilings: not less than 50% of the required floor area at 7 ft or more, and no portion below 5 ft counts toward required area.',
+      'IRC-R310.1': 'NCRC 2018 §R310.1 — Sleeping rooms require an emergency escape and rescue opening (model base: 5.7 sq ft net clear opening, 5.0 sq ft at grade floor; minimum 24 in height, 20 in width; sill height max 44 in).',
+      'ZON-SETBACK': 'Cherokee County, NC has no county-wide zoning ordinance (county Ordinances & Plans page, retrieved 2026-06-11). Evaluated against user-supplied lot setbacks only.',
+      'ZON-COVERAGE': 'Cherokee County, NC has no county-wide zoning ordinance; coverage limits apply only if user-supplied (e.g. covenants or watershed rules).',
+    },
+    zoningStatus:
+      'Cherokee County has no county-wide zoning ordinance (adopted county ordinances: Animal Control 2021, Comprehensive Plan 2023, Facilities Use Policy). Setbacks are typically driven by septic permitting (15A NCAC 18E), NCDOT driveway/right-of-way rules, watershed/flood regulations, and private covenants. Verify with Cherokee County Planning, 828-837-5527.',
+    siteAdvisories: [
+      {
+        ruleId: 'NC-SEPTIC-18E',
+        category: 'setbacks',
+        citation: '15A NCAC 18E — NC on-site wastewater rules (septic/well separations).',
+        detail: 'Septic system siting and separations from wells, streams, and property lines are not derivable from the plan JSON. Verify with Cherokee County Environmental Health.',
+      },
+      {
+        ruleId: 'NC-FLOOD-SFHA',
+        category: 'setbacks',
+        citation: 'NFIP / county flood damage prevention regulations.',
+        detail: 'If the parcel lies in a Special Flood Hazard Area, elevation and permitting requirements apply. Check the effective FIRM panel for the parcel.',
+      },
+      {
+        ruleId: 'NC-TOWN-LIMITS',
+        category: 'setbacks',
+        citation: 'Municipal zoning (Murphy / Andrews) where applicable.',
+        detail: 'Parcels inside town limits or extraterritorial jurisdiction fall under municipal zoning with their own setbacks. Confirm the parcel jurisdiction.',
+      },
+    ],
+  },
+];
+
+const PACK_BY_ID = new Map(JURISDICTION_PACKS.map((pack) => [pack.id, pack]));
+
+export function jurisdictionPack(id: string | undefined): JurisdictionPack {
+  return (id && PACK_BY_ID.get(id)) || PACK_BY_ID.get('model-irc')!;
+}
+
 export interface CodeAdvisoryRoom {
   id: string;
   label?: string;
@@ -99,6 +180,7 @@ export interface CodeAdvisoryLot {
 
 export interface CodeAdvisoryInput {
   planId?: string;
+  jurisdictionId?: string;
   footprintWidthFt?: number;
   footprintDepthFt?: number;
   rooms: CodeAdvisoryRoom[];
@@ -119,6 +201,7 @@ export interface CodeAdvisoryFinding {
 export interface CodeAdvisoryReport {
   reportVersion: typeof CODE_ADVISORY_REPORT_VERSION;
   planId?: string;
+  jurisdiction: { id: string; label: string; codeEdition: string; transitionNote?: string };
   findings: CodeAdvisoryFinding[];
   summary: { pass: number; fail: number; notEvaluated: number };
 }
@@ -200,7 +283,8 @@ function isEgressCandidate(opening: CodeAdvisoryOpening): boolean {
   return false;
 }
 
-function finding(
+function makeFinding(
+  pack: JurisdictionPack,
   ruleId: string,
   status: CodeAdvisoryStatus,
   detail: string,
@@ -210,7 +294,7 @@ function finding(
   if (!rule) throw new Error(`Unknown code advisory rule: ${ruleId}`);
   return {
     ruleId,
-    citation: rule.citation,
+    citation: pack.citationByRule[ruleId] ?? rule.citation,
     category: rule.category,
     status,
     subjectId: subject?.id,
@@ -226,7 +310,14 @@ function offGridDistanceFt(value: number, unitFt: number): number {
 }
 
 export function codeAdvisoryReport(input: CodeAdvisoryInput): CodeAdvisoryReport {
+  const pack = jurisdictionPack(input.jurisdictionId);
   const findings: CodeAdvisoryFinding[] = [];
+  const finding = (
+    ruleId: string,
+    status: CodeAdvisoryStatus,
+    detail: string,
+    subject?: { id?: string; label?: string },
+  ) => makeFinding(pack, ruleId, status, detail, subject);
   const subject = (room: CodeAdvisoryRoom) => ({ id: room.id, label: room.label ?? room.id });
 
   // --- Room minimums (IRC R304) ---
@@ -305,8 +396,11 @@ export function codeAdvisoryReport(input: CodeAdvisoryInput): CodeAdvisoryReport
   const footprintW = input.footprintWidthFt;
   const footprintD = input.footprintDepthFt;
   if (!lot) {
-    findings.push(finding('ZON-SETBACK', 'not-evaluated', 'No lot specified. Attach lot { widthFt, depthFt, setbacksFt } to evaluate setbacks.'));
-    findings.push(finding('ZON-COVERAGE', 'not-evaluated', 'No lot specified. Attach lot { widthFt, depthFt, maxCoverageRatio } to evaluate coverage.'));
+    const zoningDetail = pack.zoningStatus
+      ?? 'No lot specified. Attach lot { widthFt, depthFt, setbacksFt } to evaluate setbacks.';
+    findings.push(finding('ZON-SETBACK', 'not-evaluated', zoningDetail));
+    findings.push(finding('ZON-COVERAGE', 'not-evaluated', pack.zoningStatus
+      ?? 'No lot specified. Attach lot { widthFt, depthFt, maxCoverageRatio } to evaluate coverage.'));
   } else if (!Number.isFinite(footprintW) || !Number.isFinite(footprintD) || !footprintW || !footprintD) {
     findings.push(finding('ZON-SETBACK', 'not-evaluated', 'Plan has no footprint dimensions to compare against the lot.'));
     findings.push(finding('ZON-COVERAGE', 'not-evaluated', 'Plan has no footprint dimensions to compare against the lot.'));
@@ -333,6 +427,17 @@ export function codeAdvisoryReport(input: CodeAdvisoryInput): CodeAdvisoryReport
     }
   }
 
+  // --- Jurisdiction site advisories (never decidable from plan JSON) ---
+  for (const advisory of pack.siteAdvisories) {
+    findings.push({
+      ruleId: advisory.ruleId,
+      citation: advisory.citation,
+      category: advisory.category,
+      status: 'not-evaluated',
+      detail: advisory.detail,
+    });
+  }
+
   const summary = {
     pass: findings.filter((item) => item.status === 'pass').length,
     fail: findings.filter((item) => item.status === 'fail').length,
@@ -342,6 +447,12 @@ export function codeAdvisoryReport(input: CodeAdvisoryInput): CodeAdvisoryReport
   return {
     reportVersion: CODE_ADVISORY_REPORT_VERSION,
     planId: input.planId,
+    jurisdiction: {
+      id: pack.id,
+      label: pack.label,
+      codeEdition: pack.codeEdition,
+      transitionNote: pack.transitionNote,
+    },
     findings,
     summary,
   };

@@ -350,6 +350,8 @@ export function codeAdvisoryInputFromHome(home: DenHome): CodeAdvisoryInput {
   }
   return {
     planId: home.id,
+    // Artifact may pin a jurisdiction; the app default is the user's market.
+    jurisdictionId: typeof artifact?.jurisdiction === 'string' ? artifact.jurisdiction as string : 'nc-cherokee-county',
     // Paired-artifact footprints are normalized to feet by lib/data.ts.
     footprintWidthFt: home.footprint?.width,
     footprintDepthFt: home.footprint?.depth,

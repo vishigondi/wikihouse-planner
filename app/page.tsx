@@ -1968,6 +1968,13 @@ function ConstraintReportPanel({ home }: { home: DenHome }) {
           {report.summary.pass} pass / {report.summary.fail} fail / {report.summary.notEvaluated} not evaluated
         </span>
       </div>
+      <div className="mb-2 border border-stone-200 bg-stone-50 p-2" data-jurisdiction={report.jurisdiction.id}>
+        <div className="text-[10px] font-semibold text-stone-600">{report.jurisdiction.label}</div>
+        <div className="mt-0.5 text-[9px] leading-snug text-stone-500">{report.jurisdiction.codeEdition}</div>
+        {report.jurisdiction.transitionNote && (
+          <div className="mt-1 text-[9px] leading-snug text-amber-700">{report.jurisdiction.transitionNote}</div>
+        )}
+      </div>
       <div className="mb-2 border border-stone-200 bg-stone-50 p-2" data-lot-editor>
         <div className="mb-1 flex items-center justify-between gap-2">
           <span className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
@@ -2032,6 +2039,26 @@ function ConstraintReportPanel({ home }: { home: DenHome }) {
           );
         })}
       </div>
+      {(() => {
+        const knownRuleIds = new Set(CODE_ADVISORY_RULES.map((rule) => rule.ruleId));
+        const siteFindings = report.findings.filter((item) => !knownRuleIds.has(item.ruleId));
+        if (!siteFindings.length) return null;
+        return (
+          <div className="mt-2 space-y-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Site checks (jurisdiction)</div>
+            {siteFindings.map((item) => (
+              <div key={item.ruleId} className="border border-stone-200 bg-stone-50 p-2" data-constraint-rule={item.ruleId} data-constraint-status={item.status}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] text-stone-700">{item.ruleId}</span>
+                  <span className="font-mono text-[10px] text-stone-400">{item.status}</span>
+                </div>
+                <div className="mt-1 text-[10px] leading-snug text-stone-500">{item.citation}</div>
+                <div className="mt-1 text-[10px] leading-snug text-stone-600">{item.detail}</div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
       <div className="mt-2 text-[10px] leading-snug text-stone-400">
         Advisory only - legal code compliance is not claimed without a jurisdiction rule pack and professional review.
       </div>
