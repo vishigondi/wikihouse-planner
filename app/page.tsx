@@ -3876,6 +3876,11 @@ export default function Home() {
   const [roofVisible, setRoofVisible] = useState(true);
   const [roomLabelsVisible, setRoomLabelsVisible] = useState(false);
   const [activeFloor, setActiveFloor] = useState<number | 'all'>('all');
+  // A level filter left over from the previous plan reads as missing
+  // geometry on the next one - reset to the whole building on plan switch.
+  useEffect(() => {
+    setActiveFloor('all');
+  }, [selectedHomeId]);
   const [renderThemeId, setRenderThemeId] = useState<RenderThemeId>(DEFAULT_RENDER_THEME_ID);
   const [viewPreset, setViewPreset] = useState<ViewPreset>('presentation-3d');
   const [refreshCount, setRefreshCount] = useState(0);
