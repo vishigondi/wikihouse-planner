@@ -3732,9 +3732,13 @@ function ProductGallery({
           const audit = productAudit(home, null);
           const lifecycle = audit.designBlockers.length ? 'blocked' : (lifecycleStates[home.id] ?? audit.status);
           const thumbnail = home.pairedArtifactInfo?.deterministicRenderUrl ?? home.pairedArtifactInfo?.sourceImageUrl;
+          // Three honest tiers: fully green; design healthy but sales assets
+          // pending (JSON-only plans); genuinely blocked design.
           const qualityLabel = audit.brochureQuality.status === 'pass' && audit.designQuality.status === 'pass' && audit.presentationQuality.status === 'pass'
             ? 'Brochure Ready'
-            : 'Needs Repair';
+            : audit.designBlockers.length === 0
+              ? 'Design Ready'
+              : 'Needs Repair';
           const firstBlockedGroup = audit.groups.find((group) => group.status === 'blocked');
           const nextRepairLabel = firstBlockedGroup
             ? `${firstBlockedGroup.label}: ${firstBlockedGroup.blockers[0] ?? firstBlockedGroup.action}`
@@ -3824,7 +3828,7 @@ function ProductGallery({
                 </div>
                 <div className="p-2">
                   <div className="text-stone-400">Quality</div>
-                  <div className={qualityLabel === 'Brochure Ready' ? 'font-medium text-emerald-700' : 'font-medium text-red-700'}>{qualityLabel}</div>
+                  <div className={qualityLabel === 'Brochure Ready' ? 'font-medium text-emerald-700' : qualityLabel === 'Design Ready' ? 'font-medium text-amber-700' : 'font-medium text-red-700'}>{qualityLabel}</div>
                 </div>
               </div>
               <div className="flex items-center justify-between gap-2 border-t border-stone-200 p-3">
