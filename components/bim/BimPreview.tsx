@@ -961,7 +961,12 @@ function shouldRenderElement(
   element: SemanticBimElement,
   options: { viewPreset: NonNullable<Props['viewPreset']>; showRoof: boolean; activeFloor: number | 'all'; productMode?: boolean },
 ) {
-  if (options.activeFloor !== 'all' && element.floor !== options.activeFloor) return false;
+  // The building envelope (roof shells, full-height A-frame gable ends)
+  // spans every storey; amputating it under a level filter leaves floating
+  // triangle shards beside the model.
+  const isEnvelope = element.category === 'roofPlane'
+    || element.metadata?.wallRole === 'aFrameGableEndWall';
+  if (options.activeFloor !== 'all' && !isEnvelope && element.floor !== options.activeFloor) return false;
   if (!options.showRoof && element.category === 'roofPlane') return false;
   if (options.productMode && options.viewPreset === 'presentation-3d') {
     const elementText = [
