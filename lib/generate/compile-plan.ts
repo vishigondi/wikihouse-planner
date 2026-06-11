@@ -286,9 +286,12 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
       footprint: { units: 'ft', x: 0, z: 0, w: widthFt, d: depthFt, width: widthFt, depth: depthFt, widthFt, depthFt },
       span: { x1: 0, z1: 0, x2: widthFt, z2: depthFt },
     }],
-    rooms: rooms.map((room) => ({
+    rooms: rooms.map((room, index) => ({
       id: room.id, levelFrameId: 'floor-0', levelIndex: 0, roomKind: room.type,
       type: room.type, label: room.label,
+      // Stable shared callout numbering: render legend and proposal image
+      // must both use 1..N in intent order.
+      calloutNumber: index + 1,
       bounds: { x: room.x, z: room.z, w: room.w, d: room.d },
       polygon: poly(room.x, room.z, room.w, room.d),
     })),

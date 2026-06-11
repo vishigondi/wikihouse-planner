@@ -90,6 +90,7 @@ function generationPromptFor(brief: string, parsed: ReturnType<typeof parseBrief
     '- Exactly one exteriorDoor from "exterior" into a living/entry space, span on the footprint edge.',
     '- Interior door spans must lie exactly on the shared edge between their two rooms.',
     '- For a-frame roofs keep baths/kitchens away from the low side edges (ceiling slopes from a center ridge).',
+    '- Rooms are numbered 1..N in the order listed; any companion image must use the same callout numbers.',
     '',
     `Brief: ${brief}`,
     `Parsed program: ${JSON.stringify({ bedrooms: parsed.bedrooms, baths: parsed.baths, maxSqft: parsed.maxSqft, roofStyle: parsed.roofStyle, lot: parsed.lot })}`,
