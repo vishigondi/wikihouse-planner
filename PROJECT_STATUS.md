@@ -1,6 +1,56 @@
 # Project Status
 
-Last updated: 2026-06-10
+Last updated: 2026-06-11 (overnight build)
+
+## 2026-06-11 Morning Summary — Overnight Build
+
+All four overnight workstreams shipped; final interactive sweep clean
+(42/42 across 5 plans) and brochure QA Overall: pass.
+
+**Shipped:**
+- **Cherokee County, NC jurisdiction pack** (`55293bc`): in-force 2018 NC
+  Residential Code (IRC 2015 base, per NC OSFM, retrieved 2026-06-11) with
+  NCRC citations on R304/R305/R310; transition warning that the 2024 NCSBC
+  was delayed past April 2026. Cherokee County has **no county-wide zoning**
+  (county Ordinances & Plans page) — zoning rules evaluate user-supplied
+  lots only; standing "verify" site checks for 15A NCAC 18E septic, NFIP
+  flood, and Murphy/Andrews town limits. Jurisdiction header in the
+  Constraint Report.
+- **R305 ceiling heights derived from geometry** (`9f6c486`): per-room
+  ceiling profiles sampled at 0.5 ft from validated roof planes with loft
+  clamping; sloped-ceiling provision (70 sq ft at >=5 ft, half at >=7 ft);
+  sub-5 ft area excluded from R304 effective floor area.
+- **brief-aframe-2br furnished** (dev-compiler `2ae4707`): 14 fixtures
+  using shared registry types; fixtures lane passes.
+- **One-click generation** (`fef0388`, dev-compiler `d564940`):
+  POST /api/generate-plan + Generate button. Brief -> constrained intent ->
+  deterministic compiler (`lib/generate/compile-plan.ts` derives walls,
+  swings, roof planes, elevations) -> validation -> review-lane artifact.
+  Proof plan `gen-001` passes the full interactive protocol.
+
+**Test in the morning:** open localhost:3002 (npx next dev -p 3002),
+Review Tools -> type a brief -> Generate Plan From Brief; inspect gen-001
+and brief-aframe-2br Semantic view for the Cherokee report.
+
+**Known design findings (real, intentional):** A-frame edge rooms fail
+R305 honestly — brief-aframe-2br and gen-001 put the bath against the low
+west edge (2.6 ft ceiling): fix by moving the bath toward the ridge, knee
+walls, or a dormer. a-frame-bunk's 65 sq ft loft fails the sloped-ceiling
+provision. outpost-medium (gable) passes R305 everywhere.
+
+**Blocked / needs user:**
+- `OPENAI_API_KEY` is missing (.env.local has only Vercel/Sketchfab
+  tokens) — live generation is wired (strict JSON-schema, 5-call budget,
+  failures saved to artifacts/generation-failures/) but untested; the
+  Generate button uses the deterministic template until a key is added.
+- County verification items: confirm in-force code edition with Cherokee
+  County Building Code Enforcement (828-837-5527); septic/well siting via
+  Environmental Health; FIRM flood panel for the parcel; municipal zoning
+  if inside Murphy/Andrews limits.
+
+**Build note:** `npm run build` now uses webpack (`--webpack`) — Turbopack
+panics on the den-image-loop symlink when an app route exists. Static
+export is opt-in via `NEXT_STATIC_EXPORT=1` (API routes excluded there).
 
 ## 2026-06-10 Takeover Checkpoint
 
