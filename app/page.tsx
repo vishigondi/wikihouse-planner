@@ -17,6 +17,7 @@ import { localBimAssetSummary, localVisualAssetAttributions } from '@/lib/bim/co
 import { buildableBimFromHome, buildableBimSummary } from '@/lib/bim/buildable-bim';
 import { standardsRegistrySummary, validateStandards } from '@/lib/standards/floorplan-standards';
 import { CODE_ADVISORY_RULES, type CodeAdvisoryFinding, type CodeAdvisoryReport } from '@/lib/standards/code-advisory';
+import { parseBrief, briefToPromptFields } from '@/lib/brief';
 import { countDrawingPrimitives, diffSourceToSemanticDrawingPrimitives, extractSourceDrawingPrimitives } from '@/lib/drawing-primitives';
 import {
   applyJsonPatchToHome,
@@ -1744,6 +1745,8 @@ function ProductWorkflowPanel({
   const feedbackPrompt = useMemo(() => buildFeedbackPrompt(home, audit), [home, audit]);
   const updatePrompt = (key: keyof PromptRequest, value: string) => onPromptChange({ ...promptRequest, [key]: value });
   const canPromote = audit.blockers.length === 0 && home?.pairedArtifactInfo?.promotionEligible === true;
+  const [briefText, setBriefText] = useState('');
+  const [briefUnparsed, setBriefUnparsed] = useState<string[]>([]);
 
   return (
     <div className="border-t border-stone-200 p-3">
@@ -1767,6 +1770,37 @@ function ProductWorkflowPanel({
             </button>
           ))}
         </div>
+        <label className="block">
+          <span className="mb-1 block text-stone-400">brief (one line, parsed deterministically)</span>
+          <textarea
+            value={briefText}
+            onChange={(event) => setBriefText(event.target.value)}
+            placeholder={'2-bed A-frame, ≤800 sqft, 40×60 lot, 5 ft side setbacks'}
+            data-brief-input
+            className="h-12 w-full resize-none border border-stone-200 bg-white px-2 py-1 font-mono text-stone-700"
+          />
+        </label>
+        <button
+          type="button"
+          data-brief-parse
+          onClick={() => {
+            const parsed = parseBrief(briefText);
+            setBriefUnparsed(parsed.unparsed);
+            onPromptChange({
+              ...promptRequest,
+              ...briefToPromptFields(parsed),
+              intent: briefText.trim() || promptRequest.intent,
+            });
+          }}
+          className="w-full border border-stone-800 bg-stone-800 px-2 py-1 text-white hover:bg-stone-700"
+        >
+          Parse Brief Into Request
+        </button>
+        {briefUnparsed.length > 0 && (
+          <div className="border border-amber-200 bg-amber-50 p-1.5 text-amber-800" data-brief-unparsed>
+            Not understood (add manually below): {briefUnparsed.join('; ')}
+          </div>
+        )}
         <label className="block">
           <span className="mb-1 block text-stone-400">intent</span>
           <textarea
