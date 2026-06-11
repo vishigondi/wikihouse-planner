@@ -4636,8 +4636,8 @@ export default function Home() {
                 <div className="text-stone-400">
                   {displayHome.buildValidation?.bom.length ?? displayHome.componentsUsed.length} BOM items - {displayHome.rooms.length} rooms
                 </div>
-                <div className={`font-medium ${displayHome.pairedArtifactInfo?.promotionEligible ? 'text-emerald-600' : 'text-amber-600'}`}>
-                  Paired gates: {displayHome.pairedArtifactInfo?.promotionEligible ? 'passed' : 'not promoted'}
+                <div className={`font-medium ${displayHome.pairedArtifactInfo?.promotionEligible ? 'text-emerald-600' : 'text-stone-500'}`}>
+                  {displayHome.pairedArtifactInfo?.promotionEligible ? 'Promoted' : 'In review'}
                 </div>
                 <div className="font-mono text-[9px] text-stone-400">
                   {displayHome.pairedArtifactInfo?.reviewStatus ?? 'pending'} - {displayHome.pairedProposalId}
