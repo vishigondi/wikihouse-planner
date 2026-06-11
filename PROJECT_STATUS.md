@@ -1,6 +1,30 @@
 # Project Status
 
-Last updated: 2026-06-11 (overnight build)
+Last updated: 2026-06-11 (overnight build + polish loop)
+
+## 2026-06-11 Real-Browser Polish Loop — Closed
+
+Twelve buyer-mode sessions in real Chrome; ten fixes shipped, two clean
+closing passes; final interactive sweep clean (5 plans), brochure QA
+Overall: pass throughout.
+
+Shipped: live Compare/Overlay render with 13px dimension floor +
+dimensionLines prop (2fa6f51); passing chips collapse behind 'N gates
+pass' for buyers (c7aa68f); WebGL context-loss recovery overlay
+(2cfeffa); pixel-space dimension re-anchoring keeps labels (485eaf2);
+'In review'/'Promoted' lifecycle wording (e251dd1); Plan Top square/
+north-up (2fb9844); building envelope intact under Ground/Loft filters
+(db8de1a); gallery cards fall back to the live render (ce280a0);
+three-tier gallery quality incl. amber 'Design Ready' (953c17f); level
+filter resets on plan switch (a069058). Earlier same day: VIEW panel
+cleanup, JSON-only Compare/Overlay placeholders, design-health
+lifecycle headline.
+
+Verified working surfaces: orbit/views/toggles on all 5 plans, Compare/
+Overlay/Semantic, constraint report + lot what-if editor, brief parser,
+gallery search/filters/cards, Export dialog (2D SVG download verified),
+New Plan handoff packet, generated-plan flow (gen-001), ChatGPT browser
+image lane.
 
 ## 2026-06-11 Morning Summary — Overnight Build
 
