@@ -113,7 +113,7 @@ function drawingStyleCss(profile: DrawingStyleProfile): string {
       opacity: ${r.voids.opacity} !important;
     }
     [data-role="dimension"] line, [data-role="dimension"] path { stroke: ${r.dimensions.stroke} !important; stroke-width: ${r.dimensions.strokeWidthPx}px !important; opacity: ${r.dimensions.opacity} !important; }
-    [data-role="dimension"] text { fill: ${r.dimensions.stroke} !important; font-size: ${r.dimensions.fontSizePx}px !important; opacity: ${r.dimensions.opacity} !important; }
+    [data-role="dimension"] text { fill: ${r.dimensions.stroke} !important; font-size: ${Math.max(13, r.dimensions.fontSizePx)}px !important; opacity: ${r.dimensions.opacity} !important; }
     [data-source-id] rect,
     [data-source-id] line,
     [data-source-id] path,

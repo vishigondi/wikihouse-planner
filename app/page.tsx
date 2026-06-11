@@ -3393,13 +3393,17 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
       sourceWalls={home.sourceWalls}
       sourceOpenings={home.sourceOpenings}
       spaceFaces={home.spaceFaces}
+      dimensionLines={home.dimensionLines}
       dimensionFrame={home.dimensionFrame}
       floorFrames={home.floorFrames}
       traceMode={home.pairedArtifact}
       drawingStyleProfile={home.drawingStyleProfile}
     />
   );
-  const deterministicRender = storedDeterministicRender ?? liveDeterministicRender;
+  // Compare/Overlay show the LIVE renderer so current drawing rules (e.g.
+  // legible dimension text) always apply; the stored render remains QA
+  // evidence fetched directly by url in brochure-visual-qa.
+  const deterministicRender = liveDeterministicRender;
   const renderFallback = (
     <div>
       <div className="mb-2 text-[10px] leading-snug text-stone-400">
