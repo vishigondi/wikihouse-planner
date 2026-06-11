@@ -22,9 +22,16 @@ deterministic 2D/3D render -> cited constraint report.
   fixtures + 4 plans). The review lane accepts JSON-only artifacts;
   promotion still requires full evidence.
 
-Remaining gaps: brief parsing UI (prompt -> lot/program extraction), lot
-editor in-app, ceiling-height rule (needs section data), jurisdiction rule
-packs beyond the IRC defaults.
+Closed since: deterministic brief parser (`lib/brief.ts`, `check:brief`)
+wired into the Prompt To Plan panel, and a what-if lot editor in the
+Constraint Report panel (live setback/coverage recompute + export JSON
+with lot).
+
+Remaining gaps (both need a user decision before building):
+- Ceiling-height rule (IRC R305): needs agreement on section data — derive
+  from roof planes/loft heights or require explicit per-room heights.
+- Jurisdiction rule packs beyond the IRC defaults: which jurisdiction and
+  code edition to encode first.
 
 ## Current Objective
 
