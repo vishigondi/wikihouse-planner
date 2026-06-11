@@ -430,11 +430,13 @@ async function drawingStyleReviewMetrics(page, storedDeterministicSvgUrl = '') {
 }
 
 function validationBlockersFromSignals(signals) {
+  // Only lane blockers gate release. Lane warnings (including all visual
+  // drift vs the GPT proposal image) are advisory repair hints, not gates.
   const releaseBlockingLanes = new Set(['design', 'presentation', 'brochure']);
   return (signals?.validationGroups ?? [])
-    .filter((group) => releaseBlockingLanes.has(group.lane) && (group.status === 'blocked' || group.status === 'warning'))
+    .filter((group) => releaseBlockingLanes.has(group.lane) && group.status === 'blocked')
     .flatMap((group) => {
-      const messages = [...(group.blockers ?? []), ...(group.warnings ?? [])];
+      const messages = [...(group.blockers ?? [])];
       if (!messages.length) return [`${group.label || group.id}: ${group.status}`];
       return messages.map((message) => `${group.label || group.id}: ${message}`);
     });

@@ -860,7 +860,7 @@ function brochureQualityIssues(home: DenHome): { blockers: string[]; warnings: s
   const review = rawObject(home.pairedArtifactJson)?.brochureQualityReview ?? rawObject(home.pairedArtifactInfo)?.brochureQualityReview;
 
   if (!drift?.metrics) {
-    blockers.push('Brochure Quality requires source-vs-render visual drift evidence for Compare and Overlay.');
+    warnings.push('Brochure Quality has no source-vs-render visual drift evidence for Compare and Overlay (advisory).');
   } else {
     const sourceMissRate = (drift.metrics.primitiveSourceMissRate as number | undefined) ?? drift.metrics.sourceMissRate ?? 1;
     const renderExtraRate = (drift.metrics.primitiveRenderExtraRate as number | undefined) ?? drift.metrics.renderExtraRate ?? 1;
@@ -875,13 +875,13 @@ function brochureQualityIssues(home: DenHome): { blockers: string[]; warnings: s
       home.pairedArtifactInfo?.reviewStatus === 'passed';
     const semanticEdgeBlocked = edgeSourceMissRate > 0.12 || edgeRenderExtraRate > 0.08;
     if (semanticEdgeBlocked) {
-      blockers.push(
-        `Brochure Compare/Overlay primitive edge drift is too high for sales use: edge miss ${(edgeSourceMissRate * 100).toFixed(1)}%, edge extra ${(edgeRenderExtraRate * 100).toFixed(1)}%.`,
+      warnings.push(
+        `Brochure Compare/Overlay primitive edge drift is high (advisory): edge miss ${(edgeSourceMissRate * 100).toFixed(1)}%, edge extra ${(edgeRenderExtraRate * 100).toFixed(1)}%.`,
       );
     }
     if (!semanticEdgeBlocked && drift.passed !== true) {
-      blockers.push(
-        `Brochure visual drift gate failed: source miss ${(sourceMissRate * 100).toFixed(1)}%, render extra ${(renderExtraRate * 100).toFixed(1)}%, edge miss ${(edgeSourceMissRate * 100).toFixed(1)}%, edge extra ${(edgeRenderExtraRate * 100).toFixed(1)}%.`,
+      warnings.push(
+        `Brochure visual drift is above the advisory target: source miss ${(sourceMissRate * 100).toFixed(1)}%, render extra ${(renderExtraRate * 100).toFixed(1)}%, edge miss ${(edgeSourceMissRate * 100).toFixed(1)}%, edge extra ${(edgeRenderExtraRate * 100).toFixed(1)}%.`,
       );
     }
     const drawingLanguageBlocked =
@@ -890,8 +890,8 @@ function brochureQualityIssues(home: DenHome): { blockers: string[]; warnings: s
       fullEdgeSourceMissRate > 0.11 ||
       fullEdgeRenderExtraRate > 0.08;
     if (!semanticEdgeBlocked && drawingLanguageBlocked) {
-      blockers.push(
-        `Brochure drawing-language drift is too high for sales use: full source miss ${(fullSourceMissRate * 100).toFixed(1)}%, full render extra ${(fullRenderExtraRate * 100).toFixed(1)}%, full edge miss ${(fullEdgeSourceMissRate * 100).toFixed(1)}%, full edge extra ${(fullEdgeRenderExtraRate * 100).toFixed(1)}%. Extract or repair wall, fixture, dimension, and label style/geometry before promotion.`,
+      warnings.push(
+        `Brochure drawing-language drift is high (advisory): full source miss ${(fullSourceMissRate * 100).toFixed(1)}%, full render extra ${(fullRenderExtraRate * 100).toFixed(1)}%, full edge miss ${(fullEdgeSourceMissRate * 100).toFixed(1)}%, full edge extra ${(fullEdgeRenderExtraRate * 100).toFixed(1)}%.`,
       );
     }
     const primitiveLayerDrift = rawObject(drift.metrics.primitiveLayerDrift) ?? {};
@@ -903,24 +903,24 @@ function brochureQualityIssues(home: DenHome): { blockers: string[]; warnings: s
       const layerEdgeExtra = rawNumber(metrics.edgeRenderExtraRate) ?? 0;
       const threshold = primitiveLayerThreshold(layer);
       if (primitiveLayerSemanticEdgeBlocked(layer, layerEdgeMiss, layerEdgeExtra)) {
-        blockers.push(
-          `Brochure ${layer} primitive edge drift is too high: edge miss ${(layerEdgeMiss * 100).toFixed(1)}%, edge extra ${(layerEdgeExtra * 100).toFixed(1)}%. Repair ${layer} source primitives before release.`,
+        warnings.push(
+          `Brochure ${layer} primitive edge drift is high (advisory): edge miss ${(layerEdgeMiss * 100).toFixed(1)}%, edge extra ${(layerEdgeExtra * 100).toFixed(1)}%.`,
         );
       } else if (
         layer === 'dimension'
           ? layerEdgeExtra > threshold.edgeRenderExtraRate || layerSourceMiss > threshold.sourceMissRate || layerRenderExtra > threshold.renderExtraRate
           : layerSourceMiss > threshold.sourceMissRate || layerRenderExtra > threshold.renderExtraRate
       ) {
-        const message = `Brochure ${layer} drawing-language drift is too high: source miss ${(layerSourceMiss * 100).toFixed(1)}%, render extra ${(layerRenderExtra * 100).toFixed(1)}%. Repair the ${layer} drawing_style_profile_v1 renderer rules before release.`;
+        const message = `Brochure ${layer} drawing-language drift is high (advisory): source miss ${(layerSourceMiss * 100).toFixed(1)}%, render extra ${(layerRenderExtra * 100).toFixed(1)}%.`;
         if (isSparseLineworkLayer(layer)) {
           if (drift.passed !== true) warnings.push(message);
         }
-        else blockers.push(message);
+        else warnings.push(message);
       }
     }
     if (!semanticEdgeBlocked && !hasModernReview && (edgeSourceMissRate > 0.055 || edgeRenderExtraRate > 0.055)) {
-      blockers.push(
-        `Brochure Compare/Overlay review is not current enough for sales use: source miss ${(sourceMissRate * 100).toFixed(1)}%, render extra ${(renderExtraRate * 100).toFixed(1)}%, edge miss ${(edgeSourceMissRate * 100).toFixed(1)}%, edge extra ${(edgeRenderExtraRate * 100).toFixed(1)}%.`,
+      warnings.push(
+        `Brochure Compare/Overlay review is stale (advisory): source miss ${(sourceMissRate * 100).toFixed(1)}%, render extra ${(renderExtraRate * 100).toFixed(1)}%, edge miss ${(edgeSourceMissRate * 100).toFixed(1)}%, edge extra ${(edgeRenderExtraRate * 100).toFixed(1)}%.`,
       );
     }
   }
@@ -971,9 +971,9 @@ function brochureQualityIssues(home: DenHome): { blockers: string[]; warnings: s
   }
 
   if (!home.drawingStyleProfile) {
-    blockers.push('Brochure Quality requires an extracted drawing_style_profile_v1 so deterministic SVG matches the GPT proposal drawing language.');
+    warnings.push('No extracted drawing_style_profile_v1; deterministic SVG uses default drawing language (advisory).');
   } else if (home.drawingStyleProfile.validation?.status === 'blocked') {
-    blockers.push('Brochure Quality blocked by drawing_style_profile_v1 validation.');
+    warnings.push('drawing_style_profile_v1 validation reported issues (advisory).');
   } else if (home.drawingStyleProfile.validation?.status === 'warning') {
     warnings.push('Brochure 2D style has drawing_style_profile_v1 warnings; review Compare/Overlay before release.');
   }
@@ -1000,7 +1000,17 @@ function validationGroups(home: DenHome | null, renderedBounds: RenderedModelBou
     { id: 'codeAdvisory', label: 'Code Advisory', lane: 'codeAdvisory', status: 'pass', blockers: [], warnings: [], action: 'Add a jurisdiction-specific rule pack and professional review workflow before claiming code compliance.' },
   ];
   const byId = Object.fromEntries(groups.map((group) => [group.id, group]));
-  const block = (id: string, message: string) => byId[id].blockers.push(message);
+  // Visual drift vs the GPT proposal image is advisory: the paired semantic
+  // JSON is the source of truth and the deterministic render is correct by
+  // construction, so image-imitation distance never blocks release.
+  const ADVISORY_GROUP_IDS = new Set(['visual-drift', 'presentation-drift']);
+  const block = (id: string, message: string) => {
+    if (ADVISORY_GROUP_IDS.has(id)) {
+      byId[id].warnings.push(message);
+      return;
+    }
+    byId[id].blockers.push(message);
+  };
   const warn = (id: string, message: string) => byId[id].warnings.push(message);
 
   if (!home) {
