@@ -1,6 +1,8 @@
 # Zero-Waste Architectural Design Principles
 ## For Parametric Modular Panel-Based Home Generation
 
+For operational engineering rules that govern the current paired floorplan app, see [OPERATING_PRINCIPLES.md](OPERATING_PRINCIPLES.md). This file is the architectural/design-standards background; `OPERATING_PRINCIPLES.md` is the implementation discipline for keeping paired JSON, deterministic render, BIM/Product 3D, validation, and export lanes coherent.
+
 This document codifies architectural principles from seven traditions into concrete, encodable constraints for a parametric floor plan generator targeting modular panel-based homes (WikiHouse/Heavy Mass style) with open-plan living, large great rooms, and tall roofs.
 
 ---

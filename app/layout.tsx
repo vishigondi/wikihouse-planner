@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono } from "next/font/google";
+import { Geist_Mono, Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 
 const mono = Geist_Mono({
@@ -7,9 +7,23 @@ const mono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const serif = Playfair_Display({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+const sans = Inter({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Heavy Mass — Pattern Book Planner",
-  description: "3D parametric pattern book planner for modular homes",
+  title: "Floorplan Studio",
+  description: "Prompt-to-plan generation, semantic editing, validation, and brochure export",
 };
 
 export default function RootLayout({
@@ -19,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${mono.variable} font-mono antialiased bg-[#faf8f5] text-stone-800`}>
+      <body className={`${mono.variable} ${serif.variable} ${sans.variable} font-mono antialiased bg-[#faf8f5] text-stone-800`}>
         {children}
       </body>
     </html>

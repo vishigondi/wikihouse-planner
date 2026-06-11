@@ -84,8 +84,6 @@ export default function ComponentMesh({
   const zone = placement.zone || '';
   const cid = component.id;
 
-  if (zone === 'roof' && !roofVisible) return null;
-
   const isExtWall = zone === 'walls';
   const isIntWall = zone === 'interior';
   const isWall = isExtWall || isIntWall;
@@ -110,6 +108,8 @@ export default function ComponentMesh({
   // Subtle selection highlight
   const emissive = selected ? '#e8dcc8' : '#000000';
   const emissiveIntensity = selected ? 0.15 : 0;
+
+  if (zone === 'roof' && !roofVisible) return null;
 
   return (
     <group

@@ -69,21 +69,14 @@ export default function ComponentDetail({ component, currentHome, onSelectHome }
         </div>
       )}
 
-      {component.usedInHomes.length > 0 && (
-        <div>
-          <div className="text-[10px] text-stone-400 mb-1">Used in {component.usedInHomes.length} homes:</div>
-          <div className="flex flex-wrap gap-1">
-            {component.usedInHomes.map(hid => (
-              <button
-                key={hid}
-                onClick={() => onSelectHome(hid)}
-                className="text-[9px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 hover:text-stone-800 hover:bg-stone-200 transition-colors"
-              >
-                {hid}
-              </button>
-            ))}
-          </div>
-        </div>
+      {currentHome && instanceCount > 0 && (
+        <button
+          type="button"
+          onClick={() => onSelectHome(currentHome.id)}
+          className="text-[9px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 hover:text-stone-800 hover:bg-stone-200 transition-colors"
+        >
+          active in {currentHome.model}
+        </button>
       )}
     </div>
   );

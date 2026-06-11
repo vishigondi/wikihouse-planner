@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/artifacts/
 
 # next.js
 /.next/
@@ -32,6 +33,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -40,3 +42,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# Local BIM/marketplace downloads. Keep the small catalog JSON files; do not
+# commit downloaded provider payloads unless they become licensed release assets.
+/public/data/bim-components/staging/
+/public/data/bim-components/providers/

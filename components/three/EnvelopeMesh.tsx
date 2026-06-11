@@ -10,8 +10,8 @@ interface Props {
   roofVisible: boolean;
 }
 
-const GRID = 4; // feet per grid unit — must match generate-placements.ts
-const WALL_EXT_H = 10; // wall-ext panel height from library.json — eave is here
+const GRID = 4; // feet per paired semantic grid unit
+const WALL_EXT_H = 10; // legacy debug wall-ext panel height; BIM/Product 3D is authoritative
 const OUTDOOR_TYPES = new Set(['deck', 'porch', 'covered_porch', 'screened_porch']);
 
 interface RoofStrip {
@@ -101,7 +101,7 @@ export default function EnvelopeMesh({ home, wallOpacity, roofVisible }: Props) 
     : WALL_EXT_H;
 
   const roofGeometries = useMemo(() => {
-    // ── Mirror the coordinate system from generate-placements.ts ───────
+    // ── Legacy debug coordinate system; paired BIM/Product view is authoritative ───────
     // floor=0.5 is a ground-level bedroom wing — include it for roof footprint
     const groundRooms = home.rooms.filter(r => (r.floor ?? 0) < 1);
     const interiorRooms = groundRooms.filter(r => !OUTDOOR_TYPES.has(r.type));
@@ -115,7 +115,7 @@ export default function EnvelopeMesh({ home, wallOpacity, roofVisible }: Props) 
     const totalW = (globalMaxGx - globalMinGx) * GRID;
     const totalD = (globalMaxGz - globalMinGz) * GRID;
 
-    // World coords (same origin as generate-placements: centre of full bbox)
+    // World coords use the legacy debug origin at the centre of the full bbox.
     const gxW = (gx: number) => (gx - globalMinGx) * GRID - totalW / 2;
     const gzW = (gz: number) => (gz - globalMinGz) * GRID - totalD / 2;
 

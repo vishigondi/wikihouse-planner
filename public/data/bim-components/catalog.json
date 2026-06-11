@@ -1,0 +1,2201 @@
+{
+  "schemaVersion": "bim_component_catalog_v1",
+  "generatedAt": "2026-05-19T04:15:19.722Z",
+  "inputDir": "public/data/bim-components/staging",
+  "componentCount": 79,
+  "components": [
+    {
+      "id": "betsy-chair-bet4metalframe-gresham-betsy-chair",
+      "label": "Betsy - Chair - (BET4) Metal Frame",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/betsy-chair-ifc/Betsy-Chair-BET4MetalFrame-Gresham_Betsy_Chair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 612105,
+      "dimensions": {
+        "depthFt": 2.133,
+        "heightFt": 2.566
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "12628",
+        "modelReference": "Betsy - Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Aluminium, Wood, Steel, Polyurethane, Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "betsy-chair-bet4wmetalframe-gresham-betsy-chair",
+      "label": "Betsy - Chair - (BET4W) Metal Frame",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/betsy-chair-ifc/Betsy-Chair-BET4WMetalFrame-Gresham_Betsy_Chair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 1816490,
+      "dimensions": {
+        "depthFt": 2.133,
+        "heightFt": 2.766
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "12624",
+        "modelReference": "Betsy - Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Aluminium, Wood, Steel, Polyurethane, Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "betsy-chair-betpmetalframe-gresham-betsy-chair",
+      "label": "Betsy - Chair - (BETP) Metal Frame",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/betsy-chair-ifc/Betsy-Chair-BETPMetalFrame-Gresham_Betsy_Chair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 606401,
+      "dimensions": {
+        "depthFt": 2.133,
+        "heightFt": 2.648
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "12622",
+        "modelReference": "Betsy - Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Aluminium, Wood, Steel, Polyurethane, Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "betsy-chair-betpwmetalframe-gresham-betsy-chair",
+      "label": "Betsy - Chair - (BETPW) Metal Frame",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/betsy-chair-ifc/Betsy-Chair-BETPWMetalFrame-Gresham_Betsy_Chair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 1809990,
+      "dimensions": {
+        "depthFt": 2.133,
+        "heightFt": 2.851
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "12620",
+        "modelReference": "Betsy - Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Aluminium, Wood, Steel, Polyurethane, Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "betsy-chair-betsmetalframe-gresham-betsy-chair",
+      "label": "Betsy - Chair - (BETS) Metal Frame",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/betsy-chair-ifc/Betsy-Chair-BETSMetalFrame-Gresham_Betsy_Chair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 495300,
+      "dimensions": {
+        "depthFt": 2.133,
+        "heightFt": 2.625
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "12626",
+        "modelReference": "Betsy - Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Aluminium, Wood, Steel, Polyurethane, Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "betsy-chair-betzwoodenframe-gresham-betsy-chair",
+      "label": "Betsy - Chair - (BETZ) Wooden Frame",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/betsy-chair-ifc/Betsy-Chair-BETZWoodenFrame-Gresham_Betsy_Chair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 264779,
+      "dimensions": {
+        "depthFt": 2.133,
+        "heightFt": 2.589
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "12618",
+        "modelReference": "Betsy - Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Aluminium, Wood, Steel, Polyurethane, Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "betsy-sofa-bet2smetalframe-gresham-betsy-sofa",
+      "label": "Betsy - Sofa - (BET2S) Metal Frame",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/betsy-sofa-ifc/Betsy-Sofa-BET2SMetalFrame-Gresham_Betsy_Sofa.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 760412,
+      "dimensions": {
+        "widthFt": 4.068,
+        "depthFt": 1.542,
+        "heightFt": 2.625
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "6356",
+        "modelReference": "Betsy - Sofa",
+        "nbsReference": "45-35-20/330",
+        "material": "Steel, Wood, Polyurethane,Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "betsy-sofa-bet2zwoodenframe-gresham-betsy-sofa",
+      "label": "Betsy - Sofa - (BET2Z) Wooden Frame",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/betsy-sofa-ifc/Betsy-Sofa-BET2ZWoodenFrame-Gresham_Betsy_Sofa.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 534615,
+      "dimensions": {
+        "widthFt": 4.068,
+        "depthFt": 1.542,
+        "heightFt": 2.625
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "6354",
+        "modelReference": "Betsy - Sofa",
+        "nbsReference": "45-35-20/330",
+        "material": "Steel, Wood, Polyurethane, Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighfourleg-1600x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Four Leg - 1600 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighFourLeg-1600x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 50091,
+      "dimensions": {
+        "widthFt": 5.249,
+        "depthFt": 3.937,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5437",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighfourleg-1600x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Four Leg - 1600 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighFourLeg-1600x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 50076,
+      "dimensions": {
+        "widthFt": 5.249,
+        "depthFt": 2.953,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5447",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighfourleg-1800x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Four Leg - 1800 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighFourLeg-1800x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 50108,
+      "dimensions": {
+        "widthFt": 5.906,
+        "depthFt": 3.937,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5435",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighfourleg-1800x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Four Leg - 1800 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighFourLeg-1800x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 50093,
+      "dimensions": {
+        "widthFt": 5.906,
+        "depthFt": 2.953,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5445",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighfourleg-2000x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Four Leg - 2000 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighFourLeg-2000x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 50135,
+      "dimensions": {
+        "widthFt": 6.562,
+        "depthFt": 3.937,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5433",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighfourleg-2000x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Four Leg - 2000 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighFourLeg-2000x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 50144,
+      "dimensions": {
+        "widthFt": 6.562,
+        "depthFt": 2.953,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5443",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighfourleg-2200x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Four Leg - 2200 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighFourLeg-2200x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 50246,
+      "dimensions": {
+        "widthFt": 7.218,
+        "depthFt": 3.937,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5431",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighfourleg-2200x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Four Leg - 2200 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighFourLeg-2200x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 50267,
+      "dimensions": {
+        "widthFt": 7.218,
+        "depthFt": 2.953,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5441",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighfourleg-2400x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Four Leg - 2400 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighFourLeg-2400x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 50262,
+      "dimensions": {
+        "widthFt": 7.874,
+        "depthFt": 3.937,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5429",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighfourleg-2400x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Four Leg - 2400 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighFourLeg-2400x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 50283,
+      "dimensions": {
+        "widthFt": 7.874,
+        "depthFt": 2.953,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5439",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighsixleg-3000x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Six Leg - 3000 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighSixLeg-3000x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 61945,
+      "dimensions": {
+        "widthFt": 9.843,
+        "depthFt": 3.937,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5423",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighsixleg-3000x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Six Leg - 3000 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighSixLeg-3000x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 61966,
+      "dimensions": {
+        "widthFt": 9.843,
+        "depthFt": 2.953,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5427",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighsixleg-4000x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Six Leg - 4000 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighSixLeg-4000x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 61987,
+      "dimensions": {
+        "widthFt": 13.123,
+        "depthFt": 3.937,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5421",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-1071mmhighsixleg-4000x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 1071mm High Six Leg - 4000 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-1071mmHighSixLeg-4000x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 61992,
+      "dimensions": {
+        "widthFt": 13.123,
+        "depthFt": 2.953,
+        "heightFt": 3.514
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5425",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighfourleg-1600x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Four Leg - 1600 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighFourLeg-1600x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 48881,
+      "dimensions": {
+        "widthFt": 5.249,
+        "depthFt": 3.937,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5465",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighfourleg-1600x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Four Leg - 1600 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighFourLeg-1600x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 46622,
+      "dimensions": {
+        "widthFt": 5.249,
+        "depthFt": 2.953,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5475",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighfourleg-1800x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Four Leg - 1800 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighFourLeg-1800x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 48898,
+      "dimensions": {
+        "widthFt": 5.906,
+        "depthFt": 3.937,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5463",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighfourleg-1800x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Four Leg - 1800 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighFourLeg-1800x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 48893,
+      "dimensions": {
+        "widthFt": 5.906,
+        "depthFt": 2.953,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5473",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighfourleg-2000x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Four Leg - 2000 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighFourLeg-2000x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 48926,
+      "dimensions": {
+        "widthFt": 6.562,
+        "depthFt": 3.937,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5461",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighfourleg-2000x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Four Leg - 2000 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighFourLeg-2000x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 48928,
+      "dimensions": {
+        "widthFt": 6.562,
+        "depthFt": 2.953,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5471",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighfourleg-2200x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Four Leg - 2200 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighFourLeg-2200x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 49028,
+      "dimensions": {
+        "widthFt": 7.218,
+        "depthFt": 3.937,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5459",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighfourleg-2200x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Four Leg - 2200 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighFourLeg-2200x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 49043,
+      "dimensions": {
+        "widthFt": 7.218,
+        "depthFt": 2.953,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5469",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighfourleg-2400x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Four Leg - 2400 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighFourLeg-2400x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 49044,
+      "dimensions": {
+        "widthFt": 7.874,
+        "depthFt": 3.937,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5457",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighfourleg-2400x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Four Leg - 2400 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighFourLeg-2400x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 49059,
+      "dimensions": {
+        "widthFt": 7.874,
+        "depthFt": 2.953,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5467",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighsixleg-3000x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Six Leg - 3000 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighSixLeg-3000x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 60591,
+      "dimensions": {
+        "widthFt": 9.843,
+        "depthFt": 3.937,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5451",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighsixleg-3000x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Six Leg - 3000 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighSixLeg-3000x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 60603,
+      "dimensions": {
+        "widthFt": 9.843,
+        "depthFt": 2.953,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5455",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighsixleg-4000x1200mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Six Leg - 4000 x 1200mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighSixLeg-4000x1200mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 60633,
+      "dimensions": {
+        "widthFt": 13.123,
+        "depthFt": 3.937,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5449",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "gd10-diningtables-751mmhighsixleg-4000x900mm-gresham-gd10-diningtables",
+      "label": "GD10 - Dining Tables - 751mm High Six Leg - 4000 x 900mm",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "table",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/gd10-dining-tables-ifc/GD10-DiningTables-751mmHighSixLeg-4000x900mm-Gresham_GD10_DiningTables.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 60630,
+      "dimensions": {
+        "widthFt": 13.123,
+        "depthFt": 2.953,
+        "heightFt": 2.464
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5453",
+        "modelReference": "GD10 - Dining Tables",
+        "nbsReference": "45-35-20/340",
+        "material": "Engineered hardwood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "hecta-chair-hecppyramidwoodenbase-gresham-hecta-chair",
+      "label": "Hecta - Chair - (HECP) Pyramid Wooden Base",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/hecta-chair-ifc/Hecta-Chair-HECPPyramidWoodenBase-Gresham_Hecta_Chair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 659720,
+      "dimensions": {
+        "widthFt": 2.69,
+        "depthFt": 2.493,
+        "heightFt": 3.937
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "8956",
+        "modelReference": "Hecta - Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Polyurethane, Wood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "hecta-chair-hecs4starbase-gresham-hecta-chair",
+      "label": "Hecta - Chair - (HECS) 4 Star Base",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/hecta-chair-ifc/Hecta-Chair-HECS4StarBase-Gresham_Hecta_Chair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 707725,
+      "dimensions": {
+        "widthFt": 2.69,
+        "depthFt": 2.493,
+        "heightFt": 3.937
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "8958",
+        "modelReference": "Hecta - Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Polyurethane, Chrome, Metal"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "hecta-chair-hecw4legwoodenbase-gresham-hecta-chair",
+      "label": "Hecta - Chair - (HECW) 4 Leg Wooden Base",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/hecta-chair-ifc/Hecta-Chair-HECW4LegWoodenBase-Gresham_Hecta_Chair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 629358,
+      "dimensions": {
+        "widthFt": 2.69,
+        "depthFt": 2.493,
+        "heightFt": 3.937
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "8960",
+        "modelReference": "Hecta - Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Polyurethane, Wood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "klyro-lowback-2seaterchair-kly2l2withwoodenpyramidbase-gresham-klyro-lowback-2seaterchair",
+      "label": "Klyro - Low Back - 2 Seater Chair - (KLY2L2) With Wooden Pyramid Base",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/klyro-low-back-2-seater-chair-ifc/Klyro-LowBack-2SeaterChair-KLY2L2WithWoodenPyramidBase-Gresham_Klyro_LowBack_2SeaterChair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 418947,
+      "dimensions": {
+        "widthFt": 4.724,
+        "depthFt": 2.526,
+        "heightFt": 2.69
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "10322",
+        "modelReference": "Klyro - Low Back - 2 Seater Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Polyurethane, Wood, Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "klyro-lowback-2seaterchair-kly2l3with4legbase-gresham-klyro-lowback-2seaterchair",
+      "label": "Klyro - Low Back - 2 Seater Chair - (KLY2L3) With 4 Leg Base",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/klyro-low-back-2-seater-chair-ifc/Klyro-LowBack-2SeaterChair-KLY2L3With4LegBase-Gresham_Klyro_LowBack_2SeaterChair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 756085,
+      "dimensions": {
+        "widthFt": 4.724,
+        "depthFt": 2.526,
+        "heightFt": 2.69
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "10320",
+        "modelReference": "Klyro - Low Back - 2 Seater Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Polyurethane, Metal, Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "klyro-lowback-2seaterchair-kly2l4withwoodencradlebase-gresham-klyro-lowback-2seaterchair",
+      "label": "Klyro - Low Back - 2 Seater Chair - (KLY2L4) With Wooden Cradle Base",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/klyro-low-back-2-seater-chair-ifc/Klyro-LowBack-2SeaterChair-KLY2L4WithWoodenCradleBase-Gresham_Klyro_LowBack_2SeaterChair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 501453,
+      "dimensions": {
+        "widthFt": 4.724,
+        "depthFt": 2.526,
+        "heightFt": 2.69
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "10324",
+        "modelReference": "Klyro - Low Back - 2 Seater Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Polyurethane, Wood, Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "klyro-lowback-2seaterchair-kly2l7withsledbase-gresham-klyro-lowback-2seaterchair",
+      "label": "Klyro - Low Back - 2 Seater Chair - (KLY2L7) With Sled Base",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/klyro-low-back-2-seater-chair-ifc/Klyro-LowBack-2SeaterChair-KLY2L7WithSledBase-Gresham_Klyro_LowBack_2SeaterChair.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 872468,
+      "dimensions": {
+        "widthFt": 4.724,
+        "depthFt": 2.526,
+        "heightFt": 2.69
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "10318",
+        "modelReference": "Klyro - Low Back - 2 Seater Chair",
+        "nbsReference": "45-35-20/330",
+        "material": "Polyurethane, Metal, Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturealmar-storageunit-kc12lc21200mmwidelowcredenza-gresham-kulturealmar-storageunit",
+      "label": "Kulture Almar - Storage Unit - (KC12LC2) 1200mm Wide Low Credenza",
+      "manufacturer": "Gresham",
+      "category": "sanitary",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-almar-storage-unit-ifc/KultureAlmar-StorageUnit-KC12LC21200mmWideLowCredenza-Gresham_KultureAlmar_StorageUnit.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 636066,
+      "dimensions": {
+        "depthFt": 3.937,
+        "heightFt": 2.236
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5217",
+        "modelReference": "Kulture Almar - Storage Unit",
+        "nbsReference": "45-35-80/360",
+        "material": "MFC,Acrylonitrile butadiene styrene (ABS),Aluminium,Steel"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturealmar-storageunit-kc16mc21600mmwidetallcredenza-gresham-kulturealmar-storageunit",
+      "label": "Kulture Almar - Storage Unit - (KC16MC2) 1600mm Wide Tall Credenza",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-almar-storage-unit-ifc/KultureAlmar-StorageUnit-KC16MC21600mmWideTallCredenza-Gresham_KultureAlmar_StorageUnit.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 796373,
+      "dimensions": {
+        "depthFt": 5.249,
+        "heightFt": 2.512
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5215",
+        "modelReference": "Kulture Almar - Storage Unit",
+        "nbsReference": "45-35-80/360",
+        "material": "MFC,Acrylonitrile butadiene styrene (ABS),Aluminium,Steel"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturealmar-storageunit-kc16tc41600mmwidetwotiercredenza-gresham-kulturealmar-storageunit",
+      "label": "Kulture Almar - Storage Unit - (KC16TC4) 1600mm Wide Two Tier Credenza",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-almar-storage-unit-ifc/KultureAlmar-StorageUnit-KC16TC41600mmWideTwoTierCredenza-Gresham_KultureAlmar_StorageUnit.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 861025,
+      "dimensions": {
+        "depthFt": 5.249,
+        "heightFt": 3.969
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "5213",
+        "modelReference": "Kulture Almar - Storage Unit",
+        "nbsReference": "45-35-80/360",
+        "material": "MFC,Acrylonitrile butadiene styrene (ABS),Aluminium,Steel"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturecapaldi-softseating-1180mmseatunit-gresham-kulturecapaldi-softseating",
+      "label": "Kulture Capaldi - Soft Seating - 1180mm Seat Unit",
+      "manufacturer": "info@gof.co.uk",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-capaldi-soft-seating-ifc/KultureCapaldi-SoftSeating-1180mmSeatUnit-Gresham_KultureCapaldi_SoftSeating.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 220111,
+      "dimensions": {
+        "widthFt": 3.871,
+        "depthFt": 1.936,
+        "heightFt": 1.444
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "3667",
+        "modelReference": "Kulture Capaldi - Soft Seating",
+        "nbsReference": "45-35-20/330",
+        "material": "The box frames are manufactured from interlocking birch plywood panels, the seat unit is sprung using steel zig zag springs fixed to hardwood rails, the arms and backs use 18mm chipboard seat board, the box is covered with CMHR (Combustion Modified High Resilience) polyurethane foam for comfort and compliance with flammability requirements for contract use"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturecapaldi-softseating-1475mmseatunit-gresham-kulturecapaldi-softseating",
+      "label": "Kulture Capaldi - Soft Seating - 1475mm Seat Unit",
+      "manufacturer": "info@gof.co.uk",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-capaldi-soft-seating-ifc/KultureCapaldi-SoftSeating-1475mmSeatUnit-Gresham_KultureCapaldi_SoftSeating.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 227827,
+      "dimensions": {
+        "widthFt": 4.839,
+        "depthFt": 1.936,
+        "heightFt": 1.444
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "3661",
+        "modelReference": "Kulture Capaldi - Soft Seating",
+        "nbsReference": "45-35-20/330",
+        "material": "The box frames are manufactured from interlocking birch plywood panels, the seat unit is sprung using steel zig zag springs fixed to hardwood rails, the arms and backs use 18mm chipboard seat board, the box is covered with CMHR (Combustion Modified High Resilience) polyurethane foam for comfort and compliance with flammability requirements for contract use"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturecapaldi-softseating-backunit-gresham-kulturecapaldi-softseating",
+      "label": "Kulture Capaldi - Soft Seating - Back Unit",
+      "manufacturer": "info@gof.co.uk",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-capaldi-soft-seating-ifc/KultureCapaldi-SoftSeating-BackUnit-Gresham_KultureCapaldi_SoftSeating.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 205994,
+      "dimensions": {
+        "widthFt": 3.871,
+        "depthFt": 0.968,
+        "heightFt": 2.5
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "3669",
+        "modelReference": "Kulture Capaldi - Soft Seating",
+        "nbsReference": "45-35-20/330",
+        "material": "The box frames are manufactured from interlocking birch plywood panels, the seat unit is sprung using steel zig zag springs fixed to hardwood rails, the arms and backs use 18mm chipboard seat board, the box is covered with CMHR (Combustion Modified High Resilience) polyurethane foam for comfort and compliance with flammability requirements for contract use"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturecapaldi-softseating-longarmunit-gresham-kulturecapaldi-softseating",
+      "label": "Kulture Capaldi - Soft Seating - Long Arm Unit",
+      "manufacturer": "info@gof.co.uk",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-capaldi-soft-seating-ifc/KultureCapaldi-SoftSeating-LongArmUnit-Gresham_KultureCapaldi_SoftSeating.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 189332,
+      "dimensions": {
+        "widthFt": 2.904,
+        "depthFt": 0.968,
+        "heightFt": 2.067
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "3663",
+        "modelReference": "Kulture Capaldi - Soft Seating",
+        "nbsReference": "45-35-20/330",
+        "material": "The box frames are manufactured from interlocking birch plywood panels, the seat unit is sprung using steel zig zag springs fixed to hardwood rails, the arms and backs use 18mm chipboard seat board, the box is covered with CMHR (Combustion Modified High Resilience) polyurethane foam for comfort and compliance with flammability requirements for contract use"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturecapaldi-softseating-shortarmunit-gresham-kulturecapaldi-softseating",
+      "label": "Kulture Capaldi - Soft Seating - Short Arm Unit",
+      "manufacturer": "info@gof.co.uk",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-capaldi-soft-seating-ifc/KultureCapaldi-SoftSeating-ShortArmUnit-Gresham_KultureCapaldi_SoftSeating.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 176803,
+      "dimensions": {
+        "widthFt": 1.936,
+        "depthFt": 0.968,
+        "heightFt": 2.067
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "3665",
+        "modelReference": "Kulture Capaldi - Soft Seating",
+        "nbsReference": "45-35-20/330",
+        "material": "The box frames are manufactured from interlocking birch plywood panels, the seat unit is sprung using steel zig zag springs fixed to hardwood rails, the arms and backs use 18mm chipboard seat board, the box is covered with CMHR (Combustion Modified High Resilience) polyurethane foam for comfort and compliance with flammability requirements for contract use"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-1widex1highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 1 Wide x 1 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-1Widex1HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 31201,
+      "dimensions": {
+        "widthFt": 1.339,
+        "depthFt": 1.306,
+        "heightFt": 1.306
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7241",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-1widex2highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 1 Wide x 2 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-1Widex2HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 34806,
+      "dimensions": {
+        "widthFt": 1.339,
+        "depthFt": 1.306,
+        "heightFt": 2.549
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7239",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-1widex3highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 1 Wide x 3 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-1Widex3HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 38432,
+      "dimensions": {
+        "widthFt": 1.339,
+        "depthFt": 1.306,
+        "heightFt": 3.796
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7237",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-1widex4highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 1 Wide x 4 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-1Widex4HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 42060,
+      "dimensions": {
+        "widthFt": 1.339,
+        "depthFt": 1.306,
+        "heightFt": 5.043
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7235",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-1widex5highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 1 Wide x 5 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-1Widex5HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 45688,
+      "dimensions": {
+        "widthFt": 1.339,
+        "depthFt": 1.306,
+        "heightFt": 6.286
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7233",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-2widex1highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 2 Wide x 1 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-2Widex1HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 35661,
+      "dimensions": {
+        "widthFt": 2.615,
+        "depthFt": 1.306,
+        "heightFt": 1.306
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7231",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-2widex2highstepunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 2 Wide x 2 High Step Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-2Widex2HighStepUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 39481,
+      "dimensions": {
+        "widthFt": 2.615,
+        "depthFt": 1.306,
+        "heightFt": 2.549
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7211",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-2widex2highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 2 Wide x 2 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-2Widex2HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 41793,
+      "dimensions": {
+        "widthFt": 2.615,
+        "depthFt": 1.306,
+        "heightFt": 2.549
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7229",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-2widex3highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 2 Wide x 3 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-2Widex3HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 47953,
+      "dimensions": {
+        "widthFt": 2.615,
+        "depthFt": 1.306,
+        "heightFt": 3.796
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7227",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-2widex4highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 2 Wide x 4 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-2Widex4HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 54113,
+      "dimensions": {
+        "widthFt": 2.615,
+        "depthFt": 1.306,
+        "heightFt": 5.043
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7225",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-2widex5highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 2 Wide x 5 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-2Widex5HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 60257,
+      "dimensions": {
+        "widthFt": 2.615,
+        "depthFt": 1.306,
+        "heightFt": 6.286
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7223",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-3widex1highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 3 Wide x 1 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-3Widex1HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 39947,
+      "dimensions": {
+        "widthFt": 3.894,
+        "depthFt": 1.306,
+        "heightFt": 1.306
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7221",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-3widex2highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 3 Wide x 2 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-3Widex2HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 48588,
+      "dimensions": {
+        "widthFt": 3.894,
+        "depthFt": 1.306,
+        "heightFt": 2.549
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7219",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-3widex3highstepunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 3 Wide x 3 High Step Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-3Widex3HighStepUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 50045,
+      "dimensions": {
+        "widthFt": 3.894,
+        "depthFt": 1.306,
+        "heightFt": 3.796
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7209",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-3widex3highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 3 Wide x 3 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-3Widex3HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 57239,
+      "dimensions": {
+        "widthFt": 3.894,
+        "depthFt": 1.306,
+        "heightFt": 3.796
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7217",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-3widex4highstepunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 3 Wide x 4 High Step Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-3Widex4HighStepUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 53718,
+      "dimensions": {
+        "widthFt": 3.894,
+        "depthFt": 1.306,
+        "heightFt": 5.043
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7207",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-3widex4highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 3 Wide x 4 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-3Widex4HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 65937,
+      "dimensions": {
+        "widthFt": 3.894,
+        "depthFt": 1.306,
+        "heightFt": 5.043
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7215",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-3widex5highstepunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 3 Wide x 5 High Step Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-3Widex5HighStepUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 62494,
+      "dimensions": {
+        "widthFt": 3.894,
+        "depthFt": 1.306,
+        "heightFt": 6.286
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7205",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "kulturequollcube-shapedunits-3widex5highunit-gresham-kulturequollcube-shapedunits",
+      "label": "Kulture Quoll Cube - Shaped Units - 3 Wide x 5 High Unit",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "storage",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/kulture-quoll-cube-shaped-units-ifc/KultureQuollCube-ShapedUnits-3Widex5HighUnit-Gresham_KultureQuollCube_ShapedUnits.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 74847,
+      "dimensions": {
+        "widthFt": 3.894,
+        "depthFt": 1.306,
+        "heightFt": 6.286
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "7213",
+        "modelReference": "Kulture Quoll Cube - Shaped Units",
+        "nbsReference": "45-35-80/360",
+        "material": "Framework is Combination of 18 x 18 mm aluminium extrusion and a selection of high quality aluminium castings, all surfaces are manufactured from melamine faced chipboard, MFC is made from particleboard covered with a decorative paper impregnated with melamine resin"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "opso-bench-2way-gresham-opso-bench",
+      "label": "Opso - Bench - 2 Way",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/opso-bench-ifc/Opso-Bench-2Way-Gresham_Opso_Bench.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 278692,
+      "dimensions": {
+        "widthFt": 4.593,
+        "depthFt": 1.378,
+        "heightFt": 1.722
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "4632",
+        "modelReference": "Opso - Bench",
+        "nbsReference": "45-35-20/360",
+        "material": "n/a"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "opso-bench-3way-gresham-opso-bench",
+      "label": "Opso - Bench - 3 Way",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/opso-bench-ifc/Opso-Bench-3Way-Gresham_Opso_Bench.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 407257,
+      "dimensions": {
+        "widthFt": 4.593,
+        "depthFt": 1.378,
+        "heightFt": 1.722
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "4634",
+        "modelReference": "Opso - Bench",
+        "nbsReference": "45-35-20/360",
+        "material": "n/a"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "opso-bench-4way-gresham-opso-bench",
+      "label": "Opso - Bench - 4 Way",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/opso-bench-ifc/Opso-Bench-4Way-Gresham_Opso_Bench.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 535765,
+      "dimensions": {
+        "widthFt": 4.593,
+        "depthFt": 1.378,
+        "heightFt": 1.722
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "4630",
+        "modelReference": "Opso - Bench",
+        "nbsReference": "45-35-20/360",
+        "material": "n/a"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "osana-bench-kb1sf1seaterwoodenbase-gresham-osana-bench",
+      "label": "Osana - Bench - (KB1SF) 1 Seater Wooden Base",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/osana-bench-ifc/Osana-Bench-KB1SF1SeaterWoodenBase-Gresham_Osana_Bench.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 220783,
+      "dimensions": {
+        "widthFt": 1.942
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "4459",
+        "modelReference": "Relo Tables - Reception Table",
+        "nbsReference": "45-35-20/360",
+        "material": "Wood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "osana-bench-kb2sf2seaterwoodenbase-gresham-osana-bench",
+      "label": "Osana - Bench - (KB2SF) 2 Seater Wooden Base",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/osana-bench-ifc/Osana-Bench-KB2SF2SeaterWoodenBase-Gresham_Osana_Bench.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 532864,
+      "dimensions": {
+        "widthFt": 3.911
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "4461",
+        "modelReference": "Relo Tables - Reception Table",
+        "nbsReference": "45-35-20/360",
+        "material": "Wood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "osana-bench-kb3sf3seaterwoodenbase-gresham-osana-bench",
+      "label": "Osana - Bench - (KB3SF) 3 Seater Wooden Base",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "chair",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/osana-bench-ifc/Osana-Bench-KB3SF3SeaterWoodenBase-Gresham_Osana_Bench.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 732689,
+      "dimensions": {
+        "widthFt": 5.879
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "4463",
+        "modelReference": "Relo Tables - Reception Table",
+        "nbsReference": "45-35-20/360",
+        "material": "Wood"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "unoabooth-seating-unoba1halfboothwithouttable-gresham-unoabooth-seating",
+      "label": "Unoa Booth - Seating - (UNOBA1) Half Booth Without Table",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/unoa-booth-seating-ifc/UnoaBooth-Seating-UNOBA1HalfBoothWithoutTable-Gresham_UnoaBooth_Seating.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 113170,
+      "dimensions": {
+        "widthFt": 2.297,
+        "depthFt": 4.56,
+        "heightFt": 4.298
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "3721",
+        "modelReference": "Unoa Booth - Seating",
+        "nbsReference": "45-35-20/330",
+        "material": "Metal,Polyurethane,Wood,Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "unoabooth-seating-unoba2fullboothwithtable-gresham-unoabooth-seating",
+      "label": "Unoa Booth - Seating - (UNOBA2) Full Booth With Table",
+      "manufacturer": "Gresham",
+      "category": "furniture",
+      "intendedUse": "sofa",
+      "ifcClass": "IFCFURNITURETYPE",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/unoa-booth-seating-ifc/UnoaBooth-Seating-UNOBA2FullBoothWithTable-Gresham_UnoaBooth_Seating.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 259446,
+      "dimensions": {
+        "widthFt": 4.56,
+        "depthFt": 7.808,
+        "heightFt": 4.298
+      },
+      "metadata": {
+        "rawCategory": "Project Information",
+        "productName": "3719",
+        "modelReference": "Unoa Booth - Seating",
+        "nbsReference": "45-35-20/330",
+        "material": "Metal,Polyurethane,Wood,Fabric"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    },
+    {
+      "id": "wudumate-plumbingfixtures-baths-classic",
+      "label": "WuduMate_Classic",
+      "manufacturer": "WuduMate",
+      "category": "sanitary",
+      "intendedUse": "bath",
+      "ifcClass": "IFCBUILDINGELEMENTPROXY",
+      "ifcSchema": "IFC2X3",
+      "source": "local-download",
+      "sourceLabel": "Downloaded IFC staging",
+      "file": "/data/bim-components/staging/wudumate-plumbingfixtures-baths-classic.ifc",
+      "renderMode": "metadata-only",
+      "bytes": 158362,
+      "dimensions": {},
+      "metadata": {
+        "rawCategory": "Plumbing Fixtures",
+        "productName": "wudumate-plumbingfixtures-baths-classic",
+        "modelReference": "Classic",
+        "nbsReference": "Pr_40_20_06_08",
+        "material": "Acrylic"
+      },
+      "geometryAuthority": "semantic-json",
+      "status": "cataloged"
+    }
+  ]
+}

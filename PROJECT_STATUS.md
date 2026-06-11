@@ -1,0 +1,695 @@
+# Project Status
+
+Last updated: 2026-06-01
+
+## Current Objective
+
+Floorplan Studio is being rebuilt into a Den-style prompt-to-plan product workflow. The target output is not a debug harness: it should produce customer-facing 2D plans, BIM/Product 3D, cutaways, elevations, and export packets that are credible enough for a sales brochure or Airbnb listing.
+
+The core invariant is:
+
+```
+GPT proposal image + paired semantic JSON
+  -> deterministic 2D render
+  -> semantic_bim_v1 / buildable_bim_v1
+  -> Product 3D, exports, QA, repair prompts
+```
+
+The paired semantic JSON remains the editable source of truth. BIM, IFC, fixtures, marketplace assets, screenshots, and brochure exports are downstream lanes. They may improve presentation, but they must not redefine geometry.
+
+## Architecture Now
+
+- Product app: `app/page.tsx`
+  - Gallery/detail workflow, validation lanes, repair/export controls.
+  - Product view defaults toward BIM/Product 3D, with Compare/Overlay/Semantic review below.
+- Deterministic 2D renderer: `components/FloorPlanView.tsx`
+  - Draws paired semantic geometry using `drawing_style_profile_v1`.
+  - Renders primitive-level elements: walls, openings, doors, windows, fixtures, furniture, ladders/stairs, dashed voids, labels, dimensions.
+- BIM/Product 3D: `components/bim/BimPreview.tsx`, `lib/bim/*`
+  - Converts paired semantic JSON to `semantic_bim_v1` / `buildable_bim_v1`.
+  - Uses That Open components as the viewer/tooling direction, while keeping paired JSON as source of truth.
+- Standards and validation: `lib/standards/*`, `lib/build-validator.ts`, `scripts/recompute-visual-drift.mjs`, `scripts/brochure-visual-qa.mjs`
+  - Separates Design Quality, Presentation Quality, Brochure Quality, Manufacturing Readiness, Export Readiness, Accessibility Advisory, and Code Advisory.
+- Repair workflow: `lib/repair/*`, `scripts/print-brochure-repair-queue.mjs`, `scripts/request-brochure-repair-patch.mjs`, `scripts/apply-brochure-repair-patch.mjs`
+  - Generates scoped GPT repair prompts.
+  - Accepts RFC 6902 JSON Patch only.
+  - Validates scope, rerenders, reruns QA, and rolls back if the targeted blocker does not improve.
+- Component/asset lane: `lib/bim/component-registry.ts`, `lib/bim/component-assets.ts`, `public/data/bim-components/*`
+  - Maps semantic fixtures/furniture/doors/windows/panels to IFC classes, fallback procedural geometry, and optional local or provider assets.
+
+## Spatial Compiler Direction
+
+The useful architecture from the broader generative-CAD notes is to stop treating plan generation as a single image prompt. A one-shot request for "pixels plus JSON plus 3D" is not a reliable source of truth because the image and text channels can disagree. The app should behave more like a spatial compiler:
+
+1. Generate or import a paired artifact as volatile source code.
+2. Normalize it into `paired_gpt_floorplan_v1` semantic JSON.
+3. Validate schema and roles before anything becomes selectable.
+4. Run deterministic geometry and topology checks.
+5. Render deterministic 2D from the semantic JSON plus `drawing_style_profile_v1`.
+6. Compile downstream to `semantic_bim_v1` / `buildable_bim_v1`.
+7. Render Product 3D, cutaway, elevation, and exports from the compiled BIM lane.
+8. Use scoped GPT JSON Patch only for repair, never broad local guessing.
+9. Use downstream image generation only as a presentation lane conditioned on validated geometry, not as the geometry source.
+
+This gives the project a narrow waist:
+
+```
+prompt / source image / GPT JSON
+  -> constrained paired semantic JSON
+  -> compiler validations
+  -> deterministic 2D + BIM/Product 3D
+  -> conditioned brochure/exterior renders + exports
+```
+
+Near-term implication: invest in schema contracts, primitive extraction, visual drift reporting, repair prompt quality, and browser QA before chasing photorealistic rendering. Photorealistic images are useful later, but only after they are conditioned by validated 2D/3D geometry so they cannot move walls, doors, windows, stairs, fixtures, or roof forms.
+
+The latest architecture notes reinforce one cleanup decision: the app should not be a monolithic "ask the model for image + JSON + 3D" loop. That path creates two untrusted artifacts that can disagree. The stable foundation is a compiler boundary:
+
+- `paired_gpt_floorplan_v1` is the only editable design source.
+- `drawing_style_profile_v1` is renderer style, not geometry.
+- `semantic_bim_v1` / `buildable_bim_v1` are compiled outputs.
+- Product 3D and brochure imagery are presentation outputs.
+- GPT repairs are scoped patches against a failing compiler issue, not whole-plan guesses.
+
+Useful future upgrades:
+
+- Constrained JSON generation/import for the semantic schema.
+- Shapely-like geometry validation on the backend for polygon containment, overlaps, and intersections.
+- Circulation graph checks for room adjacency and pathing.
+- Mesh-level Product 3D checks for roof/wall/panel intersections.
+- Conditioned marketing renders from deterministic depth/edge/normal maps after the plan already passes.
+
+Claims about external products or model benchmarks should stay out of repo docs unless verified from primary/current sources. The architectural pattern is useful; unverified market numbers are not part of the plan.
+
+## Current Target Plans
+
+The active regression set is:
+
+| Plan | Artifact | Current state | Notes |
+| --- | --- | --- | --- |
+| `a-frame-bunk` | `proposal-paired-v1` | review / blocked under strict Brochure QA | A scoped fixture span patch improved the loft bed primitive. Full fixture/body drawing-language drift still blocks brochure-ready status. A source-image crop overlay experiment was rejected; keep the render vector/semantic. |
+| `a-frame-22` | `proposal-paired-v10` | review / blocked | Source primitive overrides are now materialized and door `openingType` values are normalized to the app enum. Door type blockers are cleared, but fixtures, ladder/stairs, dashed void/open-to-below, and broader primitive drawing mass still block. |
+| `outpost-medium` | `proposal-paired-v11` | review / browser QA pass | Scoped fixture and wall primitive repairs cleared the latest desktop/laptop Brochure QA run. Keep it under regression; it is the current passing target, not proof that the whole pipeline is launch-ready. |
+
+Promotion in the manifest is not the same as whole-product completion. Under the current strict Brochure QA, `outpost-medium` is the only target currently passing browser QA. `a-frame-bunk` and `a-frame-22` remain blocked repair artifacts, so the overall goal is still incomplete.
+
+## Current Metrics Snapshot
+
+Latest strict browser QA and drift regeneration after richer source-anchor selection and scoped GPT repair patches:
+
+2026-06-01 checkpoint:
+
+- Browser QA command:
+  - `BROCHURE_QA_URL=http://127.0.0.1:3002 BROCHURE_QA_PLANS=a-frame-bunk,a-frame-22,outpost-medium npm run qa:brochure`
+- Current result:
+  - gallery passes on desktop and laptop.
+  - `outpost-medium/proposal-paired-v11` passes on desktop and laptop.
+  - `a-frame-bunk/proposal-paired-v1` remains blocked on Presentation Drift and Brochure Quality.
+  - `a-frame-22/proposal-paired-v10` remains blocked on Presentation Drift and Brochure Quality.
+
+- `outpost-medium/proposal-paired-v11`
+  - Browser QA passes desktop and laptop with `BROCHURE_QA_URL=http://127.0.0.1:3002 BROCHURE_QA_PLANS=outpost-medium npm run qa:brochure`.
+  - Accepted repairs this pass:
+    - `ew-e:seg-2` source wall primitive.
+    - `fx-living-seating` fixture source anchor preference.
+    - `iw-bed9-e` source wall primitive.
+    - `iw-bed9-s:seg-1` source wall primitive.
+  - A validator/render bug was fixed so fixture/furniture elements prefer their direct `sourceAnchor.pixelBounds` over stale global source anchors.
+- `a-frame-bunk/proposal-paired-v1`
+  - Accepted repair: `/fixtures/5/sourceAnchor/span` for `furn-l2-loft-bed`.
+  - Accepted renderer/profile repair: `fixture-body-220` thickened fixture/stair glyph strokes through `drawing_style_profile_v1`. This removed the fixture-specific browser QA blocker without changing semantic geometry.
+  - Current drift remains blocked on overall drawing-language mass: primitive source miss `15.3%`, primitive render extra `17.3%`, primitive edge miss `0.9%`, primitive edge extra `1.1%`; full source miss `30.4%`, full render extra `24.0%`.
+  - The remaining issue is broader source-frame/wall/opening/dimension drawing mass, not a fixture-only blocker.
+  - Do not use source-image crop overlays as the deterministic render. A data-URI crop overlay was tested, made the SVG heavy/flaky for the browser, and violated the vector/semantic compiler direction.
+- `a-frame-22/proposal-paired-v10`
+  - Not re-cleared after the Outpost fixes. It remains blocked by fixtures, ladder/stairs, dimensions, and broad drawing-language mass.
+  - Accepted renderer/profile repair: `fixture-body-150` thickened fixture/stair glyph strokes through `drawing_style_profile_v1`.
+  - Latest strict QA layer metrics: primitive source miss `44.5%`, primitive render extra `38.9%`, primitive edge miss `3.3%`, primitive edge extra `5.2%`; full source miss `58.7%`, full render extra `40.1%`; fixture source miss `39.3%`, fixture render extra `37.7%`, fixture edge miss `6.8%`, fixture edge extra `4.9%`.
+
+2026-05-31 strict browser QA checkpoint after cleanup:
+
+- Verification:
+  - `npx eslint scripts/check-paired-geometry.mjs components/FloorPlanView.tsx` passes.
+  - `npx tsc --noEmit` passes.
+  - `npm run paired:geometry` passes and now reports geometry status without treating promotion as a geometry invariant.
+  - `npm run paired:smoke` passes with `paired 0/32 promoted, 30 queued, manifest 18 paired option(s)`.
+  - `npm run archive:stale --` moved 10 stale paired backup files into paired artifact archives.
+  - `npm run goal:audit` correctly reports incomplete: no target plan is true brochure-ready yet.
+- Browser QA:
+  - `BROCHURE_QA_URL=http://127.0.0.1:3002 BROCHURE_QA_PLANS=a-frame-bunk,a-frame-22,outpost-medium npm run qa:brochure` blocks all three target plans.
+  - This is the desired behavior until Compare/Overlay and Product 3D are actually sales-brochure quality.
+- Current strict blockers:
+  - `a-frame-bunk/proposal-paired-v1`
+    - Presentation/Brochure drawing-language drift only.
+    - primitive source miss `16.5%`, primitive render extra `15.0%`, primitive edge miss `1.6%`, primitive edge extra `1.7%`, full source miss `31.2%`, full render extra `22.9%`.
+    - Next repair is style/profile and source-frame fidelity, not semantic room redesign.
+  - `a-frame-22/proposal-paired-v10`
+    - Presentation/Brochure drawing-language drift plus fixture drift.
+    - primitive source miss `46.5%`, primitive render extra `38.6%`, primitive edge miss `3.4%`, primitive edge extra `5.1%`, full source miss `60.1%`, full render extra `39.8%`.
+    - Fixture layer remains the first high-signal repair target.
+  - `outpost-medium/proposal-paired-v11`
+    - Design/Brochure remain blocked on door, fixture, and wall primitive drift.
+    - door: source miss `29.9%`, render extra `38.0%`, edge miss `1.1%`, edge extra `8.0%`
+    - fixture: source miss `23.4%`, render extra `25.3%`, edge miss `6.8%`, edge extra `10.0%`
+    - wall: source miss `6.8%`, render extra `16.5%`, edge miss `0.1%`, edge extra `6.9%`
+    - full drawing-language drift: source miss `30.9%`, render extra `32.1%`
+- Cleanup decision:
+  - An experimental SVG wall-shadow filter was removed because it did not improve drift metrics. Renderer quality should come from explicit `drawing_style_profile_v1` rules and semantic/source primitives, not hidden filter effects.
+- Repair-loop checkpoint:
+  - The current Outpost source-primitive bundle was sent through ChatGPT in the browser. GPT returned a narrow six-operation patch touching only `/sourceOpenings/13`.
+  - `npm run repair:ingest` accepted the patch scope, but `npm run repair:evaluate` rejected it because the drift score did not improve (`0.746185 -> 0.746185`). The patch was rolled back and the temporary paired JSON backup was archived.
+  - A local renderer probe that made source-box door geometry override hinge/leaf geometry reduced door dark-pixel extra but worsened door edge drift. It was reverted because primitive edge alignment is the stricter invariant.
+  - Next Outpost work should target either source primitive extraction quality for the named door/window/wall ids or renderer primitive generation for wall/fixture glyphs. Do not keep patches that trade better area fill for worse edge alignment.
+
+2026-05-31 continuation checkpoint:
+
+- `outpost-medium/proposal-paired-v11`
+  - source wall/opening materialization now uses interval-aware host wall selection instead of nearest-line-only matching.
+  - This is a safer primitive contract for split wall segments, but it did **not** clear the remaining QA blockers.
+  - Current browser QA still blocks Outpost on:
+    - door primitive drift: source miss `29.9%`, render extra `38.0%`, edge miss `1.1%`, edge extra `8.0%`
+    - fixture primitive drift: source miss `23.4%`, render extra `25.3%`, edge miss `6.8%`, edge extra `10.0%`
+    - wall primitive drift: source miss `6.8%`, render extra `16.5%`, edge miss `0.1%`, edge extra `6.9%`
+    - full drawing-language drift: source miss `30.9%`, render extra `32.1%`
+  - Interpretation: the pipeline is correctly refusing to mark this brochure-ready. The remaining work is source/semantic primitive reconciliation for doors, fixtures, and split walls, not a threshold or style-only fix.
+- `a-frame-22/proposal-paired-v10`
+  - dimension synthetic tick/label drift was reduced by rendering source-evidenced dimensions only when explicit source dimension metadata exists.
+  - source-override doors now ignore pixel-space hinge/leaf coordinates and fall back to source-box door geometry, preventing giant false swing arcs.
+  - Remaining blocker is fixture drawing-language drift and broader primitive mass; this still needs scoped fixture/source-primitive repair.
+- `a-frame-bunk/proposal-paired-v1`
+  - no longer counts as a passing brochure baseline under the current strict full-drawing-language QA.
+  - latest browser QA blocks it on Presentation/Brochure drawing-language drift: primitive source miss `16.5%`, primitive render extra `15.0%`, primitive edge miss `1.6%`, primitive edge extra `1.7%`, full source miss `31.2%`, full render extra `22.9%`.
+  - interpretation: structural primitive edges are close, but style/frame/body mass is not yet good enough for sales-brochure use.
+  - keep it as the small regression fixture for Product 3D and 2D Compare/Overlay, not as proof the product goal is complete.
+
+2026-05-31 spatial compiler checkpoint:
+
+- `a-frame-bunk/proposal-paired-v1`
+  - historical note: it previously passed the lighter browser QA gate.
+  - current strict Brochure QA blocks it on full drawing-language drift, so it is a regression fixture rather than a release-candidate.
+- `a-frame-22/proposal-paired-v10`
+  - strict browser QA is still blocked on Presentation/Brochure drift.
+  - current drift after regeneration:
+    - full source miss: `51.1%`
+    - full render extra: `47.3%`
+    - primitive source miss: `35.2%`
+    - primitive render extra: `46.7%`
+    - primitive edge source miss: `3.0%`
+    - primitive edge render extra: `7.2%`
+  - layer-specific blockers are door, fixture, ladder/stair, and overall drawing-language mass. Edge alignment is close enough to prove source anchors are flowing; body/symbol fidelity is still not brochure-ready.
+- `outpost-medium/proposal-paired-v11`
+  - strict browser QA is still blocked on Presentation/Brochure drift.
+  - current drift after regeneration:
+    - full source miss: `28.4%`
+    - full render extra: `31.3%`
+    - primitive source miss: `19.2%`
+    - primitive render extra: `31.3%`
+    - primitive edge source miss: `7.3%`
+    - primitive edge render extra: `6.0%`
+  - current blocker is broad source/render drawing mass, not missing source primitive metadata.
+- A raster source-crop overlay experiment for fixtures/ladders was rejected. It made stored SVGs fragile and worsened drift. Keep source image crops as evidence for repair prompts, not as a default deterministic render shortcut.
+- Fresh scoped repair bundles were generated under `artifacts/brochure-qa/repair-bundles-all`; the current queue has `18` repair prompts covering `a-frame-22` and `outpost-medium`.
+- Verification:
+  - `npx tsc --noEmit` passes.
+  - Historical verification at this checkpoint passed the gallery and `a-frame-bunk`, then blocked `a-frame-22` and `outpost-medium`; the stricter continuation checkpoint above supersedes that result and blocks all three target artifacts for release-candidate status.
+  - `npm run repair:queue -- --out artifacts/brochure-qa/next-repair-prompts-all.md --bundle-dir artifacts/brochure-qa/repair-bundles-all --zip --all` regenerated current repair evidence.
+
+2026-05-31 source primitive override checkpoint:
+
+- `a-frame-22/proposal-paired-v10`
+  - source primitive overrides were materialized from GPT proposal anchors: `71` wall primitives and `19` openings.
+  - fixed the source-opening type boundary: materialized source doors now normalize `swing-door`, `exterior-swing-door`, and `bifold-closet-door` into the app's semantic enum (`interiorDoor`, `exteriorDoor`, `bifoldDoor`, etc.).
+  - generated backup paired JSON files were moved under the paired artifact archive via `npm run archive:stale --`.
+  - Current browser QA result: gallery passes, `a-frame-22` remains blocked on fixture primitive edge drift, ladder/stair drift, dashed void/open-to-below drift, and broad Presentation/Brochure Quality drift.
+  - Current `a-frame-22` drift after regeneration:
+    - full source miss: `51.2%`
+    - full render extra: `47.1%`
+    - primitive source miss: `35.4%`
+    - primitive render extra: `46.6%`
+    - primitive edge source miss: `5.7%`
+    - primitive edge render extra: `7.0%`
+  - Remaining repair should use the generated scoped bundles for `semantic rebuild`, `void/open-to-below`, `fixtures`, `stairs`, and `level frames`. Do not try to pass this with style-only tuning.
+
+- `outpost-medium/proposal-paired-v11`
+  - source primitive overrides were materialized from GPT proposal anchors: `36` wall primitives and `14` openings.
+  - generated backup paired JSON files were moved under the paired artifact archive via `npm run archive:stale --`.
+  - `sourceWalls` now preserve exterior roles for ids such as `ew-*`; current count is `10` exterior wall primitives.
+  - `sourceOpenings` now preserve door metadata: `fromRoomId`, `toRoomId`, hinge/leaf/swing fields, `opensIntoRoomId`, and host wall ids. No source door is missing required metadata.
+  - fixed a coordinate-space bug where source-opening door hinge/leaf points were copied in feet while the renderer expected the 4-ft grid. This created giant door arcs and false 28-38 ft drift blockers. Source overrides now store those points in grid units and the primitive validator converts them back to feet for comparison.
+  - fixed QA/source primitive expectations so explicit `sourceWalls` / `sourceOpenings` are the source primitive contract when present. Browser QA no longer compares active source overrides against stale derived `exteriorWalls` / `interiorWalls` ids.
+  - Current browser QA result: gallery passes, Outpost remains blocked only on Presentation/Brochure Quality, not missing source primitive metadata.
+  - Current Outpost drift after regeneration:
+    - full source miss: `28.5%`
+    - full render extra: `31.6%`
+    - primitive source miss: `19.3%`
+    - primitive render extra: `31.6%`
+    - primitive edge source miss: `7.3%`
+    - primitive edge render extra: `5.8%`
+  - Remaining blocker is real visible drawing-language/source-render drift. Do not promote. Next repair should target the semantic composition and drawing-style profile, not source metadata plumbing.
+
+- `a-frame-bunk/proposal-paired-v1`
+  - now passes visual drift and full desktop/laptop browser QA
+  - fixture edge extra dropped below the cap after removing duplicate pillow rendering from the bed symbol
+  - dashed-void edge drift is zero; body-only dark-region noise is classified as sparse linework presentation warning rather than a semantic blocker
+- `outpost-medium/proposal-paired-v11`
+  - still blocked
+  - false door/window primitive blockers cleared after area-symbol source-anchor selection
+  - current blocker: overall Compare/Overlay primitive mass drift, so Brochure Quality remains blocked
+- `a-frame-22/proposal-paired-v10`
+  - still blocked
+  - source primitive overrides and door semantic type normalization are now in place
+  - current blockers: fixture primitive edge drift, ladder/stair primitive drift, dashed void/open-to-below drift, and full Compare/Overlay mass
+  - this is still a semantic/presentation repair target, not a promotion candidate
+
+Verification after this checkpoint:
+
+- `npx tsc --noEmit` passes.
+- `node --check scripts/brochure-visual-qa.mjs && node --check scripts/regenerate-paired-renders.mjs` passes.
+- `npm run archive:stale -- --dry-run` reports no manifest-archived files or active backups to move.
+- Historical note: an older smoke run reported `1/32` promoted; the current strict baseline reports `0/32` promoted under the paired manifest. Treat release-candidate status as browser-QA driven, not manifest-promotion driven.
+
+Older metric notes below are retained as historical checkpoints; the table and latest checkpoint above are authoritative for the current active baseline.
+
+Recent drift files show:
+
+- `a-frame-bunk/proposal-paired-v1`
+  - `passed: false`
+  - primitive source miss: `13.5%`
+  - primitive render extra: `18.1%`
+  - primitive edge source miss: `1.3%`
+  - primitive edge render extra: `2.0%`
+  - blocker: fixture layer edge/render drift; QA generated fixture, drawing-style, window, wall, level-frame, and void repair bundles
+- `outpost-medium/proposal-paired-v11`
+  - `passed: false`
+  - primitive source miss: `18.5%`
+  - primitive render extra: `28.3%`
+  - primitive edge source miss: `6.7%`
+  - primitive edge render extra: `5.5%`
+  - blocker: primitive drawing mass and wall/opening primitive geometry; QA generated drawing-style, fixture, wall, door, level-frame, and furniture repair bundles
+- `a-frame-22/proposal-paired-v10`
+  - `passed: false`
+  - primitive source miss: `33.0%`
+  - primitive render extra: `46.1%`
+  - primitive edge source miss: `3.4%`
+  - primitive edge render extra: `7.1%`
+  - wall layer itself now clears the layer thresholds, but overall primitive mass still fails
+  - blockers: dashed void/open-to-below, dimensions, drawing style profile, walls, level frames, fixtures, ladder, and door/furniture presentation
+
+2026-05-30 stricter drift checkpoint:
+
+- All three target artifacts are review-only. `proposal-manifest.json` now has `pairedPromotionEligible: 0`; blocked artifacts remain visible for repair/debug but are not promoted.
+- `paired:smoke` passes under the new rule: a promoted option must have passing visual drift; failing latest artifacts stay out of promotion.
+- `paired:geometry` passes for the three review targets and verifies they remain in physical feet with roof/elevation JSON available.
+- Fresh browser QA blocks all three targets and generated 17 scoped repair bundles under `artifacts/brochure-qa/repair-bundles-all`.
+- The next high-leverage repair order is:
+  1. `a-frame-bunk/proposal-paired-v1/fixtures`
+  2. `a-frame-22/proposal-paired-v10/void-open-to-below`
+  3. `a-frame-22/proposal-paired-v10/dimensions`
+  4. `outpost-medium/proposal-paired-v11/walls`
+- Repair bundles now include the full current paired JSON, drawing style profile, brochure repair packet, layer report, current layer section, patch path index, source image, deterministic SVG, and browser QA screenshots.
+- `repair-prompt.md` was reduced from a duplicated ~468 KB prompt to a compact ~31 KB prompt. Full machine-readable context now lives in adjacent bundle files.
+- `repair:gpt` dry-run request preview now includes structured context for current paired JSON, drawing style profile, compact layer report, patch path index, deterministic SVG, and selected images. It no longer duplicates the full repair packet in the API request body.
+- Verification after this change: `node --check` for drift/render scripts, `npx tsc --noEmit`, `npm run paired:smoke`, `npm run paired:geometry`, and `BROCHURE_QA_PLANS=a-frame-bunk,a-frame-22,outpost-medium npm run qa:brochure` were run. QA correctly exits blocked while emitting repair packets.
+- ChatGPT UI repair attempts:
+  - `semantic rebuild` zip returned `[]`; too broad for a safe patch.
+  - `walls` zip returned `[]`; it identified wall/source-anchor drift but would not patch safely.
+  - `level frames` individual-file upload returned a JSON Patch, but local validation/regeneration showed it did not improve the primitive drift and removed generic floor panel entries. The patch was rejected, the automatic backup was restored, and the rejection is recorded in `artifacts/brochure-qa/repair-bundles-all/a-frame-22-proposal-paired-v10-level-frames/rejection.json`.
+  - Current baseline after rollback remains blocked with primitive edge source miss `3.6%` and primitive edge render extra `8.2%`.
+
+2026-05-31 primitive compiler checkpoint:
+
+- Fixed a primitive contract bug in `lib/drawing-primitives.ts`: split wall segments inherited their parent wall's full source anchor before the segment semantic span was known. That made the app compare a short rendered wall piece against an entire parent wall and produced false 20+ ft wall blockers.
+- The extractor now prefers an exact `sourceAnchorId` match over inherited parent anchors, then computes the semantic span before projecting source anchors into feet. This keeps split wall comparisons at the primitive/segment level instead of the parent-wall level.
+- Added per-layer primitive-contract classification in `app/page.tsx`: when the wall layer's visual primitive drift passes, noisy wall source-anchor geometry diffs are downgraded to debug warnings instead of blocking Design Quality. This does not relax door/window/fixture blockers.
+- Verification:
+  - `npx tsc --noEmit` passes.
+  - `npm run paired:smoke` passes with `0/32` promoted and `30` queued.
+  - `npm run paired:geometry` passes for the three review targets.
+  - Syntax checks pass for the drift/render/smoke scripts.
+  - Browser opened `http://127.0.0.1:3002/?home=outpost-medium` and captured `outpost-after-primitive-anchor-fix.png`.
+  - `BROCHURE_QA_URL=http://127.0.0.1:3002 BROCHURE_QA_PLANS=outpost-medium npm run qa:brochure` still exits blocked, as intended.
+- Impact on Outpost:
+  - The false north-wall full-span blockers disappeared.
+  - Wall primitive blockers are no longer in the browser QA blocker list because the wall layer's visual primitive drift is within tolerance.
+  - Remaining blockers are now more actionable: door swing/placement drift, `win-n-stair` window drift, hidden additional door/window primitive diffs, and overall primitive mass.
+  - Fixture blockers did not reappear in the Outpost QA blocker list after the wall classifier change.
+  - Outpost remains review-only. Do not promote it until Compare/Overlay primitive drift and Brochure Quality pass.
+
+2026-05-31 A-frame 22 annotation checkpoint:
+
+- Archived the local rollback file `a-frame-22-proposal-paired-v10.paired.json.bak-1780196347027` out of the active paired data folder to `/Users/openclaw/.openclaw/archive/wikihouse-planner/20260531-active-paired-backups/`.
+- Kept current paired JSON, source image, render SVG, drift JSON, QA report, screenshots, and repair bundles active. They are current failure evidence, not cruft.
+- Fixed the next false layer classification after the dashed-void repair:
+  - `scripts/recompute-visual-drift.mjs` now treats dimension primitives as annotation/presentation when source dimension edges are covered but the renderer adds extra tick/label edges.
+  - `scripts/brochure-visual-qa.mjs` now routes that dimension annotation drift to the drawing-style/profile repair lane instead of semantic JSON repair.
+  - `app/page.tsx` now reports dimension edge-extra as sparse-linework presentation drift unless source dimension edges are actually missing.
+- Verification:
+  - `npx tsc --noEmit` passes.
+  - `node --check scripts/brochure-visual-qa.mjs && node --check scripts/recompute-visual-drift.mjs` passes.
+  - `npm run paired:smoke` passes with `0/32` promoted and `30` queued.
+  - `npm run paired:geometry` passes for the three review targets.
+  - `BROCHURE_QA_URL=http://127.0.0.1:3002 npm run drift:paired -- --plans a-frame-22 --url http://127.0.0.1:3002` still blocks A-frame 22, but `primitiveLayerBlockers` is now empty; the remaining blocker is whole primitive drawing mass drift.
+  - `BROCHURE_QA_URL=http://127.0.0.1:3002 BROCHURE_QA_PLANS=a-frame-22 npm run qa:brochure` correctly exits blocked.
+  - Browser opened `http://127.0.0.1:3002/?home=a-frame-22` and captured `a-frame-22-after-dimension-classifier.png`.
+- Current A-frame 22 blocker list after this change:
+  - door primitive geometry drift on eight door ids
+  - 20 hidden additional primitive geometry blockers
+  - drawing-language drift for dashed void, doors, fixtures, ladder, and full Compare/Overlay mass
+  - Product 3D/Cutaway/Front/Side/Plan Top remain blocked because Design, Presentation, and Brochure Quality are still blocked
+- Next repair order:
+  1. Door primitive geometry for `a-frame-22/proposal-paired-v10`.
+  2. Fixture and ladder source/render primitive fidelity.
+  3. Dashed-void drawing-style rhythm.
+  4. Product 3D roof/panel/fixture presentation only after 2D primitive fidelity improves.
+
+## What Recently Changed
+
+- Added primitive-level visual drift checks for source/render comparison.
+- Added wall segment splitting so physical wall pieces are compared as segments rather than continuous masked lines.
+- Added sparse linework handling so dimension/window dark-area drift does not block when edge geometry passes.
+- Improved fixture classification in `FloorPlanView.tsx`, including storage, counters, refrigerator, dining table, and fixture part rendering.
+- Added source primitive alignment in `scripts/regenerate-paired-renders.mjs`.
+- Regenerated Outpost render/drift after fixture stroke and wall primitive work.
+- Added `wallBodyLineMode` to `drawing_style_profile_v1`.
+  - `outpost-medium/proposal-paired-v11` now uses `centerline` wall bodies so deterministic wall edges match the GPT proposal source primitives.
+  - A-frame plans keep the default `outline` wall body mode, avoiding the regression where a global centerline change made `a-frame-bunk` fail.
+- Fixed fallback split-wall source span math so derived vertical wall segments preserve parent wall width instead of collapsing into diagonal/sliver boxes.
+- Added wall-specific dark-mask tolerance in `scripts/recompute-visual-drift.mjs`.
+  - This is a measurement fix, not a quality-threshold relaxation: thick filled wall bands are compared with a `9px` body tolerance, while wall edge thresholds remain strict and all non-wall layers keep the normal `4px` body tolerance.
+  - This cleared the Outpost wall presentation false positive without changing fixture, room, or wall geometry.
+- Demoted every target artifact whose current visual drift fails.
+  - `paired:smoke` now reports `0/32` promoted and `30` queued generation handoffs.
+  - `a-frame-bunk/proposal-paired-v1`, `a-frame-22/proposal-paired-v10`, and `outpost-medium/proposal-paired-v11` remain selectable review artifacts, but none are brochure-ready.
+  - Render/drift/QA scripts now select the latest paired artifact for explicit regression targets even when it is not promoted, preventing fallback to stale v1 artifacts.
+  - Promotion smoke now checks the visual drift file has `passed: true` for every promoted option.
+
+## What Did Not Work
+
+These should not be repeated without a new reason:
+
+- Materializing broad source primitive overrides for Outpost worsened drift.
+- Removing parent alignment for split wall segments worsened drift.
+- Broad wall `no-stroke` or generic cross-axis thickness changes worsened either wall or fixture metrics.
+- Tightening Outpost source wall anchors improved one number but created adjacent drift and did not clear the wall threshold.
+- Treating dimension/window dark-pixel area as structural drift created false blockers for sparse linework.
+- Applying centerline wall rendering globally fixed Outpost but regressed `a-frame-bunk`; wall drawing language must be per-profile, not global.
+- Sweeping Outpost wall stroke, opacity, and backing color did not clear the wall drawing-language area blocker without trading off source miss or edge quality. The remaining Outpost issue should stay as a scoped `drawing style profile` GPT repair or explicit renderer-profile improvement, not a threshold relaxation.
+
+## Cleanup Stance
+
+Do checkpoint cleanup, not evidence-destroying cleanup.
+
+- Keep failed artifacts and repair bundles as evidence until the replacement path is proven.
+- Do not delete active paired data, QA screenshots, repair prompts, or catalog data blindly.
+- Quarantine old SpatialIR/canonical-seed assumptions in docs and default selection.
+- Do not keep optional side-channel data sources that can silently override paired JSON metadata.
+- Remove generated cruft only after `rg` proves it is unreferenced and the browser QA still passes.
+- Commit or stash before large cleanup; the current worktree contains many intentional untracked modules and generated artifacts.
+
+Current cleanup decision:
+
+- Keep `artifacts/brochure-qa/*` active for now. The screenshots, product packets, repair bundles, and reports are current failure evidence, not cruft.
+- Keep deleted legacy paths deleted from the active tree; previous archive snapshots preserve the old foundation outside the app path.
+- Do not archive current paired JSON, source images, deterministic renders, visual drift files, or repair bundles until a replacement artifact has passed browser QA.
+
+Removed from the active foundation because they were old SpatialIR/guardian-generation paths rather than paired compiler paths:
+
+- `app/den-seeds`
+- `autoresearch/plan-fidelity/value_guardian_loop.py`
+- `scripts/generate-data.py`
+- `scripts/analyze-plans.py`
+- `scripts/auto-improve.ts`
+- `lib/conversion-validator.ts`
+- `lib/graph-layout.ts`
+- `lib/generate-placements.ts`
+- `lib/plan-validator.ts`
+- `public/data/den-seeds` symlink and runtime seed lookup in `lib/data.ts`
+- `public/data/spatial-manifest.json` and `public/data/kintsugi-plans.json` stale symlinks
+- `scripts/brochure-cron-loop.sh`; repair loops must be explicit via `npm run repair:loop`
+
+Verification after this cleanup:
+
+- `npm run paired:smoke` passes and guards that these paths stay removed.
+- `npx tsc --noEmit` passes after clearing the stale Next.js cache and tightening a few paired TypeScript edges.
+- `lib/data.ts` now derives plan name, square footage, bed/bath count, roof style, and loft status from the paired artifact itself.
+- Stale-path search only finds this documentation and the explicit smoke guard list.
+
+## Next Technical Work
+
+1. Fix `a-frame-22` semantic drift before presentation polish.
+   - The current active path is the `semantic rebuild` repair bundle, not more local renderer tuning.
+   - The artifact is missing most source primitives in the rendered semantic layer: walls, doors, windows, fixtures, ladder, dashed void, and dimensions all need a scoped GPT JSON Patch or regenerated paired artifact.
+   - Use `artifacts/brochure-qa/repair-bundles-all/a-frame-22-proposal-paired-v10-semantic-rebuild.zip` as the next GPT handoff. Apply the returned patch through `npm run repair:apply`, then rerun `npm run qa:brochure`.
+   - Because the first broad and wall-specific GPT repair attempts returned `[]`, the next useful prompt should either target one primitive with exact allowed paths or regenerate a fresh `proposal-paired-v11` paired artifact instead of trying to patch the current highly drifted v10 semantic graph.
+2. Improve Product 3D after 2D primitive fidelity is stable.
+   - Roof panels, wall heights, open-to-below, ladders/stairs, fixtures, and furniture must render as semantic objects, not debug-looking planes.
+3. Keep browser QA as the gate.
+   - Use actual browser screenshots for gallery, Product 3D, Cutaway, Front, Side, Compare, Overlay, Semantic, and export packet.
+4. Repair one target at a time through scoped GPT patches.
+   - Start with the smallest reliable artifact: `artifacts/brochure-qa/repair-bundles-all/a-frame-bunk-proposal-paired-v1-fixtures.zip`.
+   - Apply returned patches with `npm run repair:apply`, regenerate render/drift, and rerun browser QA.
+   - Do not restore promotion until the drift file and browser QA both pass.
+
+## Cleanup Checkpoint
+
+2026-05-30 cleanup pass:
+
+- Removed stale generated `artifacts/` evidence and `.next/`; both are regenerated rather than treated as source.
+- Removed unused old-manifest symlinks and the hidden cron-loop helper from the active tree.
+- Archived heavyweight local evidence and BIM provider downloads to `/Users/openclaw/.openclaw/archive/wikihouse-planner/20260530-132324`.
+- Left only the small BIM component catalogs in `public/data/bim-components`; provider/staging payloads are ignored local cache unless promoted as licensed release assets.
+- Restarted the dev server on `http://127.0.0.1:3002` after clearing `.next`.
+- Regenerated deterministic renders and visual drift for the three active plans.
+- Regenerated browser QA evidence from the live app.
+- Regenerated the repair queue from fresh QA only.
+- Added `npm run style:sweep` so the existing measured style sweep is reachable as a first-class command.
+- Archived stale paired backup/review files to `/Users/openclaw/.openclaw/archive/wikihouse-planner/20260530-140318-stale-paired-files`.
+- Validation files were restored after an over-broad archive because the active manifest still references them. Cleanup now needs an explicit manifest-reference check before moving validation artifacts.
+
+Fresh repair queue:
+
+- `a-frame-22/proposal-paired-v10`: semantic rebuild, walls, void/open-to-below, dimensions, drawing style profile, level frames.
+- `outpost-medium/proposal-paired-v11`: now passes browser QA after the wall-body measurement fix; keep it in the regression set to guard against wall/fixture tolerance regressions.
+
+Active bundle cleanup:
+
+- `artifacts/brochure-qa/repair-bundles-all` is now the canonical repair-bundle directory.
+- The older one-layer `artifacts/brochure-qa/repair-bundles` directory was archived to `/Users/openclaw/.openclaw/archive/wikihouse-planner/20260530-active-bundle-cleanup`.
+- Mis-keyed `a-frame-22-*a-frame-bunk*product-packet.json` QA packets were archived with the old bundles. Fresh QA should regenerate packets under the correct plan/proposal names.
+
+Fresh checks:
+
+- `npm run paired:smoke` passes.
+- `npx tsc --noEmit` passes.
+- `npm run goal:audit` passes.
+- `npm run qa:brochure` is expected to exit blocked because `a-frame-22` still has real brochure blockers; this is the correct gate behavior.
+
+2026-05-30 paired cruft archive:
+
+- Moved stale paired-directory backups and browser/debug screenshots to `/Users/openclaw/.openclaw/archive/wikihouse-planner/20260530-162917-paired-cruft`.
+- Archived only files that were not active manifests, paired JSON, deterministic renders, roof/elevation JSON, validation files, visual drift files, or repair bundles.
+- The active `public/data/den-image-loop` symlink now has no `*.bak-*`, `*.sweepbak`, `app-browser`, or `chatgpt-cdp-state` files inside paired artifact folders.
+- Keep this cleanup policy: archive stale evidence with a manifest; do not silently delete active source-of-truth artifacts.
+
+2026-05-30 primitive-contract fix:
+
+- Fixed a source-to-semantic drift false positive in `lib/drawing-primitives.ts`: exact `:seg-n` source anchors are no longer projected a second time as if they were parent wall spans.
+- This reduced the worst visible `a-frame-22` wall primitive drift descriptions, but it did not clear `a-frame-22`; the artifact still has real source/render drift in dashed voids, dimensions, ladders, walls, doors, and fixtures.
+- A reversible probe that materialized broad `sourceWalls`/`sourceOpenings` for `a-frame-22` was rejected and rolled back because it barely improved drift and introduced door/opening schema blockers.
+- A reversible door-fill drawing-style probe was rejected and rolled back because it traded render-extra for source-miss without clearing the door presentation blocker.
+- ChatGPT repair handoff for the semantic-rebuild bundle returned a blocked response rather than a patch. The response agreed that a broad semantic rewrite is unsafe from the current bundle alone and recommended either a drawing-style/profile repair pass or a regenerated paired JSON from a single source primitive contract.
+- `BROCHURE_QA_URL=http://127.0.0.1:3002 BROCHURE_QA_PLANS=a-frame-bunk,outpost-medium npm run qa:brochure` passes after the primitive-contract fix.
+- `a-frame-22/proposal-paired-v10` remains blocked by design; do not promote it until Compare/Overlay and primitive visual drift pass.
+
+2026-05-30 active-path archive:
+
+- Moved the remaining active-path temp/backup artifacts to `/Users/openclaw/.openclaw/archive/wikihouse-planner/20260530-170703-active-path-cruft`.
+- Archived files:
+  - `outpost-medium-proposal-paired-v11.drawing-style.json.tmp-before-width-sweep`
+  - `a-frame-22-proposal-paired-v10.paired.json.bak-1780174310959`
+- Verified the active `public/data/den-image-loop` paired artifact folders no longer contain `*.bak*`, `*.sweepbak`, `*.tmp`, `*tmp-*`, `*app-browser*`, or `*chatgpt-cdp-state*` files.
+- Continue using archive moves for stale evidence; only delete regenerated caches or files that are explicitly not source-of-truth.
+
+2026-05-30 fixture/ladder primitive-contract alignment:
+
+- Tightened `lib/drawing-primitives.ts` so source-anchored fixtures and ladders use the same source-anchor bounds in the primitive contract that the deterministic renderer already uses in `lib/data.ts`.
+- This fixes a compiler-layer inconsistency: the renderer was drawing fixtures/ladders from source anchors, while the primitive contract compared the GPT image against raw fixture bounds.
+- The refreshed `a-frame-22` product packet now reports zero source-to-semantic geometry blockers for `fixture` and `ladder`.
+- This did not clear `a-frame-22` release gates because the pixel/raster drift is still real:
+  - full source miss `57.0%`
+  - full render extra `44.1%`
+  - primitive source miss `43.8%`
+  - primitive render extra `43.3%`
+  - ladder edge render extra `9.4%`
+  - dimension edge render extra `28.4%`
+  - wall edge render extra `6.2%`
+- Regenerated the active repair queue after the check. It still contains the `a-frame-22/proposal-paired-v10` lanes that remain blocked: semantic rebuild, walls, void/open-to-below, dimensions, drawing style profile, and level frames.
+- Regression check passes for `a-frame-bunk/proposal-paired-v1` and `outpost-medium/proposal-paired-v11` after the primitive-contract change.
+
+2026-05-30 verification/archive refresh:
+
+- `npx tsc --noEmit` passes.
+- `npm run paired:smoke` passes: `2/32` promoted, `30` queued, `18` paired options in the manifest.
+- Fresh render/drift/browser QA was regenerated from the live app at `http://127.0.0.1:3002`.
+- `BROCHURE_QA_PLANS=a-frame-bunk,a-frame-22,outpost-medium npm run qa:brochure` correctly blocks only `a-frame-22`; `a-frame-bunk` and `outpost-medium` pass desktop and laptop browser QA.
+- Current `a-frame-22/proposal-paired-v10` drift remains real and must not be promoted:
+  - full source miss `56.7%`
+  - full render extra `43.8%`
+  - primitive source miss `43.5%`
+  - primitive render extra `43.0%`
+  - primitive edge source miss `3.6%`
+  - primitive edge render extra `8.2%`
+  - blocked layers: dashed void, dimensions, wall edge extra, plus door/fixture/ladder drawing-language drift.
+- The fresh repair queue now contains six active `a-frame-22/proposal-paired-v10` bundles:
+  - semantic rebuild
+  - walls
+  - void/open-to-below
+  - dimensions
+  - drawing style profile
+  - level frames
+- Archived stale `a-frame-22` browser/debug screenshots and old patch-loop output to `/Users/openclaw/.openclaw/archive/wikihouse-planner/20260530-175156-a-frame-22-debug-output`.
+- Smoke still passes after the archive. The active manifest-linked paired JSON, source images, renders, validation files, visual drift files, and repair bundles were not moved.
+
+2026-05-30 manifest-aware in-place archive:
+
+- Added `npm run archive:stale`.
+- The command moves manifest-archived paired sidecars out of active folders and rewrites their manifest URLs to `archive/` paths, so archived plans remain debuggable without contaminating active candidate directories.
+- It also moves repair backups and debug drift folders under `paired/archive/backups/` and `paired/archive/debug/`.
+- Ran it against the live `public/data/den-image-loop` symlink:
+  - `74` manifest-archived files moved on the first pass.
+  - `10` backup/debug items moved on the second pass.
+  - A final dry run reports `0 moved, 0 already archived, 0 missing`.
+- Active paired folders now contain only current candidate sidecars for:
+  - `a-frame-bunk/proposal-paired-v1`
+  - `a-frame-22/proposal-paired-v10`
+  - `outpost-medium/proposal-paired-v11`
+
+2026-05-30 repair evaluator hardening:
+
+- Added `npm run repair:evaluate`.
+- The evaluator applies a scoped GPT JSON Patch, regenerates the deterministic render, recomputes visual drift, and automatically rolls the patch back if drift or blockers do not improve.
+- The known-bad `a-frame-22/proposal-paired-v10` level-frame patch was evaluated and rejected:
+  - score `1.123451 -> 1.126889`
+  - paired JSON was rolled back
+  - generated backup was archived
+- This closes the loop that previously let manual repair attempts leave stale `.bak-*` files in active paired folders.
+
+Latest verification after archive/evaluator changes:
+
+- `npx tsc --noEmit` passes.
+- `npm run paired:smoke` passes.
+- `npm run repair:queue -- --out artifacts/brochure-qa/next-repair-prompts-all.md --bundle-dir artifacts/brochure-qa/repair-bundles-all --zip --clean --all` regenerated six active `a-frame-22/proposal-paired-v10` repair bundles.
+- Browser QA against `http://127.0.0.1:3002`:
+  - gallery passes on desktop and laptop
+  - `a-frame-bunk/proposal-paired-v1` passes on desktop and laptop
+  - `outpost-medium/proposal-paired-v11` passes on desktop and laptop
+  - `a-frame-22/proposal-paired-v10` remains correctly blocked by primitive visual drift and drawing-language drift
+
+2026-05-30 primitive compiler regression guard:
+
+- `npm run paired:smoke` now checks primitive visual drift caps for every promoted plan, not only the top-level `passed` flag.
+- Promoted plans must keep primitive edge drift under the current passing floor for walls, doors, windows, and fixtures. This prevents renderer/theme/asset changes from silently making brochure primitives worse while still reporting green.
+- `a-frame-22/proposal-paired-v10` is explicitly guarded as a blocked primitive-drift regression case. It must stay out of promotion until its visual drift file passes and its primitive blockers are gone.
+- `npm run archive:stale -- --dry-run` currently reports `0 moved, 0 already archived, 0 missing`, so the active paired folders are clean after the archive pass.
+
+2026-05-30 handoff-output archive:
+
+- Moved generated `paired-handoff/output` scaffolds out of the active data tree to `/Users/openclaw/.openclaw/archive/wikihouse-planner/20260530-paired-handoff-output`.
+- Archived:
+  - `outpost-medium-output`
+  - `a-frame-bunk-output`
+  - `a-frame-bunk-plus-output`
+- Recreated empty `paired-handoff/output` folders so future handoff scripts can write fresh outputs without reusing stale patch candidates.
+- Verified `find -L public/data/den-image-loop -path '*/paired-handoff/output/*' -type f` returns `0` files, and `npm run paired:smoke` still passes.
+
+2026-05-30 geometry compiler target fix:
+
+- `npm run paired:geometry` now validates explicit target artifacts instead of only promoted artifacts:
+  - `a-frame-bunk/proposal-paired-v1` as promoted
+  - `a-frame-22/proposal-paired-v10` as active review/blocked
+  - `outpost-medium/proposal-paired-v11` as promoted
+- Added compiler checks for:
+  - `paired_gpt_floorplan_v1` schema version
+  - stable ids on rooms, walls, doors, windows, openings, and fixtures
+  - door/window/opening `wallId` references
+  - door/window/opening spans hosted by a wall segment or adjacent split-wall gap
+  - room references on doors/openings and fixture ownership
+  - fixture `anchorWallId` references
+- The adjacent split-wall gap rule matters for Den-style render fidelity: a doorway may be represented as the omitted gap immediately after a solid wall segment, so the validator must reject detached openings without requiring the opening span to lie inside the drawn solid wall body.
+- Verification:
+  - `node --check scripts/check-paired-geometry.mjs` passes.
+  - `npm run paired:geometry` passes and reports all three target artifacts.
+  - `npm run paired:smoke` passes.
+  - `npx tsc --noEmit` passes.
+  - Historical lighter QA passed for `a-frame-bunk` and `outpost-medium`.
+  - Browser QA correctly blocks `a-frame-22` on primitive visual drift, not on schema/geometry compilation.
+
+2026-05-30 Outpost style sweep result:
+
+- Ran the bounded `style:sweep` loop for `outpost-medium/proposal-paired-v11` against `http://127.0.0.1:3002`.
+- Baseline remained the best option:
+  - baseline score `1.138347`
+  - `wall-edge-body-soft` improved wall edge render extra from `5.32%` to `4.89%`, but worsened primitive/source balance enough that the aggregate score rose to `1.151447`
+  - fixture-soft variants worsened primitive edge source miss substantially
+- The sweep restored the baseline drawing style. Historical lighter QA passed Outpost at this point, but current strict Brochure QA blocks it; residual wall drift should be treated as source primitive/semantic repair work rather than a broad renderer style change.
+- Tightened `archive:stale` so duplicate runtime backups are removed when an identical archived copy already exists. The post-sweep duplicate active `.sweep-runtime-bak` was removed.
+- Verification:
+  - `node --check scripts/archive-stale-paired-artifacts.mjs` passes.
+  - `npm run archive:stale` reports `0 moved, 1 duplicate(s) removed, 0 already archived, 0 missing`.
+  - `npm run paired:smoke` passes.
+  - `npm run paired:geometry` passes.
+  - `npx tsc --noEmit` passes.
+  - Historical lighter QA passed for `a-frame-bunk` and `outpost-medium` after baseline restore.
+
+2026-05-30 stable-foundation archive checkpoint:
+
+- The active paired folders are clean: `npm run archive:stale` reports `0 moved, 0 duplicate(s) removed, 0 already archived, 0 missing`.
+- No active paired `.bak`, `.tmp`, or `.sweep-runtime-bak` files remain outside paired archives.
+- No generated `paired-handoff/output` files remain in the active Den image-loop tree.
+- The old tracked legacy harness files currently deleted from the worktree were archived from `HEAD` for reversibility:
+  - `/Users/openclaw/.openclaw/archive/wikihouse-planner/20260530-203903-removed-legacy-tracked-files/deleted-files.txt`
+  - `/Users/openclaw/.openclaw/archive/wikihouse-planner/20260530-203903-removed-legacy-tracked-files/deleted-files-from-head.tar`
+- This archive contains 26 removed tracked files, including old static home JSON, old SpatialIR manifests, pre-paired generator/analyzer scripts, and stale `.best` component snapshots. The active app should not load them.
+- `chatgpt-handoff/generated` images remain active because the proposal manifest references those source proposal images. Do not archive the whole handoff directory unless the manifest is updated to point at a replacement source-image location.
+- Fresh verification after the archive checkpoint:
+  - `npm run paired:smoke` passes.
+  - `npm run paired:geometry` passes.
+  - `npx tsc --noEmit` passes.
+  - Historical lighter QA passed for then-promoted plans `a-frame-bunk` and `outpost-medium`.
+  - Browser QA correctly blocks `a-frame-22` on primitive/source-render drift.
+
+2026-05-31 A-frame 22 void/render contract checkpoint:
+
+- Fixed the renderer suppression bug where any source void marker on a floor suppressed the full semantic open-to-below face.
+  - Boundary markers such as `int-l1-open-to-below-east-boundary` now remain dashed boundary lines.
+  - Area markers such as explicit cross/diagonal/voidmarker primitives are the only markers allowed to replace the semantic void face.
+- Regenerated `a-frame-22/proposal-paired-v10` render and drift.
+- Result:
+  - `dashedVoid` edge source miss improved from the prior ~37% range to `6.7%`.
+  - The broad open-to-below X/area is visible again in the deterministic SVG.
+  - `a-frame-22` remains correctly blocked.
+- Current blockers after browser QA:
+  - fixture primitive edge drift: source miss `40.3%`, render extra `37.0%`, edge miss `12.1%`, edge extra `4.8%`
+  - fixture/ladder primitive geometry blockers for range, stair treads, tub, loft stair treads, loft bath fixtures, and loft bed
+  - broad Presentation/Brochure drawing-language drift: primitive source miss `35.4%`, primitive render extra `46.6%`, primitive edge miss `3.4%`, primitive edge extra `7.2%`
+- Important architecture note:
+  - Some fixture source anchors describe the source visual glyph footprint, while semantic fixture bounds describe the buildable object. The next fix should add an explicit `visualPrimitiveBounds` / source-glyph contract or a scoped GPT patch, rather than forcing semantic fixture dimensions to impersonate brochure glyph boxes.
+  - Do not regress the fixed void-face rule while working on fixtures/ladders.
+
+## Useful Commands
+
+```bash
+npm run render:paired
+npm run drift:paired
+npm run qa:brochure
+npm run paired:geometry
+
+BROCHURE_QA_URL=http://127.0.0.1:3002 BROCHURE_QA_PLANS=a-frame-bunk npm run qa:brochure
+BROCHURE_QA_URL=http://127.0.0.1:3002 BROCHURE_QA_PLANS=outpost-medium npm run qa:brochure
+BROCHURE_QA_URL=http://127.0.0.1:3002 BROCHURE_QA_PLANS=a-frame-22 npm run qa:brochure
+
+npm run repair:queue -- --out artifacts/brochure-qa/next-repair-prompts-all.md --bundle-dir artifacts/brochure-qa/repair-bundles-all --zip --clean --all
+npm run repair:evaluate -- --bundle artifacts/brochure-qa/repair-bundles-all/a-frame-22-proposal-paired-v10-walls --patch patch.json
+npm run archive:stale
+npm run repair:doctor
+```
