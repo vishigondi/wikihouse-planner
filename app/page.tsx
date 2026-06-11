@@ -3306,11 +3306,6 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
     { id: 'semantic', label: 'Semantic' },
   ];
   const renderUrl = info.deterministicRenderUrl;
-  const renderFallback = (
-    <div className="flex min-h-[240px] items-center justify-center border border-dashed border-stone-200 bg-stone-50 text-xs text-stone-400">
-      Deterministic render unavailable for this blocked artifact.
-    </div>
-  );
   const storedDeterministicRender = renderUrl ? (
     <img src={renderUrl} alt={`${home.model} deterministic render`} className="block h-auto w-full object-contain" />
   ) : null;
@@ -3329,6 +3324,16 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
     />
   );
   const deterministicRender = storedDeterministicRender ?? liveDeterministicRender;
+  const renderFallback = (
+    <div>
+      <div className="mb-2 text-[10px] leading-snug text-stone-400">
+        No GPT proposal image to overlay - showing the deterministic render of the semantic JSON.
+      </div>
+      <div className="[&>img]:h-auto [&>img]:w-full [&>svg]:h-auto [&>svg]:w-full">
+        {deterministicRender}
+      </div>
+    </div>
+  );
   const qaPrimitiveMetadataRender = storedDeterministicRender ? (
     <div
       aria-hidden="true"
