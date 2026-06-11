@@ -16,6 +16,7 @@ import { bimAssetRegistrySummary } from '@/lib/bim/component-registry';
 import { localBimAssetSummary, localVisualAssetAttributions } from '@/lib/bim/component-assets';
 import { buildableBimFromHome, buildableBimSummary } from '@/lib/bim/buildable-bim';
 import { standardsRegistrySummary, validateStandards } from '@/lib/standards/floorplan-standards';
+import { CODE_ADVISORY_RULES, type CodeAdvisoryFinding, type CodeAdvisoryReport } from '@/lib/standards/code-advisory';
 import { countDrawingPrimitives, diffSourceToSemanticDrawingPrimitives, extractSourceDrawingPrimitives } from '@/lib/drawing-primitives';
 import {
   applyJsonPatchToHome,
@@ -1861,6 +1862,65 @@ function ProductWorkflowPanel({
   );
 }
 
+function ConstraintReportPanel({ report }: { report: CodeAdvisoryReport }) {
+  const findingsByRule = new Map<string, CodeAdvisoryFinding[]>();
+  for (const item of report.findings) {
+    const list = findingsByRule.get(item.ruleId) ?? [];
+    list.push(item);
+    findingsByRule.set(item.ruleId, list);
+  }
+  const statusClass = (status: string) =>
+    status === 'fail' ? 'text-red-700' : status === 'pass' ? 'text-emerald-700' : 'text-stone-400';
+  return (
+    <section className="border border-stone-200 bg-white p-3" data-constraint-report={report.reportVersion}>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Constraint Report</h3>
+        <span className="font-mono text-[10px] text-stone-500">
+          {report.summary.pass} pass / {report.summary.fail} fail / {report.summary.notEvaluated} not evaluated
+        </span>
+      </div>
+      <div className="space-y-2">
+        {CODE_ADVISORY_RULES.map((rule) => {
+          const findings = findingsByRule.get(rule.ruleId) ?? [];
+          const ruleStatus = findings.some((item) => item.status === 'fail')
+            ? 'fail'
+            : findings.some((item) => item.status === 'pass')
+              ? 'pass'
+              : 'not-evaluated';
+          return (
+            <div
+              key={rule.ruleId}
+              className="border border-stone-200 bg-stone-50 p-2"
+              data-constraint-rule={rule.ruleId}
+              data-constraint-status={ruleStatus}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-[10px] text-stone-700">{rule.ruleId}</span>
+                <span className={`font-mono text-[10px] ${statusClass(ruleStatus)}`}>{ruleStatus}</span>
+              </div>
+              <div className="mt-1 text-[10px] leading-snug text-stone-500">{rule.citation}</div>
+              <div className="mt-1 space-y-0.5 text-[10px] leading-snug">
+                {findings.slice(0, 6).map((item, index) => (
+                  <div key={`${item.subjectId ?? 'plan'}-${index}`} className={statusClass(item.status)}>
+                    {item.subjectLabel ? `${item.subjectLabel}: ` : ''}{item.detail}
+                  </div>
+                ))}
+                {findings.length > 6 && (
+                  <div className="text-stone-400">+{findings.length - 6} more finding(s)</div>
+                )}
+                {!findings.length && <div className="text-stone-400">No findings for this rule.</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 text-[10px] leading-snug text-stone-400">
+        Advisory only - legal code compliance is not claimed without a jurisdiction rule pack and professional review.
+      </div>
+    </section>
+  );
+}
+
 function ValidationSummary({
   groups,
   compact = false,
@@ -3094,6 +3154,9 @@ function SemanticReviewPanel({ home }: { home: DenHome }) {
           {buildableSummary.blockers.slice(0, 5).map((item) => <div key={item} className="border border-red-100 bg-red-50 p-2 text-red-700">{item}</div>)}
           {!buildableSummary.blockers.length && buildableSummary.warnings.slice(0, 5).map((item) => <div key={item} className="border border-amber-100 bg-amber-50 p-2 text-amber-700">{item}</div>)}
           {!buildableSummary.blockers.length && !buildableSummary.warnings.length && <div className="border border-emerald-100 bg-emerald-50 p-2 text-emerald-700">No BIM blockers or warnings.</div>}
+        </div>
+        <div className="mt-4">
+          <ConstraintReportPanel report={standards.codeAdvisory} />
         </div>
         <div className="mt-4">
           <ValidationSummary groups={groups} />

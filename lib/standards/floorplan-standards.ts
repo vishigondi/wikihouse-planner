@@ -7,6 +7,7 @@ import {
   codeAdvisoryReport,
   type CodeAdvisoryInput,
   type CodeAdvisoryLot,
+  type CodeAdvisoryOpening,
   type CodeAdvisoryReport,
 } from '@/lib/standards/code-advisory';
 
@@ -300,7 +301,7 @@ export function codeAdvisoryInputFromHome(home: DenHome): CodeAdvisoryInput {
       semanticZone: room.semanticZone,
     };
   });
-  const openings = (home.sourceOpenings ?? []).map((opening) => ({
+  const openings: CodeAdvisoryOpening[] = (home.sourceOpenings ?? []).map((opening) => ({
     id: opening.id,
     kind: opening.kind,
     openingType: opening.openingType,
@@ -309,6 +310,44 @@ export function codeAdvisoryInputFromHome(home: DenHome): CodeAdvisoryInput {
     toRoomId: opening.toRoomId,
     opensIntoRoomId: opening.opensIntoRoomId,
   }));
+  // The render pipeline drops geometry-less semantic windows/doors and keeps
+  // image-extracted ones without room references. Join the raw artifact's
+  // room attribution back in so egress can evaluate from semantic intent.
+  const artifact = (home.pairedArtifactJson ?? null) as Record<string, unknown> | null;
+  const rawOpenings: Array<{ raw: Record<string, unknown>; defaultKind: string }> =
+    ([['windows', 'window'], ['doors', 'door'], ['openings', 'opening']] as const)
+      .flatMap(([key, defaultKind]) => (Array.isArray(artifact?.[key]) ? (artifact?.[key] as Array<Record<string, unknown>>).map((raw) => ({ raw, defaultKind })) : []))
+      .filter((entry) => Boolean(entry.raw && typeof entry.raw === 'object'));
+  const refList = (raw: Record<string, unknown>): string[] => [
+    ...(Array.isArray(raw.roomIds) ? raw.roomIds.filter((id): id is string => typeof id === 'string') : []),
+    ...[raw.roomId, raw.fromRoomId, raw.toRoomId, raw.opensIntoRoomId].filter((id): id is string => typeof id === 'string'),
+  ];
+  const rawRefsById = new Map<string, string[]>();
+  for (const { raw } of rawOpenings) {
+    const refs = refList(raw);
+    if (typeof raw.id === 'string' && refs.length) rawRefsById.set(raw.id, refs);
+  }
+  const presentIds = new Set(openings.map((opening) => opening.id).filter(Boolean));
+  for (const opening of openings) {
+    const hasRefs = Boolean(opening.fromRoomId || opening.toRoomId || opening.opensIntoRoomId || (opening.roomIds ?? []).some(Boolean));
+    if (!hasRefs && opening.id && rawRefsById.has(opening.id)) {
+      opening.roomIds = rawRefsById.get(opening.id);
+    }
+  }
+  for (const { raw, defaultKind } of rawOpenings) {
+    if (typeof raw.id === 'string' && presentIds.has(raw.id)) continue;
+    const refs = refList(raw);
+    if (!refs.length) continue;
+    openings.push({
+      id: typeof raw.id === 'string' ? raw.id : undefined,
+      kind: typeof raw.kind === 'string' ? raw.kind : typeof raw.type === 'string' ? raw.type : defaultKind,
+      openingType: typeof raw.openingType === 'string' ? raw.openingType : undefined,
+      roomIds: refs,
+      fromRoomId: typeof raw.fromRoomId === 'string' ? raw.fromRoomId : undefined,
+      toRoomId: typeof raw.toRoomId === 'string' ? raw.toRoomId : undefined,
+      opensIntoRoomId: typeof raw.opensIntoRoomId === 'string' ? raw.opensIntoRoomId : undefined,
+    });
+  }
   return {
     planId: home.id,
     // Paired-artifact footprints are normalized to feet by lib/data.ts.

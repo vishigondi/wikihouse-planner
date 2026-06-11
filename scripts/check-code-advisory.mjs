@@ -125,15 +125,15 @@ for (const relativePath of PLANS) {
     floor: room.floor,
   }));
   const openings = [
-    ...(artifact.doors ?? []),
-    ...(artifact.windows ?? []),
-    ...(artifact.openings ?? []),
-    ...(artifact.sourceOpenings ?? []),
-  ].map((opening) => ({
+    ...(artifact.doors ?? []).map((opening) => ({ opening, defaultKind: 'door' })),
+    ...(artifact.windows ?? []).map((opening) => ({ opening, defaultKind: 'window' })),
+    ...(artifact.openings ?? []).map((opening) => ({ opening, defaultKind: 'opening' })),
+    ...(artifact.sourceOpenings ?? []).map((opening) => ({ opening, defaultKind: 'opening' })),
+  ].map(({ opening, defaultKind }) => ({
     id: opening.id,
-    kind: opening.kind,
+    kind: opening.kind ?? opening.type ?? defaultKind,
     openingType: opening.openingType,
-    roomIds: opening.roomIds,
+    roomIds: opening.roomIds ?? (typeof opening.roomId === 'string' ? [opening.roomId] : undefined),
     fromRoomId: opening.fromRoomId,
     toRoomId: opening.toRoomId,
     opensIntoRoomId: opening.opensIntoRoomId,
@@ -155,7 +155,7 @@ for (const relativePath of PLANS) {
   const sleeping = rooms.filter((room) => /bed|bunk|sleep/i.test(`${room.type} ${room.label}`) && !/bath/i.test(`${room.type} ${room.label}`));
   const egressFindings = report.findings.filter((item) => item.ruleId === 'IRC-R310.1');
   check(`${artifact.planId}: egress evaluated for every sleeping room (${sleeping.length})`, egressFindings.length, sleeping.length);
-  check(`${artifact.planId}: egress findings are decisive`, egressFindings.every((item) => item.status !== 'missing'), true);
+  check(`${artifact.planId}: every sleeping room proves egress`, egressFindings.every((item) => item.status === 'pass'), true);
   const ruleIdsInReport = new Set(report.findings.map((item) => item.ruleId));
   const lotRules = ['ZON-SETBACK', 'ZON-COVERAGE'];
   check(`${artifact.planId}: lot rules reported`, lotRules.every((ruleId) => ruleIdsInReport.has(ruleId)), true);
