@@ -1149,7 +1149,9 @@ function applyCameraPreset(
   const elevationTargetY = Math.max(3, home.height * 0.42);
   const elevationDistance = Math.max(model.footprint.widthFt, model.footprint.depthFt) * 1.05;
   if (preset === 'plan-top') {
-    world.camera.controls.setLookAt(0.01, maxDim * 1.65, 0.01, 0, 0, 0, false);
+    // Offset only along z so the top view reads square/north-up; an x==z
+    // offset makes the straight-down camera inherit a 45-degree azimuth.
+    world.camera.controls.setLookAt(0, maxDim * 1.65, 0.012, 0, 0, 0, false);
     return;
   }
   if (preset === 'front-elevation') {
