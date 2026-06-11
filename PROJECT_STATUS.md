@@ -1,6 +1,30 @@
 # Project Status
 
-Last updated: 2026-06-01
+Last updated: 2026-06-10
+
+## 2026-06-10 Takeover Checkpoint
+
+The north-star flow now works end to end: brief -> paired semantic JSON ->
+deterministic 2D/3D render -> cited constraint report.
+
+- Visual drift vs the GPT proposal image is advisory everywhere, never a
+  release blocker. Brochure QA: Overall pass for a-frame-22, a-frame-bunk,
+  outpost-medium (blocked since May 30 under the old pixel-drift gates).
+- New constraint engine `lib/standards/code-advisory.ts`: IRC R304.1/R304.2
+  room minimums, IRC R310.1 egress, WH-GRID-4FT panel grid, ZON-SETBACK and
+  ZON-COVERAGE parameterized by `artifact.lot`. Findings report
+  pass/fail/not-evaluated with citations; rendered in-app as the Constraint
+  Report panel (Semantic review surface).
+- Fresh-brief proof: `brief-aframe-2br` (2-bed A-frame, 672 sqft, 40x60 lot,
+  5 ft side setbacks) authored as constrained JSON with no GPT image, loads
+  through the review lane, renders 2D/3D, passes all six rules outright.
+- Deterministic regression: `npm run check:code` (55 checks across synthetic
+  fixtures + 4 plans). The review lane accepts JSON-only artifacts;
+  promotion still requires full evidence.
+
+Remaining gaps: brief parsing UI (prompt -> lot/program extraction), lot
+editor in-app, ceiling-height rule (needs section data), jurisdiction rule
+packs beyond the IRC defaults.
 
 ## Current Objective
 
