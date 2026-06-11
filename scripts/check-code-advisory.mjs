@@ -114,7 +114,13 @@ const PLANS = [
   'public/data/den-image-loop/a-frame-22/paired/a-frame-22-proposal-paired-v10.paired.json',
   'public/data/den-image-loop/a-frame-bunk/paired/a-frame-bunk-proposal-paired-v1.paired.json',
   'public/data/den-image-loop/outpost-medium/paired/outpost-medium-proposal-paired-v11.paired.json',
+  'public/data/den-image-loop/brief-aframe-2br/paired/brief-aframe-2br-proposal-paired-v1.paired.json',
 ];
+
+// The brief plan is authored as constrained JSON from the canonical prompt
+// ("2-bed A-frame, <=800 sqft, 40x60 lot, 5 ft side setbacks") and must
+// satisfy every rule outright.
+const ALL_PASS_PLANS = new Set(['brief-aframe-2br']);
 
 for (const relativePath of PLANS) {
   const artifact = JSON.parse(readFileSync(join(root, relativePath), 'utf8'));
@@ -123,6 +129,11 @@ for (const relativePath of PLANS) {
     label: room.label,
     type: room.type,
     floor: room.floor,
+    widthFt: room.bounds?.w,
+    depthFt: room.bounds?.d,
+    grid: room.bounds && Number.isFinite(room.bounds.w)
+      ? { gx: room.bounds.x, gz: room.bounds.z, gw: room.bounds.w, gd: room.bounds.d, unitFt: 1 }
+      : undefined,
   }));
   const openings = [
     ...(artifact.doors ?? []).map((opening) => ({ opening, defaultKind: 'door' })),
@@ -161,6 +172,12 @@ for (const relativePath of PLANS) {
   check(`${artifact.planId}: lot rules reported`, lotRules.every((ruleId) => ruleIdsInReport.has(ruleId)), true);
   check(`${artifact.planId}: lot rules evaluate to pass`, lotRules.every((ruleId) => statusOf(report, ruleId) === 'pass'), true);
   check(`${artifact.planId}: grid rule reported`, ruleIdsInReport.has('WH-GRID-4FT'), true);
+  if (ALL_PASS_PLANS.has(artifact.planId)) {
+    check(`${artifact.planId}: zero failed findings`, report.summary.fail, 0);
+    for (const rule of CODE_ADVISORY_RULES) {
+      check(`${artifact.planId}: ${rule.ruleId} passes outright`, statusOf(report, rule.ruleId), 'pass');
+    }
+  }
 }
 
 check('rule registry has 6 rules', CODE_ADVISORY_RULES.length, 6);

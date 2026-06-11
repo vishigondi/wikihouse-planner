@@ -1980,16 +1980,18 @@ function promotedOptions(manifest: ProposalManifest | null): Array<{ planId: str
 }
 
 function reviewableLatestOptions(manifest: ProposalManifest | null): Array<{ planId: string; option: ProposalAvailability }> {
+  // Review lane accepts JSON-only artifacts: the paired semantic JSON is the
+  // source of truth, so a GPT proposal image, stored render, and validation
+  // sidecar are optional evidence here. In-app validation lanes still gate
+  // the plan, and promotedOptions keeps the strict requirements.
   return Object.entries(manifest?.plans ?? {}).flatMap(([planId, options]) => (
     (options ?? [])
       .filter((option) => (
         option.pairedArtifact === true
         && option.archived !== true
         && (option.latestPairedArtifact === true || option.latestGptPairedArtifact === true)
-        && option.pairedValidationReady === true
-        && Boolean(option.imageUrl)
+        && option.pairedValidationReady !== false
         && Boolean(option.pairedJsonUrl)
-        && Boolean(option.deterministicRenderUrl)
       ))
       .map((option) => ({ planId, option }))
   ));
