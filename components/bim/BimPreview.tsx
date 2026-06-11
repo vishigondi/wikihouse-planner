@@ -136,59 +136,39 @@ function gableEndWallMesh(element: SemanticBimElement, model: SemanticBimModel) 
     pushTri(a, c, d);
   };
 
-  if (verticalX) {
-    const x = sx;
-    const zMin = Math.min(sz, ez);
-    const zMax = Math.max(sz, ez);
-    const sourceZMin = Math.min(z1, z2);
-    const sourceZMax = Math.max(z1, z2);
-    const hMin = Math.max(y1 + 0.4, gableHeightAt(sourceZMin));
-    const hMax = Math.max(y1 + 0.4, gableHeightAt(sourceZMax));
-    const front = [
-      new THREE.Vector3(x - halfT, y1, zMin),
-      new THREE.Vector3(x - halfT, y1, zMax),
-      new THREE.Vector3(x - halfT, hMax, zMax),
-      new THREE.Vector3(x - halfT, hMin, zMin),
-    ];
-    const back = [
-      new THREE.Vector3(x + halfT, y1, zMin),
-      new THREE.Vector3(x + halfT, y1, zMax),
-      new THREE.Vector3(x + halfT, hMax, zMax),
-      new THREE.Vector3(x + halfT, hMin, zMin),
-    ];
-    pushQuad(front[0], front[1], front[2], front[3]);
-    pushQuad(back[0], back[3], back[2], back[1]);
-    pushQuad(front[0], back[0], back[1], front[1]);
-    pushQuad(front[1], back[1], back[2], front[2]);
-    pushQuad(front[2], back[2], back[3], front[3]);
-    pushQuad(front[3], back[3], back[0], front[0]);
-  } else {
-    const z = sz;
-    const xMin = Math.min(sx, ex);
-    const xMax = Math.max(sx, ex);
-    const sourceXMin = Math.min(x1, x2);
-    const sourceXMax = Math.max(x1, x2);
-    const hMin = Math.max(y1 + 0.4, gableHeightAt(sourceXMin));
-    const hMax = Math.max(y1 + 0.4, gableHeightAt(sourceXMax));
-    const front = [
-      new THREE.Vector3(xMin, y1, z - halfT),
-      new THREE.Vector3(xMax, y1, z - halfT),
-      new THREE.Vector3(xMax, hMax, z - halfT),
-      new THREE.Vector3(xMin, hMin, z - halfT),
-    ];
-    const back = [
-      new THREE.Vector3(xMin, y1, z + halfT),
-      new THREE.Vector3(xMax, y1, z + halfT),
-      new THREE.Vector3(xMax, hMax, z + halfT),
-      new THREE.Vector3(xMin, hMin, z + halfT),
-    ];
-    pushQuad(front[0], front[1], front[2], front[3]);
-    pushQuad(back[0], back[3], back[2], back[1]);
-    pushQuad(front[0], back[0], back[1], front[1]);
-    pushQuad(front[1], back[1], back[2], front[2]);
-    pushQuad(front[2], back[2], back[3], front[3]);
-    pushQuad(front[3], back[3], back[0], front[0]);
+  // Sample the roof profile along the run so segments that cross the ridge
+  // peak correctly instead of interpolating eave-to-eave (which flattened
+  // full-width gables and, with a wrong ridge axis, produced sail fins).
+  const SAMPLES = 24;
+  const runAlongX = verticalZ;
+  const samples: Array<{ wx: number; wz: number; h: number }> = [];
+  for (let i = 0; i <= SAMPLES; i += 1) {
+    const t = i / SAMPLES;
+    const sourceCoord = runAlongX ? x1 + (x2 - x1) * t : z1 + (z2 - z1) * t;
+    samples.push({
+      wx: sx + (ex - sx) * t,
+      wz: sz + (ez - sz) * t,
+      h: Math.max(y1 + 0.4, gableHeightAt(sourceCoord)),
+    });
   }
+  const offX = runAlongX ? 0 : halfT;
+  const offZ = runAlongX ? halfT : 0;
+  const bottomFront = (s0: { wx: number; wz: number }) => new THREE.Vector3(s0.wx - offX, y1, s0.wz - offZ);
+  const bottomBack = (s0: { wx: number; wz: number }) => new THREE.Vector3(s0.wx + offX, y1, s0.wz + offZ);
+  const topFront = (s0: { wx: number; wz: number; h: number }) => new THREE.Vector3(s0.wx - offX, s0.h, s0.wz - offZ);
+  const topBack = (s0: { wx: number; wz: number; h: number }) => new THREE.Vector3(s0.wx + offX, s0.h, s0.wz + offZ);
+  for (let i = 0; i < SAMPLES; i += 1) {
+    const a = samples[i];
+    const b = samples[i + 1];
+    pushQuad(bottomFront(a), bottomFront(b), topFront(b), topFront(a));
+    pushQuad(bottomBack(b), bottomBack(a), topBack(a), topBack(b));
+    pushQuad(topFront(a), topFront(b), topBack(b), topBack(a));
+    pushQuad(bottomFront(b), bottomFront(a), bottomBack(a), bottomBack(b));
+  }
+  const first = samples[0];
+  const last = samples[SAMPLES];
+  pushQuad(bottomFront(first), topFront(first), topBack(first), bottomBack(first));
+  pushQuad(bottomBack(last), topBack(last), topFront(last), bottomFront(last));
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));

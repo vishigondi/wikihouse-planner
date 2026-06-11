@@ -79,6 +79,10 @@ function clipWallsToRoof(home: DenHome, elements: SemanticBimElement[]) {
         ...element.metadata,
         wallRole: parallelToRidge ? 'aFrameEaveKneeWall' : 'aFrameGableEndWall',
         heightPolicy: parallelToRidge ? 'clip-to-eave-knee-wall' : 'full-height-gable-end',
+        // The renderer needs the ridge axis to route walls correctly; without
+        // it, ridge-along-z plans get eave walls misread as gables (sail fins).
+        roofRidgeAxis: ridgeAxis,
+        roofStyle: 'a-frame',
         roofEaveHeightFt: eave,
         roofRidgeHeightFt: ridge,
         roofDepthFt: home.footprint.depth,
