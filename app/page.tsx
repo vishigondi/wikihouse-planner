@@ -4523,7 +4523,8 @@ export default function Home() {
                   { id: 'white-cutaway' as const, label: 'Cutaway' },
                   { id: 'front-elevation' as const, label: 'Front' },
                   { id: 'side-elevation' as const, label: 'Side' },
-                  { id: 'debug-review' as const, label: 'Legacy Debug' },
+                  // Legacy Debug is a review surface, not a product view.
+                  ...(reviewToolsVisible ? [{ id: 'debug-review' as const, label: 'Legacy Debug' }] : []),
                 ].map((item) => (
                   <button
                     key={item.id}
@@ -4539,24 +4540,26 @@ export default function Home() {
                   </button>
                 ))}
               </div>
-              <div className="grid grid-cols-3 gap-1">
-                {[
-                  { id: 0 as const, label: 'Ground' },
-                  { id: 1 as const, label: 'Loft' },
-                  { id: 'all' as const, label: 'All' },
-                ].map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => setActiveFloor(item.id)}
-                    className={`border px-1.5 py-0.5 text-[9px] ${
-                      activeFloor === item.id ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-stone-50 text-stone-600'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
+              {displayHome?.hasLoft && (
+                <div className="grid grid-cols-3 gap-1">
+                  {[
+                    { id: 0 as const, label: 'Ground' },
+                    { id: 1 as const, label: 'Loft' },
+                    { id: 'all' as const, label: 'All' },
+                  ].map((item) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => setActiveFloor(item.id)}
+                      className={`border px-1.5 py-0.5 text-[9px] ${
+                        activeFloor === item.id ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-stone-50 text-stone-600'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
               {viewPreset === 'debug-review' ? (
                 <>
                   <div className="grid grid-cols-2 gap-1">
@@ -4590,11 +4593,7 @@ export default function Home() {
                     <span className="w-7 text-right font-mono">{Math.round(wallOpacity * 100)}%</span>
                   </label>
                 </>
-              ) : (
-                <div className="border border-stone-200 bg-stone-50 px-2 py-1 text-[9px] leading-snug text-stone-500">
-                  BIM camera controls are on the canvas.
-                </div>
-              )}
+              ) : null}
               {viewPreset !== 'plan-top' && (
                 <>
                   <label className="flex cursor-pointer items-center gap-2 text-[10px] text-stone-600">
