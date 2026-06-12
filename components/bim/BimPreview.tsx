@@ -8,6 +8,12 @@ import type { DenHome } from '@/lib/types';
 import type { SemanticBimElement, SemanticBimModel } from '@/lib/bim/semantic-bim';
 import { buildableBimFromHome, buildableBimSummary } from '@/lib/bim/buildable-bim';
 import { localBimAssetSummary } from '@/lib/bim/component-assets';
+import {
+  ceilingHeightAt,
+  ceilingPlanesFromRoofPoints,
+  clipPrismToCeiling,
+  type CeilingPlane,
+} from '@/lib/bim/envelope-clip';
 
 interface Props {
   home: DenHome;
@@ -88,10 +94,6 @@ function shouldOpenAFrameRoofForProductView(
   return false;
 }
 
-function wallRole(element: SemanticBimElement) {
-  return `${element.metadata?.wallRole ?? ''}`;
-}
-
 const gltfCache = new Map<string, Promise<THREE.Object3D>>();
 
 function loadGltfScene(url: string) {
@@ -105,77 +107,80 @@ function loadGltfScene(url: string) {
   return promise;
 }
 
-function gableEndWallMesh(element: SemanticBimElement, model: SemanticBimModel) {
-  if (!element.segment) return null;
+// Ceiling planes per model, fitted once from the roofPlane elements with the
+// same math the constraint engine uses. Source-coordinate space.
+const ceilingPlanesCache = new WeakMap<SemanticBimModel, CeilingPlane[]>();
+function modelCeilingPlanes(model: SemanticBimModel): CeilingPlane[] {
+  let planes = ceilingPlanesCache.get(model);
+  if (!planes) {
+    planes = ceilingPlanesFromRoofPoints(
+      model.elements
+        .filter((element) => element.category === 'roofPlane' && (element.points?.length ?? 0) >= 3)
+        .map((element) => ({ points: element.points as Array<{ x: number; y: number; z: number }> })),
+    );
+    ceilingPlanesCache.set(model, planes);
+  }
+  return planes;
+}
+
+/**
+ * Constructive wall geometry: the wall's footprint rectangle extruded from
+ * its base and clipped against the roof envelope (lib/bim/envelope-clip).
+ * Gable ends, knee walls, and ridge-straddling partitions are all the same
+ * call — no wall-role routing, no ridge-axis guessing, no sampling.
+ */
+function clippedWallMesh(
+  element: SemanticBimElement,
+  model: SemanticBimModel,
+  productMode: boolean,
+  viewPreset: NonNullable<Props['viewPreset']>,
+) {
+  if (element.category !== 'wall' || !element.segment) return null;
+  const planes = modelCeilingPlanes(model);
+  if (!planes.length) return null;
   const { x1, y1, z1, x2, z2, thickness, height } = element.segment;
-  const sx = centerX(model, x1);
-  const sz = centerZ(model, z1);
-  const ex = centerX(model, x2);
-  const ez = centerZ(model, z2);
-  const verticalX = Math.abs(sx - ex) < 0.001;
-  const verticalZ = Math.abs(sz - ez) < 0.001;
-  if (!verticalX && !verticalZ) return null;
-
-  const halfT = Math.max(0.08, thickness) / 2;
-  const ridgeAxis = element.metadata?.roofRidgeAxis === 'z' ? 'z' : 'x';
-  const eaveHeight = typeof element.metadata?.roofEaveHeightFt === 'number' ? Number(element.metadata.roofEaveHeightFt) : 0.35;
-  const ridgeHeight = typeof element.metadata?.roofRidgeHeightFt === 'number' ? Number(element.metadata.roofRidgeHeightFt) : height;
-  const profileSpan = ridgeAxis === 'x' ? model.footprint.depthFt : model.footprint.widthFt;
-  const gableHeightAt = (coord: number) => {
-    const halfSpan = Math.max(0.001, profileSpan / 2);
-    const distanceFromRidge = Math.abs(coord - halfSpan);
-    const slopeT = Math.max(0, Math.min(1, 1 - distanceFromRidge / halfSpan));
-    return Math.max(0.4, eaveHeight + (ridgeHeight - eaveHeight) * slopeT);
-  };
-  const positions: number[] = [];
-  const pushTri = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3) => {
-    positions.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
-  };
-  const pushQuad = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, d: THREE.Vector3) => {
-    pushTri(a, b, c);
-    pushTri(a, c, d);
-  };
-
-  // Sample the roof profile along the run so segments that cross the ridge
-  // peak correctly instead of interpolating eave-to-eave (which flattened
-  // full-width gables and, with a wrong ridge axis, produced sail fins).
-  const SAMPLES = 24;
-  const runAlongX = verticalZ;
-  const samples: Array<{ wx: number; wz: number; h: number }> = [];
-  for (let i = 0; i <= SAMPLES; i += 1) {
-    const t = i / SAMPLES;
-    const sourceCoord = runAlongX ? x1 + (x2 - x1) * t : z1 + (z2 - z1) * t;
-    samples.push({
-      wx: sx + (ex - sx) * t,
-      wz: sz + (ez - sz) * t,
-      h: Math.max(y1 + 0.4, gableHeightAt(sourceCoord)),
-    });
+  const length = Math.hypot(x2 - x1, z2 - z1);
+  if (length < 0.05) return null;
+  const t = Math.max(0.16, thickness);
+  const ux = (x2 - x1) / length;
+  const uz = (z2 - z1) / length;
+  const px = (-uz * t) / 2;
+  const pz = (ux * t) / 2;
+  const footprint = [
+    { x: x1 + px, z: z1 + pz },
+    { x: x2 + px, z: z2 + pz },
+    { x: x2 - px, z: z2 - pz },
+    { x: x1 - px, z: z1 - pz },
+  ];
+  const exterior = element.metadata?.exterior === true;
+  // Exterior walls rise until the roof stops them (gable ends become
+  // triangles, eave walls become knee wedges). Interior walls keep their
+  // storey height but still never pierce the roof. Cutaway keeps its
+  // see-inside stub height — also clipped.
+  const cutaway = productMode && viewPreset === 'white-cutaway';
+  const intentCap = exterior ? 1e6 : y1 + Math.max(0.5, height);
+  const styleCap = cutaway ? y1 + Math.max(0.08, Math.min(height, exterior ? 4.8 : 3.45)) : Infinity;
+  const capY = Math.min(intentCap, styleCap === Infinity ? 1e6 : styleCap);
+  const solid = clipPrismToCeiling(footprint, y1, capY, planes);
+  if (solid.empty) return null;
+  const positions = new Float32Array(solid.positions.length);
+  for (let i = 0; i < solid.positions.length; i += 3) {
+    positions[i] = solid.positions[i] - model.footprint.widthFt / 2;
+    positions[i + 1] = solid.positions[i + 1];
+    positions[i + 2] = solid.positions[i + 2] - model.footprint.depthFt / 2;
   }
-  const offX = runAlongX ? 0 : halfT;
-  const offZ = runAlongX ? halfT : 0;
-  const bottomFront = (s0: { wx: number; wz: number }) => new THREE.Vector3(s0.wx - offX, y1, s0.wz - offZ);
-  const bottomBack = (s0: { wx: number; wz: number }) => new THREE.Vector3(s0.wx + offX, y1, s0.wz + offZ);
-  const topFront = (s0: { wx: number; wz: number; h: number }) => new THREE.Vector3(s0.wx - offX, s0.h, s0.wz - offZ);
-  const topBack = (s0: { wx: number; wz: number; h: number }) => new THREE.Vector3(s0.wx + offX, s0.h, s0.wz + offZ);
-  for (let i = 0; i < SAMPLES; i += 1) {
-    const a = samples[i];
-    const b = samples[i + 1];
-    pushQuad(bottomFront(a), bottomFront(b), topFront(b), topFront(a));
-    pushQuad(bottomBack(b), bottomBack(a), topBack(a), topBack(b));
-    pushQuad(topFront(a), topFront(b), topBack(b), topBack(a));
-    pushQuad(bottomFront(b), bottomFront(a), bottomBack(a), bottomBack(b));
-  }
-  const first = samples[0];
-  const last = samples[SAMPLES];
-  pushQuad(bottomFront(first), topFront(first), topBack(first), bottomBack(first));
-  pushQuad(bottomBack(last), topBack(last), topFront(last), bottomFront(last));
-
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geometry.computeVertexNormals();
   const wallKind = `${element.metadata?.wallKind ?? ''} ${element.name}`.toLowerCase();
-  const mesh = new THREE.Mesh(geometry, productShellMaterial(/glaz|window|glass/.test(wallKind) ? 'glassGable' : 'gable'));
-  mesh.renderOrder = 18;
+  const glassy = /glaz|glass/.test(wallKind);
+  const baseMaterial = productMode
+    ? productShellMaterial(glassy ? 'glassGable' : 'wall')
+    : themeMaterial('wall');
+  const mat = baseMaterial.clone();
+  mat.side = THREE.DoubleSide;
+  const mesh = new THREE.Mesh(geometry, mat);
+  mesh.renderOrder = 30;
   mesh.frustumCulled = false;
   mesh.userData.semanticBim = element;
   return mesh;
@@ -199,15 +204,11 @@ function lineMesh(
   const angle = Math.atan2(dz, dx);
   const isOpening = element.category === 'door' || element.category === 'window' || element.category === 'opening';
   const exterior = element.category === 'wall' && element.metadata?.exterior === true;
-  const role = wallRole(element);
-  const aFrame = /a-frame/i.test(`${element.metadata?.roofStyle ?? ''} ${role}`);
-  const ridgeAxis = element.metadata?.roofRidgeAxis === 'z' ? 'z' : 'x';
-  const perpendicularToRidge = ridgeAxis === 'x' ? Math.abs(dz) > Math.abs(dx) : Math.abs(dx) > Math.abs(dz);
-  const aFrameGableWall = role === 'aFrameGableEndWall' || (aFrame && perpendicularToRidge);
-  if (productMode && viewPreset === 'white-cutaway' && exterior && aFrameGableWall) return null;
-  if (productMode && exterior && aFrameGableWall) {
-    const gable = gableEndWallMesh(element, model);
-    if (gable) return gable;
+  if (element.category === 'wall') {
+    // Constructive clipping replaces all wall-role/ridge-axis routing. Falls
+    // through to the legacy box only when the model has no roof planes.
+    const clipped = clippedWallMesh(element, model, productMode, viewPreset);
+    if (clipped) return clipped;
   }
   if (element.category === 'guardrail') {
     const group = new THREE.Group();
@@ -355,16 +356,31 @@ function lineMesh(
     const windowText = `${element.name} ${element.metadata?.windowKind ?? ''} ${element.metadata?.sillType ?? ''} ${element.metadata?.openingType ?? ''}`.toLowerCase();
     const fullHeightGlass = /full.?height|folding|glass.?wall|glaz/.test(windowText);
     const guardGlazing = /guard|rail|low/.test(windowText);
-    const sillHeight = guardGlazing
+    let sillHeight = guardGlazing
       ? y1 + 0.35
       : fullHeightGlass
         ? y1 + 0.3
         : y1 + 3.15;
-    const glassHeight = guardGlazing
+    let glassHeight = guardGlazing
       ? 1.1
       : fullHeightGlass
         ? Math.max(2.8, Math.min(4.8, height))
         : Math.max(2.4, Math.min(4.6, height));
+    // Clamp glazing to the roof envelope: a window on a low eave wall slides
+    // its sill down and shrinks; if no viable pane fits under the roof at
+    // this position, render nothing rather than float glass above the roof.
+    const ceilingPlanes = modelCeilingPlanes(model);
+    if (ceilingPlanes.length) {
+      let roofLimit = Infinity;
+      for (const [wx, wz] of [[x1, z1], [x2, z2], [(x1 + x2) / 2, (z1 + z2) / 2]] as Array<[number, number]>) {
+        roofLimit = Math.min(roofLimit, ceilingHeightAt(ceilingPlanes, wx, wz));
+      }
+      const maxHead = roofLimit - 0.15;
+      let top = Math.min(sillHeight + glassHeight, maxHead);
+      if (top - sillHeight < 1.0) sillHeight = Math.max(y1 + 0.3, top - 2.4);
+      if (top - sillHeight < 0.5) return null;
+      glassHeight = top - sillHeight;
+    }
     const glassOpacity = viewPreset === 'white-cutaway' ? 0.22 : fullHeightGlass ? 0.38 : 0.34;
     const glass = new THREE.Mesh(
       new THREE.BoxGeometry(length, glassHeight, Math.max(0.04, thickness * 0.42)),
@@ -408,7 +424,7 @@ function lineMesh(
   const h = isOpening
     ? Math.max(0.12, height * 0.03)
     : presentationCutawayWall
-      ? Math.max(0.08, Math.min(height, exterior && aFrame ? 3.35 : exterior ? 4.8 : 3.45))
+      ? Math.max(0.08, Math.min(height, exterior ? 4.8 : 3.45))
       : Math.max(0.08, height);
   const t = isOpening ? Math.max(0.08, thickness) : Math.max(0.08, thickness);
   const mesh = new THREE.Mesh(
@@ -807,75 +823,6 @@ function aFrameProfile(model: SemanticBimModel) {
   return { ridgeY, eaveY, ridgeZ, zMin, zMax, xMin, xMax };
 }
 
-function aFrameGableCaps(model: SemanticBimModel) {
-  const profile = aFrameProfile(model);
-  if (!profile) return null;
-  const group = new THREE.Group();
-  group.name = 'a-frame-roof-derived-gable-caps';
-  const capMat = productShellMaterial('gable');
-  const glassMat = productShellMaterial('glassGable');
-  const glassWalls = model.elements.filter((element) => (
-    element.category === 'wall' &&
-    element.segment &&
-    /glaz|glass/.test(`${element.metadata?.wallKind ?? ''} ${element.name}`.toLowerCase())
-  ));
-  const capThickness = 0.22;
-  const makeCap = (xFt: number, label: 'west' | 'east') => {
-    const x = centerX(model, xFt);
-    const zMin = centerZ(model, profile.zMin);
-    const zMax = centerZ(model, profile.zMax);
-    const zRidge = centerZ(model, profile.ridgeZ);
-    const half = capThickness / 2;
-    const frontX = x + (label === 'west' ? -half : half);
-    const backX = x + (label === 'west' ? half : -half);
-    const positions: number[] = [];
-    const front = [
-      new THREE.Vector3(frontX, profile.eaveY, zMin),
-      new THREE.Vector3(frontX, profile.eaveY, zMax),
-      new THREE.Vector3(frontX, profile.ridgeY, zRidge),
-    ];
-    const back = [
-      new THREE.Vector3(backX, profile.eaveY, zMin),
-      new THREE.Vector3(backX, profile.eaveY, zMax),
-      new THREE.Vector3(backX, profile.ridgeY, zRidge),
-    ];
-    const push = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3) => positions.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
-    push(front[0], front[1], front[2]);
-    push(back[0], back[2], back[1]);
-    push(front[0], back[0], back[1]); push(front[0], back[1], front[1]);
-    push(front[1], back[1], back[2]); push(front[1], back[2], front[2]);
-    push(front[2], back[2], back[0]); push(front[2], back[0], front[0]);
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.computeVertexNormals();
-    const nearGlass = glassWalls.some((element) => {
-      if (!element.segment) return false;
-      const wx = (element.segment.x1 + element.segment.x2) / 2;
-      return Math.abs(wx - xFt) < 1.25;
-    });
-    if (!nearGlass) {
-      const cap = new THREE.Mesh(geometry, capMat);
-      cap.renderOrder = 16;
-      cap.frustumCulled = false;
-      group.add(cap);
-    }
-    if (nearGlass) {
-      const glassHeight = Math.max(4.5, profile.ridgeY * 0.45);
-      const glass = new THREE.Mesh(
-        new THREE.BoxGeometry(0.08, glassHeight, Math.max(3.2, (profile.zMax - profile.zMin) * 0.48)),
-        glassMat,
-      );
-      glass.position.set(x + (label === 'west' ? -0.16 : 0.16), profile.eaveY + glassHeight / 2, zRidge);
-      glass.renderOrder = 46;
-      group.add(glass);
-    }
-
-  };
-  makeCap(0, 'west');
-  makeCap(model.footprint.widthFt, 'east');
-  return group;
-}
-
 function addProductEnvelope(root: THREE.Group, model: SemanticBimModel, renderedCounts: Record<string, number>) {
   const hasSemanticExteriorWalls = model.elements.some((element) => (
     element.category === 'wall' &&
@@ -963,7 +910,6 @@ function shouldRenderElement(
     ].filter(Boolean).join(' ').toLowerCase();
     if (['void', 'space', 'openZone'].includes(element.category)) return false;
     if (element.category === 'slab') return false;
-    if (element.category === 'wall' && element.metadata?.wallRole === 'aFrameGableEndWall') return false;
     if (['fixtureProxy'].includes(element.category)) return false;
     if (element.category === 'equipment' && !/kitchen|island|counter|range|stove|refrigerator|fridge|washer|dryer|laundry/i.test(elementText)) return false;
     if (element.category === 'furniture' && !/bed|sofa|couch|chair|table|dining|bench|desk/i.test(elementText)) return false;
@@ -996,17 +942,10 @@ function populateWorld(
     addProductEnvelope(root, model, renderedCounts);
   }
   const profile = aFrameProfile(model);
-  if (options.productMode && options.viewPreset === 'presentation-3d' && options.showRoof && profile) {
-    const caps = aFrameGableCaps(model);
-    if (caps) root.add(caps);
-    // For A-frame products, the roof planes are the exterior envelope. Count
-    // the roof shell plus gable caps as the product envelope so the QA guard
-    // does not require low eave-wall traces in the customer-facing hero view.
+  if (options.productMode && options.viewPreset === 'presentation-3d' && profile) {
+    // A-frame envelope = roof shell + clipped gable-end walls; keep the QA
+    // count satisfied without requiring low eave-wall traces.
     renderedCounts.productEnvelopeWall = Math.max(renderedCounts.productEnvelopeWall ?? 0, 4);
-  }
-  if (options.productMode && options.viewPreset !== 'presentation-3d' && options.showRoof && profile && options.viewPreset !== 'white-cutaway') {
-    const caps = aFrameGableCaps(model);
-    if (caps) root.add(caps);
   }
   for (const element of model.elements) {
     if (!shouldRenderElement(element, options)) continue;
@@ -1015,6 +954,9 @@ function populateWorld(
     if (!object) continue;
     object.name = `${element.ifcClass}:${element.name}`;
     object.userData.semanticBim = element;
+    object.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh && !child.userData.semanticBim) child.userData.semanticBim = element;
+    });
     root.add(object);
     objectByElementId.set(element.id, object);
     renderedCounts[element.category] = (renderedCounts[element.category] ?? 0) + 1;

@@ -27,18 +27,24 @@ for (const plan of PLANS) {
   const canvas = await page.locator('canvas').count();
   note(canvas >= 1, 'canvas renders');
 
-  // Envelope integrity: no wall vertex more than 0.5 ft above the roof
-  // plane at its x,z — guards the compiled-plan sail-fin regression.
+  // Envelope integrity: every rendered mesh is sampled against the roof
+  // planes. Compiled plans must be strictly inside (constructive clipping);
+  // traced plans keep their designed-bay exemption for excess, but no plan
+  // may render untagged geometry above the roof (untagged meshes are how
+  // the sail fins evaded the old wall-only gate).
   const envelope = await page.locator('canvas').first().evaluate((el) => ({
     maxExcess: Number(el.dataset.bimEnvelopeMaxExcessFt ?? 'NaN'),
     planes: Number(el.dataset.bimEnvelopePlanes ?? 'NaN'),
-  })).catch(() => ({ maxExcess: NaN, planes: NaN }));
-  // Only compiled plans promise a simple single-shell envelope; traced plans
-  // legitimately carry bays/dormers that pierce the main roof planes.
+    offenders: JSON.parse(el.dataset.bimEnvelopeOffenders ?? '[]'),
+  })).catch(() => ({ maxExcess: NaN, planes: NaN, offenders: [] }));
   const COMPILED_PLANS = new Set(['brief-aframe-2br', 'gen-001']);
+  if (envelope.planes > 0) {
+    const untagged = envelope.offenders.filter((item) => item.category === 'untagged');
+    note(untagged.length === 0, `no untagged geometry above the roof (${untagged.length})`);
+  }
   if (COMPILED_PLANS.has(plan) && Number.isFinite(envelope.maxExcess) && envelope.planes > 0) {
-    // 2 ft accommodates corner geometry; the sail fins exceeded by 10+ ft.
-    note(envelope.maxExcess <= 2.0, `walls within roof envelope (max excess ${envelope.maxExcess} ft <= 2.0)`);
+    note(envelope.maxExcess <= 0.5, `all meshes within roof envelope (max excess ${envelope.maxExcess} ft <= 0.5)`);
+    note(envelope.offenders.length === 0, `zero envelope offenders (${JSON.stringify(envelope.offenders).slice(0, 140)})`);
   } else if (envelope.planes > 0) {
     console.log(`  info envelope max excess ${envelope.maxExcess} ft (traced plan, designed bays exempt)`);
   } else {
