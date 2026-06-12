@@ -1,6 +1,41 @@
 # Project Status
 
-Last updated: 2026-06-12 (3D quality loop — closed; 3D reads like the 2D)
+Last updated: 2026-06-12 (export pass — closed; brief → Brochure Ready → client packet)
+
+## 2026-06-12 Export Pass — Closed
+
+A generated plan now completes the whole product story with no GPT
+image: type a brief → green "Brochure Ready" card → one-file client
+packet with the code citations inside. Commits be7fc2a, b9105df,
+f29f3d0, 650bda0, 0eb620b (+ dev-compiler 99b5204, 29f0e10).
+
+1. **Stored deterministic render** — /api/generate-plan writes
+   deterministicRenderUrl and spawns the render:paired capture
+   (loopback/env origin only — SSRF review fix b9105df). gen-001 and
+   brief-aframe-2br backfilled.
+2. **JSON-only brochure lane** — sourceKind constrained_json requires
+   the stored render only; GPT-source-relative checks (drift evidence,
+   drawing primitive contract, style sidecar, proposal-image warnings)
+   do not apply to a lane with no image to trace. GPT-paired plans
+   unchanged. Compare header carries a "JSON-only deterministic
+   packet" badge (data-json-only-packet).
+3. **Export packet** — front/side elevation SVGs, build-kit BOM JSON,
+   Cherokee County constraint report (printable HTML + JSON, citation
+   and pass/fail per finding), and Download Client Packet (HTML): one
+   self-contained file (plan SVG + elevations + BOM + full report).
+   Verified by real download: gen-001-client-packet.html, 42 KB, all
+   content checks (evidence in artifacts/customer-readiness/).
+4. **Mechanical gate** — gen-001 in the default qa:brochure +
+   render:paired sets (10 QA passes); sweep asserts the badge renders
+   and the workflow header never reads Brochure blocked.
+
+State at close: gallery 6/6 clean 0 blocked at the time of the fresh-
+generation test; gen-001 header reads "Design pass - Presentation pass
+- Brochure pass"; a fresh UI generation reached the same line with its
+render auto-stored in ~25 s. All gates green two consecutive fires.
+Note: Chrome's multiple-automatic-download guard can swallow a second
+programmatic download in one session — user-initiated clicks are
+unaffected.
 
 ## 2026-06-12 3D Quality Loop — Closed
 
