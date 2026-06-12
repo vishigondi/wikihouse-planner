@@ -43,7 +43,7 @@ for (const plan of PLANS) {
     note(untagged.length === 0, `no untagged geometry above the roof (${untagged.length})`);
   }
   if (COMPILED_PLANS.has(plan) && Number.isFinite(envelope.maxExcess) && envelope.planes > 0) {
-    note(envelope.maxExcess <= 0.5, `all meshes within roof envelope (max excess ${envelope.maxExcess} ft <= 0.5)`);
+    note(envelope.maxExcess <= 0.25, `all meshes within roof envelope (max excess ${envelope.maxExcess} ft <= 0.25)`);
     note(envelope.offenders.length === 0, `zero envelope offenders (${JSON.stringify(envelope.offenders).slice(0, 140)})`);
   } else if (envelope.planes > 0) {
     console.log(`  info envelope max excess ${envelope.maxExcess} ft (traced plan, designed bays exempt)`);

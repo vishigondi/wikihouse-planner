@@ -125,6 +125,77 @@ function modelCeilingPlanes(model: SemanticBimModel): CeilingPlane[] {
   return planes;
 }
 
+// Bounded ceiling planes (with their xz extents) for fixture clamping:
+// fixtures outside the roof span (decks, porches) must NOT be clamped by an
+// extrapolated slope, so coverage matters here, unlike for walls.
+interface BoundedCeilingPlane extends CeilingPlane { minX: number; maxX: number; minZ: number; maxZ: number }
+const boundedCeilingCache = new WeakMap<SemanticBimModel, BoundedCeilingPlane[]>();
+function modelBoundedCeiling(model: SemanticBimModel): BoundedCeilingPlane[] {
+  let planes = boundedCeilingCache.get(model);
+  if (!planes) {
+    planes = [];
+    for (const element of model.elements) {
+      if (element.category !== 'roofPlane' || (element.points?.length ?? 0) < 3) continue;
+      const pts = element.points as Array<{ x: number; y: number; z: number }>;
+      const fitted = ceilingPlanesFromRoofPoints([{ points: pts }]);
+      if (!fitted.length) continue;
+      planes.push({
+        ...fitted[0],
+        minX: Math.min(...pts.map((pt) => pt.x)),
+        maxX: Math.max(...pts.map((pt) => pt.x)),
+        minZ: Math.min(...pts.map((pt) => pt.z)),
+        maxZ: Math.max(...pts.map((pt) => pt.z)),
+      });
+    }
+    boundedCeilingCache.set(model, planes);
+  }
+  return planes;
+}
+
+/**
+ * Clamp a fixture object under the roof at its bounds. Returns the object
+ * (possibly wrapped in a Y-scaling pivot about its base) — a range that
+ * would poke 2 inches through a low A-frame eave squashes imperceptibly
+ * instead of piercing the envelope. Fixtures outside the roof span (decks)
+ * are untouched.
+ */
+function clampFixtureToEnvelope(
+  object: THREE.Object3D,
+  element: SemanticBimElement,
+  model: SemanticBimModel,
+): THREE.Object3D {
+  const bounds = element.bounds;
+  if (!bounds) return object;
+  const planes = modelBoundedCeiling(model);
+  if (!planes.length) return object;
+  const { x, y, z, w, d, h } = bounds;
+  let limit = Infinity;
+  for (const [sx, sz] of [
+    [x, z], [x + w, z], [x, z + d], [x + w, z + d], [x + w / 2, z + d / 2],
+  ] as Array<[number, number]>) {
+    for (const plane of planes) {
+      if (sx < plane.minX - 0.1 || sx > plane.maxX + 0.1 || sz < plane.minZ - 0.1 || sz > plane.maxZ + 0.1) continue;
+      limit = Math.min(limit, plane.a * sx + plane.b * sz + plane.c);
+    }
+  }
+  if (!Number.isFinite(limit)) return object;
+  const natural = Math.max(0.06, h);
+  const allowed = limit - 0.06 - y;
+  if (allowed >= natural) return object;
+  if (allowed < 0.2) {
+    object.visible = false;
+    return object;
+  }
+  const scale = allowed / natural;
+  const pivot = new THREE.Group();
+  pivot.position.y = y;
+  object.position.y -= y;
+  pivot.scale.y = scale;
+  pivot.add(object);
+  pivot.userData.semanticBim = element;
+  return pivot;
+}
+
 /**
  * Single source for a window's glazing extent (sill/top), shared by the
  * glazing mesh and the wall-hole cut so they always agree. Returns null when
@@ -756,7 +827,7 @@ function boundsMesh(element: SemanticBimElement, model: SemanticBimModel) {
   }
 
   const procedural = proceduralBoundsObject(element, model);
-  if (procedural) return procedural;
+  if (procedural) return clampFixtureToEnvelope(procedural, element, model);
 
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(Math.max(0.08, w), Math.max(0.06, h), Math.max(0.08, d)),
@@ -767,6 +838,9 @@ function boundsMesh(element: SemanticBimElement, model: SemanticBimModel) {
   mesh.renderOrder = element.category === 'slab' || element.category === 'deck' ? 5 : 50;
   mesh.frustumCulled = false;
   mesh.userData.semanticBim = element;
+  if (['furniture', 'equipment', 'sanitaryTerminal', 'fixtureProxy'].includes(element.category)) {
+    return clampFixtureToEnvelope(mesh, element, model);
+  }
   return mesh;
 }
 
@@ -1319,7 +1393,7 @@ export default function BimPreview({
             excess: Math.round(meshExcess * 100) / 100,
           };
         }
-        if (meshExcess > 0.5) {
+        if (meshExcess > 0.25) {
           envelopeOffenders.push({
             id: semantic?.id ?? mesh.name ?? 'untagged-mesh',
             category: semantic?.category ?? 'untagged',
