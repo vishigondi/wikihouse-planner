@@ -1268,6 +1268,7 @@ export default function BimPreview({
       })
       .filter((plane): plane is NonNullable<typeof plane> => plane !== null);
     let envelopeMaxExcess = 0;
+    const envelopeOffenders: Array<{ id: string; category: string; excess: number }> = [];
     if (roofPlaneEqs.length) {
       const centerOffsetX = model.footprint.widthFt / 2;
       const centerOffsetZ = model.footprint.depthFt / 2;
@@ -1275,10 +1276,15 @@ export default function BimPreview({
       root.traverse((object) => {
         const mesh = object as THREE.Mesh;
         const semantic = mesh.userData?.semanticBim as SemanticBimElement | undefined;
-        if (!semantic || semantic.category !== 'wall' || !mesh.isMesh) return;
+        if (!mesh.isMesh) return;
+        // Roof planes define the envelope; everything else rendered must sit
+        // inside it. Untagged meshes are sampled too — a mesh the evidence
+        // cannot attribute must never be a mesh the evidence ignores.
+        if (semantic?.category === 'roofPlane') return;
         const position = mesh.geometry?.getAttribute?.('position');
         if (!position) return;
         mesh.updateWorldMatrix(true, false);
+        let meshExcess = 0;
         for (let i = 0; i < position.count; i += 1) {
           vertex.fromBufferAttribute(position as THREE.BufferAttribute, i).applyMatrix4(mesh.matrixWorld);
           const sourceX = vertex.x + centerOffsetX;
@@ -1288,12 +1294,23 @@ export default function BimPreview({
             if (sourceX < plane.minX - 0.1 || sourceX > plane.maxX + 0.1 || sourceZ < plane.minZ - 0.1 || sourceZ > plane.maxZ + 0.1) continue;
             roofY = Math.min(roofY, plane.a * sourceX + plane.b * sourceZ + plane.c);
           }
-          if (Number.isFinite(roofY)) envelopeMaxExcess = Math.max(envelopeMaxExcess, vertex.y - roofY);
+          if (Number.isFinite(roofY)) meshExcess = Math.max(meshExcess, vertex.y - roofY);
+        }
+        envelopeMaxExcess = Math.max(envelopeMaxExcess, meshExcess);
+        if (meshExcess > 2.0) {
+          envelopeOffenders.push({
+            id: semantic?.id ?? mesh.name ?? 'untagged-mesh',
+            category: semantic?.category ?? 'untagged',
+            excess: Math.round(meshExcess * 100) / 100,
+          });
         }
       });
     }
     world.renderer.three.domElement.dataset.bimEnvelopeMaxExcessFt = envelopeMaxExcess.toFixed(2);
     world.renderer.three.domElement.dataset.bimEnvelopePlanes = String(roofPlaneEqs.length);
+    world.renderer.three.domElement.dataset.bimEnvelopeOffenders = JSON.stringify(
+      envelopeOffenders.sort((a, b) => b.excess - a.excess).slice(0, 12),
+    );
 
     return () => {
       worldRef.current = null;

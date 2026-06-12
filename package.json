@@ -8,6 +8,7 @@
     "check:brief": "node scripts/check-brief.mjs",
     "check:code": "node scripts/check-code-advisory.mjs",
     "check:generation": "node scripts/check-generation.mjs",
+    "check:clip": "node scripts/check-envelope-clip.mjs",
     "paired:smoke": "node scripts/check-den-seeds.mjs",
     "paired:geometry": "node scripts/check-paired-geometry.mjs",
     "paired:roof": "node scripts/import-roof-elevation.mjs",
