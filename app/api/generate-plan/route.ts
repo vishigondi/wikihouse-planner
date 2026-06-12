@@ -221,13 +221,20 @@ export async function POST(request: Request) {
   // Compare pane keeps rendering live. Fire-and-forget: generation must not
   // wait ~10s on a screenshot pipeline.
   try {
-    const origin = new URL(request.url).origin;
-    const child = spawn(
-      process.execPath,
-      ['scripts/regenerate-paired-renders.mjs', '--plans', planId, '--url', origin],
-      { cwd: root, detached: true, stdio: 'ignore' },
-    );
-    child.unref();
+    // Never hand the renderer a Host-header-derived origin (SSRF vector):
+    // only a configured internal origin or the loopback port we serve on.
+    const requestUrl = new URL(request.url);
+    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(requestUrl.hostname);
+    const origin = process.env.INTERNAL_RENDER_ORIGIN
+      ?? (loopback ? `http://127.0.0.1:${requestUrl.port || '3000'}` : null);
+    if (origin) {
+      const child = spawn(
+        process.execPath,
+        ['scripts/regenerate-paired-renders.mjs', '--plans', planId, '--url', origin],
+        { cwd: root, detached: true, stdio: 'ignore' },
+      );
+      child.unref();
+    }
   } catch {
     // Render backfill can be run manually via npm run render:paired.
   }
