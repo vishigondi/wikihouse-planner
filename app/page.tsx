@@ -16,6 +16,7 @@ import { bimAssetRegistrySummary } from '@/lib/bim/component-registry';
 import { localBimAssetSummary, localVisualAssetAttributions } from '@/lib/bim/component-assets';
 import { buildableBimFromHome, buildableBimSummary } from '@/lib/bim/buildable-bim';
 import { standardsRegistrySummary, validateStandards, codeAdvisoryReportForHome, lotFromArtifact } from '@/lib/standards/floorplan-standards';
+import { buildElevationModel, elevationSvgString, type ElevationArtifactInput } from '@/lib/elevations';
 import { CODE_ADVISORY_RULES, type CodeAdvisoryFinding } from '@/lib/standards/code-advisory';
 import { parseBrief, briefToPromptFields } from '@/lib/brief';
 import { countDrawingPrimitives, diffSourceToSemanticDrawingPrimitives, extractSourceDrawingPrimitives } from '@/lib/drawing-primitives';
@@ -1644,37 +1645,33 @@ function escapeHtml(value: unknown) {
     .replace(/'/g, '&#39;');
 }
 
-/** Standalone elevation SVG (same geometry as SemanticElevationView). */
+/** Elevation model from the paired artifact (honest openings, real roof). */
+function elevationModelForHome(home: DenHome, side: 'front' | 'side') {
+  const raw = rawObject(home.pairedArtifactJson) as unknown as Partial<ElevationArtifactInput> | null;
+  const roofRaw = (raw?.roof ?? {}) as ElevationArtifactInput['roof'];
+  const artifact: ElevationArtifactInput = {
+    planId: home.id,
+    footprint: {
+      widthFt: Number((raw?.footprint as { widthFt?: number } | undefined)?.widthFt ?? home.footprint.width),
+      depthFt: Number((raw?.footprint as { depthFt?: number } | undefined)?.depthFt ?? home.footprint.depth),
+    },
+    roof: {
+      style: roofRaw?.style ?? home.roofStyle,
+      ridgeAxis: roofRaw?.ridgeAxis ?? home.roofSemantics?.ridgeAxis ?? 'x',
+      ridgeHeightFt: Number(roofRaw?.ridgeHeightFt ?? home.roofSemantics?.ridgeHeightFt ?? home.height),
+      eaveHeightFt: Number(roofRaw?.eaveHeightFt ?? home.roofSemantics?.eaveHeightFt ?? Math.max(7, home.height * 0.45)),
+      overhangFt: Number(roofRaw?.overhangFt ?? home.roofSemantics?.overhangFt ?? 1),
+      planes: roofRaw?.planes ?? home.roofSemantics?.planes,
+    },
+    windows: (raw?.windows ?? []) as ElevationArtifactInput['windows'],
+    doors: (raw?.doors ?? []) as ElevationArtifactInput['doors'],
+  };
+  return buildElevationModel(artifact, side);
+}
+
+/** Standalone elevation SVG, derived from the artifact (no invented openings). */
 function elevationSvgMarkup(home: DenHome, side: 'front' | 'side'): string {
-  const span = side === 'front' ? home.footprint.width : home.footprint.depth;
-  const roof = home.roofSemantics;
-  const ridge = roof?.ridgeHeightFt ?? home.height;
-  const eave = roof?.eaveHeightFt ?? Math.max(7, home.height * 0.45);
-  const overhang = roof?.overhangFt ?? 1.25;
-  const pad = 18;
-  const width = 760;
-  const height = 320;
-  const scaleX = (width - pad * 2) / (span + overhang * 2);
-  const scaleY = (height - pad * 2) / Math.max(ridge + 2, 12);
-  const x0 = pad + overhang * scaleX;
-  const x1 = x0 + span * scaleX;
-  const yBase = height - pad;
-  const yEave = yBase - eave * scaleY;
-  const yRidge = yBase - ridge * scaleY;
-  const xRidge = (x0 + x1) / 2;
-  const roofPoints = home.roofStyle === 'shed'
-    ? `${x0 - overhang * scaleX},${yEave} ${x1 + overhang * scaleX},${yRidge}`
-    : `${x0 - overhang * scaleX},${yEave} ${xRidge},${yRidge} ${x1 + overhang * scaleX},${yEave}`;
-  return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" font-family="monospace">`,
-    `<rect x="0" y="0" width="${width}" height="${height}" fill="#fbfaf6"/>`,
-    `<text x="${pad}" y="14" font-size="11" fill="#8a8178">${escapeHtml(home.id)} - ${side} elevation - ${span}' span - ${Math.round(ridge)}' ridge</text>`,
-    `<rect x="${x0}" y="${yEave}" width="${x1 - x0}" height="${yBase - yEave}" fill="#f2eee7" stroke="#3d3933" stroke-width="2"/>`,
-    `<polyline points="${roofPoints}" fill="none" stroke="#3d3933" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>`,
-    `<line x1="${x0}" y1="${yBase}" x2="${x1}" y2="${yBase}" stroke="#8f867a" stroke-width="3"/>`,
-    `<line x1="${x0}" y1="${yEave}" x2="${x1}" y2="${yEave}" stroke="#b8ad9d" stroke-width="1.5" stroke-dasharray="6 5"/>`,
-    '</svg>',
-  ].join('');
+  return elevationSvgString(elevationModelForHome(home, side));
 }
 
 /** Cherokee County constraint report as a standalone printable HTML page. */
@@ -3637,48 +3634,19 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
 }
 
 function SemanticElevationView({ home, side }: { home: DenHome; side: 'front' | 'side' }) {
-  const span = side === 'front' ? home.footprint.width : home.footprint.depth;
-  const roof = home.roofSemantics;
-  const ridge = roof?.ridgeHeightFt ?? home.height;
-  const eave = roof?.eaveHeightFt ?? Math.max(7, home.height * 0.45);
-  const overhang = roof?.overhangFt ?? 1.25;
-  const pad = 18;
-  const width = 760;
-  const height = 320;
-  const scaleX = (width - pad * 2) / (span + overhang * 2);
-  const scaleY = (height - pad * 2) / Math.max(ridge + 2, 12);
-  const x0 = pad + overhang * scaleX;
-  const x1 = x0 + span * scaleX;
-  const yBase = height - pad;
-  const yEave = yBase - eave * scaleY;
-  const yRidge = yBase - ridge * scaleY;
-  const xRidge = (x0 + x1) / 2;
-  const roofPoints = home.roofStyle === 'shed'
-    ? `${x0 - overhang * scaleX},${yEave} ${x1 + overhang * scaleX},${yRidge} ${x1 + overhang * scaleX},${yRidge + 10} ${x0 - overhang * scaleX},${yEave + 10}`
-    : `${x0 - overhang * scaleX},${yEave} ${xRidge},${yRidge} ${x1 + overhang * scaleX},${yEave}`;
-
+  const model = elevationModelForHome(home, side);
+  const svg = elevationSvgString(model);
   return (
     <div className="flex h-full items-center justify-center bg-[#f7f3ec] p-8">
       <div className="w-full max-w-5xl border border-stone-200 bg-[#fbfaf6] p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-wide text-stone-500">
-          <span>{side} elevation</span>
-          <span>{span}&apos; span - {Math.round(ridge)}&apos; ridge</span>
+          <span>{side} elevation - {model.gableFacing ? 'gable face' : 'eave face'}</span>
+          <span>
+            {model.spanFt}&apos; span - {Math.round(model.ridgeFt)}&apos; ridge - {model.openings.length} opening{model.openings.length === 1 ? '' : 's'} - {home.roofSemantics?.status === 'validated' ? 'paired roof/elevation' : 'provisional'}
+          </span>
         </div>
-        <svg viewBox={`0 0 ${width} ${height}`} className="h-[min(42vh,360px)] w-full">
-          <rect x={x0} y={yEave} width={x1 - x0} height={yBase - yEave} fill="#f2eee7" stroke="#3d3933" strokeWidth="2" />
-          <polyline points={roofPoints} fill="none" stroke="#3d3933" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" />
-          <line x1={x0} y1={yBase} x2={x1} y2={yBase} stroke="#8f867a" strokeWidth="3" />
-          <line x1={x0} y1={yEave} x2={x1} y2={yEave} stroke="#b8ad9d" strokeWidth="1.5" strokeDasharray="6 5" />
-          {Array.from({ length: 5 }).map((_, index) => {
-            const x = x0 + ((index + 0.75) / 5.5) * (x1 - x0);
-            return (
-              <rect key={index} x={x} y={yEave + 28} width={Math.max(22, (x1 - x0) * 0.08)} height="28" fill="#f8faf9" stroke="#9fb3bc" strokeWidth="1.5" />
-            );
-          })}
-          <text x={width / 2} y={height - 4} textAnchor="middle" fontFamily="monospace" fontSize="11" fill="#8a8178">
-            {home.model} - {home.roofSemantics?.status === 'validated' ? 'paired roof/elevation' : 'provisional elevation'}
-          </text>
-        </svg>
+        {/* eslint-disable-next-line react/no-danger */}
+        <div className="h-[min(42vh,360px)] w-full [&>svg]:h-full [&>svg]:w-full" data-elevation-openings={model.openings.length} dangerouslySetInnerHTML={{ __html: svg }} />
       </div>
     </div>
   );
