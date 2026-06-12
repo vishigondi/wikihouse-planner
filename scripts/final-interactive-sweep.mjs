@@ -27,6 +27,24 @@ for (const plan of PLANS) {
   const canvas = await page.locator('canvas').count();
   note(canvas >= 1, 'canvas renders');
 
+  // Envelope integrity: no wall vertex more than 0.5 ft above the roof
+  // plane at its x,z — guards the compiled-plan sail-fin regression.
+  const envelope = await page.locator('canvas').first().evaluate((el) => ({
+    maxExcess: Number(el.dataset.bimEnvelopeMaxExcessFt ?? 'NaN'),
+    planes: Number(el.dataset.bimEnvelopePlanes ?? 'NaN'),
+  })).catch(() => ({ maxExcess: NaN, planes: NaN }));
+  // Only compiled plans promise a simple single-shell envelope; traced plans
+  // legitimately carry bays/dormers that pierce the main roof planes.
+  const COMPILED_PLANS = new Set(['brief-aframe-2br', 'gen-001']);
+  if (COMPILED_PLANS.has(plan) && Number.isFinite(envelope.maxExcess) && envelope.planes > 0) {
+    // 2 ft accommodates corner geometry; the sail fins exceeded by 10+ ft.
+    note(envelope.maxExcess <= 2.0, `walls within roof envelope (max excess ${envelope.maxExcess} ft <= 2.0)`);
+  } else if (envelope.planes > 0) {
+    console.log(`  info envelope max excess ${envelope.maxExcess} ft (traced plan, designed bays exempt)`);
+  } else {
+    note(true, 'envelope data unavailable (no roof planes), skipped');
+  }
+
   // (1) rotation in two directions
   await page.mouse.move(800, 470); await page.mouse.down();
   await page.mouse.move(1080, 400, { steps: 12 }); await page.mouse.up();

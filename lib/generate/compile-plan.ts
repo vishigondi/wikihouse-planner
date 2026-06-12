@@ -130,6 +130,119 @@ function spanOnWall(span: IntentSpan, wall: WallSegment): boolean {
     && Math.max(span.x1, span.x2) <= Math.max(wall.span.x1, wall.span.x2) + 0.26;
 }
 
+interface StarterFixture {
+  id: string;
+  roomId: string;
+  type: string;
+  floor: number;
+  bounds: { x: number; z: number; w: number; d: number };
+  clearance: { frontFt: number; doorSwingClear: boolean; note: string };
+  sourceAnchorId: string;
+  wallAnchor?: { wallId?: string; side: string; span: [number, number] };
+}
+
+/**
+ * Deterministic starter furnishing per room type, using only component
+ * registry ids already proven in shipped plans. Placement is recipe-based
+ * (beds on the far edge, wet fixtures on the near edge, kitchen run on the
+ * perimeter side) so the same intent always furnishes identically.
+ */
+function starterFixtures(intent: GenerationIntent, walls: WallSegment[]): StarterFixture[] {
+  const { widthFt } = intent.footprint;
+  const fixtures: StarterFixture[] = [];
+  const nearestWall = (px: number, pz: number): WallSegment | undefined => {
+    let best: WallSegment | undefined;
+    let bestDist = Infinity;
+    for (const wall of walls) {
+      const vertical = Math.abs(wall.span.x1 - wall.span.x2) < EPS;
+      const dist = vertical
+        ? Math.abs(px - wall.span.x1) + (pz < Math.min(wall.span.z1, wall.span.z2) || pz > Math.max(wall.span.z1, wall.span.z2) ? 100 : 0)
+        : Math.abs(pz - wall.span.z1) + (px < Math.min(wall.span.x1, wall.span.x2) || px > Math.max(wall.span.x1, wall.span.x2) ? 100 : 0);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = wall;
+      }
+    }
+    return bestDist < 1.5 ? best : undefined;
+  };
+  const anchor = (px: number, pz: number, fixtureCenter: { x: number; z: number }, span: [number, number]) => {
+    const wall = nearestWall(px, pz);
+    if (!wall) return undefined;
+    const vertical = Math.abs(wall.span.x1 - wall.span.x2) < EPS;
+    const side = vertical
+      ? (fixtureCenter.x >= wall.span.x1 ? 'E' : 'W')
+      : (fixtureCenter.z >= wall.span.z1 ? 'S' : 'N');
+    return { wallId: wall.id, side, span };
+  };
+  const add = (
+    id: string,
+    roomId: string,
+    type: string,
+    x: number,
+    z: number,
+    w: number,
+    d: number,
+    note: string,
+    wallPoint?: { x: number; z: number },
+  ) => {
+    const fixture: StarterFixture = {
+      id,
+      roomId,
+      type,
+      floor: 0,
+      bounds: { x: Math.round(x * 10) / 10, z: Math.round(z * 10) / 10, w, d },
+      clearance: { frontFt: 2, doorSwingClear: true, note },
+      sourceAnchorId: id,
+    };
+    if (wallPoint) {
+      const center = { x: x + w / 2, z: z + d / 2 };
+      const span: [number, number] = Math.abs(wallPoint.x - center.x) < Math.abs(wallPoint.z - center.z)
+        ? [z, z + d]
+        : [x, x + w];
+      fixture.wallAnchor = anchor(wallPoint.x, wallPoint.z, center, span);
+      if (!fixture.wallAnchor) delete fixture.wallAnchor;
+    }
+    fixtures.push(fixture);
+  };
+
+  for (const room of intent.rooms) {
+    const text = `${room.type} ${room.label}`.toLowerCase();
+    const cx = room.x + room.w / 2;
+    const slug = room.id.replace(/^room-/, '');
+    if (/bed/.test(text) && !/bath/.test(text)) {
+      if (room.w >= 7 && room.d >= 8) {
+        add(`fx-${slug}-bed`, room.id, 'queen_bed', cx - 2.5, room.z + room.d - 6.5, 5, 6.5, 'foot and sides clear', { x: cx, z: room.z + room.d });
+        if (room.w >= 9) {
+          add(`fx-${slug}-wardrobe`, room.id, 'closet_wardrobe', room.x + 1, room.z + 0.3, Math.min(4.5, room.w - 2), 1.9, 'sliding storage', { x: cx, z: room.z });
+        }
+      }
+    } else if (/bath|wc|toilet/.test(text)) {
+      add(`fx-${slug}-toilet`, room.id, 'toilet', room.x + 0.5, room.z + 0.3, 2.2, 2.2, 'front clear', { x: room.x + 1.6, z: room.z });
+      if (room.w >= 6) {
+        add(`fx-${slug}-vanity`, room.id, 'vanity_sink', room.x + 3.0, room.z + 0.3, 2.4, 1.7, 'front clear', { x: room.x + 4.2, z: room.z });
+      }
+      if (room.w >= 8) {
+        add(`fx-${slug}-shower`, room.id, 'shower', room.x + room.w - 2.5, room.z + 0.3, 2.4, 2.6, 'door clear', { x: room.x + room.w - 1.3, z: room.z });
+      }
+    } else if (/kitchen/.test(text)) {
+      const onRightPerimeter = Math.abs(room.x + room.w - widthFt) < EPS;
+      const runX = onRightPerimeter ? room.x + room.w - 2 : room.x + 0.2;
+      const wallX = onRightPerimeter ? room.x + room.w : room.x;
+      const runDepth = Math.min(7, room.d - 2);
+      add(`fx-${slug}-counter`, room.id, 'counter_run', runX, room.z + 1, 1.8, runDepth, 'work aisle clear', { x: wallX, z: room.z + 1 + runDepth / 2 });
+      add(`fx-${slug}-sink`, room.id, 'sink', runX + 0.1, room.z + 1 + runDepth / 2 - 0.75, 1.6, 1.5, 'under window where possible', { x: wallX, z: room.z + 1 + runDepth / 2 });
+      add(`fx-${slug}-range`, room.id, 'range', runX - 0.1, room.z + 1 + runDepth + 0.3, 2.0, 1.8, 'landing space beside', { x: wallX, z: room.z + 1 + runDepth + 1.2 });
+      add(`fx-${slug}-fridge`, room.id, 'refrigerator', room.x + 0.4, room.z + 0.4, 2.8, 2.6, 'door swing clear', { x: room.x + 1.8, z: room.z });
+    } else if (/living|great/.test(text)) {
+      if (room.w >= 12 && room.d >= 9) {
+        add(`fx-${slug}-sofa`, room.id, 'sofa_chairs_coffee_table', room.x + 1.5, room.z + 1.5, Math.min(8, room.w - 4), Math.min(6, room.d - 3), 'circulation around');
+        add(`fx-${slug}-dining`, room.id, 'round_table_six_chairs', room.x + room.w - 5, room.z + room.d / 2 - 2, 4, 4, 'chairs pull out');
+      }
+    }
+  }
+  return fixtures;
+}
+
 export function compileIntent(intent: GenerationIntent, planId: string, brief: string): CompileResult {
   const errors: string[] = [];
   const { widthFt, depthFt } = intent.footprint ?? { widthFt: 0, depthFt: 0 };
@@ -300,7 +413,7 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
     doors,
     windows,
     openings,
-    fixtures: [],
+    fixtures: starterFixtures(intent, allWalls),
     dimensionLines: [
       { id: 'dim-width', span: { x1: 0, z1: -2, x2: widthFt, z2: -2 }, label: `${widthFt}'-0"` },
       { id: 'dim-depth', span: { x1: -2, z1: 0, x2: -2, z2: depthFt }, label: `${depthFt}'-0"` },

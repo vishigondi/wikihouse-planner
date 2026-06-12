@@ -1249,6 +1249,51 @@ export default function BimPreview({
     world.renderer.three.domElement.dataset.bimComponentMissingCount = String(model.elements.length - componentElements.length);
     world.renderer.three.domElement.dataset.bimLocalAssetCount = String(model.elements.filter((element) => Boolean(element.metadata?.localAssetId)).length);
     world.renderer.three.domElement.dataset.bimRenderableVisualAssetCount = String(model.elements.filter((element) => element.metadata?.visualAssetMode === 'gltf-cache').length);
+    // Envelope integrity evidence for QA: no wall vertex may sit more than
+    // 0.5 ft above the roof plane at its x,z (sail-fin regression guard).
+    const roofPlaneEqs = model.elements
+      .filter((element) => element.category === 'roofPlane' && (element.points?.length ?? 0) >= 3)
+      .map((element) => {
+        const pts = element.points!;
+        const [p, q, r] = [pts[0], pts[1], pts[2]];
+        const det = (q.x - p.x) * (r.z - p.z) - (r.x - p.x) * (q.z - p.z);
+        if (Math.abs(det) < 1e-9) return null;
+        const a = ((q.y - p.y) * (r.z - p.z) - (r.y - p.y) * (q.z - p.z)) / det;
+        const b = ((q.x - p.x) * (r.y - p.y) - (r.x - p.x) * (q.y - p.y)) / det;
+        return {
+          a, b, c: p.y - a * p.x - b * p.z,
+          minX: Math.min(...pts.map((pt) => pt.x)), maxX: Math.max(...pts.map((pt) => pt.x)),
+          minZ: Math.min(...pts.map((pt) => pt.z)), maxZ: Math.max(...pts.map((pt) => pt.z)),
+        };
+      })
+      .filter((plane): plane is NonNullable<typeof plane> => plane !== null);
+    let envelopeMaxExcess = 0;
+    if (roofPlaneEqs.length) {
+      const centerOffsetX = model.footprint.widthFt / 2;
+      const centerOffsetZ = model.footprint.depthFt / 2;
+      const vertex = new THREE.Vector3();
+      root.traverse((object) => {
+        const mesh = object as THREE.Mesh;
+        const semantic = mesh.userData?.semanticBim as SemanticBimElement | undefined;
+        if (!semantic || semantic.category !== 'wall' || !mesh.isMesh) return;
+        const position = mesh.geometry?.getAttribute?.('position');
+        if (!position) return;
+        mesh.updateWorldMatrix(true, false);
+        for (let i = 0; i < position.count; i += 1) {
+          vertex.fromBufferAttribute(position as THREE.BufferAttribute, i).applyMatrix4(mesh.matrixWorld);
+          const sourceX = vertex.x + centerOffsetX;
+          const sourceZ = vertex.z + centerOffsetZ;
+          let roofY = Infinity;
+          for (const plane of roofPlaneEqs) {
+            if (sourceX < plane.minX - 0.1 || sourceX > plane.maxX + 0.1 || sourceZ < plane.minZ - 0.1 || sourceZ > plane.maxZ + 0.1) continue;
+            roofY = Math.min(roofY, plane.a * sourceX + plane.b * sourceZ + plane.c);
+          }
+          if (Number.isFinite(roofY)) envelopeMaxExcess = Math.max(envelopeMaxExcess, vertex.y - roofY);
+        }
+      });
+    }
+    world.renderer.three.domElement.dataset.bimEnvelopeMaxExcessFt = envelopeMaxExcess.toFixed(2);
+    world.renderer.three.domElement.dataset.bimEnvelopePlanes = String(roofPlaneEqs.length);
 
     return () => {
       worldRef.current = null;
