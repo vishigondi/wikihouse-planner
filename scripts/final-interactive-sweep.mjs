@@ -96,6 +96,9 @@ for (const plan of PLANS) {
   note(septic === 1, 'site checks present');
   const ruleCount = await page.locator('[data-constraint-rule]').count();
   note(ruleCount === 10, `10 rule cards rendered (${ruleCount})`);
+  const titleBlocks = await page.locator('[data-plan-title-block]').count();
+  const northArrows = await page.locator('[data-north-arrow]').count();
+  note(titleBlocks >= 1 && northArrows >= 1, `plan sheet annotations present (title ${titleBlocks}, north ${northArrows})`);
   await page.screenshot({ path: `${SHOT_DIR}/${plan}-semantic.png`, fullPage: false });
 
   // JSON-only lane: gen-001 must read Brochure pass with the honest packet
