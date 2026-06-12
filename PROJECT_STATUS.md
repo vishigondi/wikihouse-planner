@@ -1,6 +1,75 @@
 # Project Status
 
-Last updated: 2026-06-12 (export pass — closed; brief → Brochure Ready → client packet)
+Last updated: 2026-06-12 (architect-ready polish — closed; ARCHITECT REVIEW READY)
+
+## ARCHITECT REVIEW READY — what to demo
+
+Four fires (d4eeddb, 213884a, 28d4c49, 9cf3c8a), verified green two
+consecutive fires. Dev server on localhost:3002, prod on :3000.
+
+**The demo, in order:**
+
+1. **Fresh generation, end to end** — on the landing page type
+   `3 bed 2 bath gable, 60x90 lot, 10 ft setbacks`, watch the echo line
+   ("Understood: 3 bed · 2 bath · gable · 60×90 lot · setbacks ..."),
+   generate. ~25 s later the card reads Brochure Ready and the plan
+   opens with the full sheet treatment below.
+2. **The 2D sheet** (any compiled plan, e.g. gen-001) — title block with
+   plan id / area / bed-bath / roof, north arrow, graphic scale bar, and
+   chained band dimensions along the top and left that SUM to the
+   footprint (verified live: 16'+8'+12' = 36' top, 12'+4'+12' = 28'
+   left on a fresh gable), plus W'×D' size labels inside each room.
+3. **Honest elevations** — in the client packet (Download Client
+   Packet on gen-001): front + side elevations are built from the
+   stored artifact itself (lib/elevations.ts, 48-check battery). Every
+   opening drawn maps to a real facade opening within 0.5 ft, heads
+   clamp under the roof at their own position, loft windows draw at
+   loft height, gable vs eave face follows the actual ridge axis.
+   No invented openings, on any of the five plans (check:drawing
+   asserts this mechanically for every plan, both sides).
+4. **Professional 3D** — orbit any plan: edge lines define the form
+   (24° crease threshold), a soft contact shadow grounds it, and the
+   White checkbox in the VIEW panel flips to an architect white-model
+   preset (matte white shell, opaque roof). Cutaway / Front / Side all
+   hold up. Envelope evidence stays live: compiled plans read
+   0.00–0.01 ft max excess, offenders [], every mesh tagged.
+5. **Traced references untouched** — a-frame-bunk, a-frame-22,
+   outpost-medium still show 12 GATES PASS with their original
+   geometry; gen-001 still carries the "JSON-only deterministic
+   packet" badge and Brochure pass header.
+
+**Gates at close** (all green, two consecutive fires): build,
+check:drawing (38), check:elevations (48), check:clip (33), check:code,
+check:brief, check:generation, qa:brochure 10/10 on prod :3000,
+final-interactive-sweep (per-plan title block + north arrow in live
+DOM, envelope gates, JSON-only badge, landing echo). Stored renders
+regenerated once via render:paired after the sheet annotations landed.
+
+## 2026-06-12 Architect Polish — Closed
+
+One capability per fire on top of the export pass:
+
+1. **Honest elevations** (d4eeddb) — lib/elevations.ts builds front/side
+   elevation models from the artifact (dependency-free; same ceiling-
+   plane math as the constraint engine). Ridge-axis-aware gable/eave
+   profiles, openings matched to the facade within tolerance, 3D's own
+   clamp policy mirrored (sill base+3.15, slide-down, skip <0.5 ft),
+   loft openings at level height. check:elevations battery: fresh
+   a-frame + fresh gable + traced a-frame-22 + bare-facade case.
+2. **Drawing standards** (213884a) — FloorPlanView annotations: title
+   block, north arrow, scale bar, chained band dimensions cut at room
+   edges, room size sublabels. Wired for compiled plans' live render
+   and stored sheets.
+3. **3D presentation** (28d4c49) — EdgesGeometry crease lines on
+   wall/roof meshes (productMode only; lines aren't meshes so envelope
+   evidence is unaffected), radial-gradient contact shadow (tagged
+   siteShadow), whiteModel prop → white-model material preset + VIEW
+   checkbox (data-view-white-model).
+4. **Consistency sweep** (9cf3c8a) — check:drawing battery gates every
+   plan's stored render: sheet elements on JSON-only sheets, primitive-
+   QA contract on traced artifacts, elevation honesty for all five
+   plans both sides; final-interactive-sweep asserts title block +
+   north arrow per plan in the live DOM.
 
 ## 2026-06-12 Export Pass — Closed
 
