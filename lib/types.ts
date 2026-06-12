@@ -232,6 +232,8 @@ export interface PairedPlanArtifactInfo {
   planId: string;
   proposalId: string;
   artifactVersion: string;
+  /** 'constrained_json' marks the JSON-only lane (no GPT image by design). */
+  sourceKind?: string | null;
   sourceImageUrl: string;
   deterministicRenderUrl?: string;
   pairedJsonUrl: string;

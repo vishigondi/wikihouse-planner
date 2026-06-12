@@ -752,7 +752,9 @@ function drawingStyleProfileIssues(home: DenHome): { blockers: string[]; warning
   const warnings: string[] = [];
   const profile = home.drawingStyleProfile;
   if (!profile) {
-    blockers.push('Missing drawing_style_profile_v1 sidecar; deterministic renderer is using fallback style rules instead of extracted source rules.');
+    if (!isJsonOnlyPlan(home)) {
+      blockers.push('Missing drawing_style_profile_v1 sidecar; deterministic renderer is using fallback style rules instead of extracted source rules.');
+    }
     return { blockers, warnings };
   }
   if (profile.schemaVersion !== 'drawing_style_profile_v1') {
@@ -776,6 +778,10 @@ function drawingStyleProfileIssues(home: DenHome): { blockers: string[]; warning
 function drawingPrimitiveContractIssues(home: DenHome): { blockers: string[]; warnings: string[] } {
   const blockers: string[] = [];
   const warnings: string[] = [];
+  // The drawing primitive contract exists to diff a SOURCE IMAGE against the
+  // deterministic render layer-by-layer. JSON-only plans have no source image
+  // to trace; the render is canonical, so the contract does not apply.
+  if (isJsonOnlyPlan(home)) return { blockers, warnings };
   const primitives = extractSourceDrawingPrimitives(home.pairedArtifactJson);
   const counts = countDrawingPrimitives(primitives);
   if (!primitives.length) {
@@ -866,7 +872,9 @@ function brochureQualityIssues(home: DenHome): { blockers: string[]; warnings: s
   const drift = home.pairedArtifactInfo?.visualDrift;
   const review = rawObject(home.pairedArtifactJson)?.brochureQualityReview ?? rawObject(home.pairedArtifactInfo)?.brochureQualityReview;
 
-  if (!drift?.metrics) {
+  if (isJsonOnlyPlan(home) && !drift?.metrics) {
+    // No GPT source to drift from; the stored deterministic render is canonical.
+  } else if (!drift?.metrics) {
     warnings.push('Brochure Quality has no source-vs-render visual drift evidence for Compare and Overlay (advisory).');
   } else {
     const sourceMissRate = (drift.metrics.primitiveSourceMissRate as number | undefined) ?? drift.metrics.sourceMissRate ?? 1;
@@ -973,12 +981,20 @@ function brochureQualityIssues(home: DenHome): { blockers: string[]; warnings: s
     warnings.push('Brochure 3D has too few typed fixture/furniture elements to read as a furnished sales visualization.');
   }
 
-  if (!home.pairedArtifactInfo?.sourceImageUrl || !home.pairedArtifactInfo?.deterministicRenderUrl) {
+  if (isJsonOnlyPlan(home)) {
+    // JSON-only lane: the deterministic render IS the design asset; there is
+    // no GPT image to demand.
+    if (!home.pairedArtifactInfo?.deterministicRenderUrl) {
+      blockers.push('JSON-only deterministic packet requires the stored deterministic render.');
+    }
+  } else if (!home.pairedArtifactInfo?.sourceImageUrl || !home.pairedArtifactInfo?.deterministicRenderUrl) {
     blockers.push('Brochure packet requires both GPT proposal and deterministic render images for review/export.');
   }
 
   if (!home.drawingStyleProfile) {
-    warnings.push('No extracted drawing_style_profile_v1; deterministic SVG uses default drawing language (advisory).');
+    if (!isJsonOnlyPlan(home)) {
+      warnings.push('No extracted drawing_style_profile_v1; deterministic SVG uses default drawing language (advisory).');
+    }
   } else if (home.drawingStyleProfile.validation?.status === 'blocked') {
     warnings.push('drawing_style_profile_v1 validation reported issues (advisory).');
   } else if (home.drawingStyleProfile.validation?.status === 'warning') {
@@ -1024,13 +1040,17 @@ function validationGroups(home: DenHome | null, renderedBounds: RenderedModelBou
     block('source', 'No active plan selected');
   } else {
     const geometry = liveGeometryAudit(home);
+    const jsonOnlyLane = isJsonOnlyPlan(home);
     if (!home.pairedArtifact) block('source', 'Active plan is not a paired image + JSON artifact');
-    if (!home.pairedArtifactInfo?.sourceImageUrl) warn('source', 'GPT proposal image is missing from local import');
-    if (!home.pairedArtifactInfo?.promotionEligible) warn('source', 'Artifact is local or review-only until validation promotes it');
+    if (!home.pairedArtifactInfo?.sourceImageUrl && !jsonOnlyLane) warn('source', 'GPT proposal image is missing from local import');
+    if (!home.pairedArtifactInfo?.promotionEligible && !jsonOnlyLane) warn('source', 'Artifact is local or review-only until validation promotes it');
     const visualDrift = home.pairedArtifactInfo?.visualDrift;
     const repairHistory = rawObject(home.pairedArtifactJson)?.repairHistory;
     const hasPostDriftRepair = Array.isArray(repairHistory) && repairHistory.length > 0;
-    if (!visualDrift?.metrics) {
+    if (jsonOnlyLane && !visualDrift?.metrics) {
+      // JSON-only lane: there is no GPT source image, so source-vs-render
+      // drift is not a meaningful check; the render is correct by construction.
+    } else if (!visualDrift?.metrics) {
       warn('visual-drift', 'No source-vs-render visual drift metrics are attached');
     } else if (
       hasPostDriftRepair &&
@@ -3452,7 +3472,14 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
       {qaPrimitiveMetadataRender}
       <div className="relative z-20 mb-3 flex items-center justify-between gap-3">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">GPT Proposal + Deterministic Render</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
+            GPT Proposal + Deterministic Render
+            {isJsonOnlyPlan(home) && (
+              <span className="ml-2 border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[9px] normal-case tracking-normal text-stone-600" data-json-only-packet>
+                JSON-only deterministic packet
+              </span>
+            )}
+          </div>
           <div className="mt-0.5 font-mono text-[10px] text-stone-400">{info.proposalId}</div>
         </div>
         <div className="relative z-20 flex border border-stone-200 bg-white">
@@ -3692,6 +3719,11 @@ function GalleryBriefGenerate() {
       </div>
     </div>
   );
+}
+
+/** JSON-only lane: authored as constrained JSON, no GPT image by design. */
+function isJsonOnlyPlan(home: DenHome | null | undefined): boolean {
+  return home?.pairedArtifactInfo?.sourceKind === 'constrained_json';
 }
 
 /**

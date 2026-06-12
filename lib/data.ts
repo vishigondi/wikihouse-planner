@@ -258,6 +258,7 @@ type PixelFloorFrame = {
 };
 
 type ProposalAvailability = {
+  sourceKind?: string | null;
   id: string;
   label?: string;
   imageUrl?: string;
@@ -1660,6 +1661,7 @@ function artifactInfo(planId: string, option: ProposalAvailability): PairedPlanA
     planId,
     proposalId: option.id,
     artifactVersion: option.artifactVersion ?? 'paired_gpt_floorplan_v1',
+    sourceKind: option.sourceKind ?? null,
     sourceImageUrl: option.imageUrl ? `/data/den-image-loop/${planId}/${option.imageUrl}` : '',
     deterministicRenderUrl: option.deterministicRenderUrl ? `/data/den-image-loop/${planId}/${option.deterministicRenderUrl}` : undefined,
     pairedJsonUrl: `/data/den-image-loop/${planId}/${option.pairedJsonUrl}`,
