@@ -212,7 +212,8 @@ function starterFixtures(intent: GenerationIntent, walls: WallSegment[]): Starte
     if (/bed/.test(text) && !/bath/.test(text)) {
       if (room.w >= 7 && room.d >= 8) {
         add(`fx-${slug}-bed`, room.id, 'queen_bed', cx - 2.5, room.z + room.d - 6.5, 5, 6.5, 'foot and sides clear', { x: cx, z: room.z + room.d });
-        if (room.w >= 9) {
+        // Wardrobe needs ~2 ft beyond the bed's 6.5 ft; skip in shallow rooms.
+        if (room.w >= 9 && room.d >= 9) {
           add(`fx-${slug}-wardrobe`, room.id, 'closet_wardrobe', room.x + 1, room.z + 0.3, Math.min(4.5, room.w - 2), 1.9, 'sliding storage', { x: cx, z: room.z });
         }
       }
@@ -455,93 +456,154 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
  * Band layout: front band (living/kitchen, plus bath for 3-bed), full-width
  * hall band, rear bedroom band. All coordinates on the 4 ft grid.
  *
- * Layouts are "ridge-safe": with the steep A-frame profile (eave 1 ft,
- * ridge 18 ft) only the central column has usable headroom, so habitable
- * rooms always span toward the ridge and wet rooms (bath/laundry, which
- * R305 holds to 6'8" minimum everywhere) sit in the center columns. Only
- * storage/closet space occupies the low eave edges. The same layouts pass
- * trivially under the gable profile (eave 8 ft).
+ * Footprint width is chosen from per-program candidates: the largest that
+ * fits the lot's buildable envelope (lot minus setbacks) and the brief's
+ * max square footage. A-frames have a single width per program because the
+ * steep profile (eave 1 ft, ridge 18 ft) leaves usable headroom only in the
+ * central column — habitable rooms span toward the ridge and wet rooms
+ * (bath/laundry, which R305 holds to 6'8" minimum everywhere) sit in the
+ * center; only storage/closets occupy the low eave edges. Gables (eave 8 ft)
+ * have headroom everywhere, so they offer narrower variants for small lots.
+ * If even the smallest candidate cannot fit, the smallest is emitted and
+ * compileIntent reports the honest envelope failure.
  */
-export function mockIntentFromBrief(brief: { bedrooms?: number; roofStyle?: string; lot?: GenerationIntent['lot'] }): GenerationIntent {
+export function mockIntentFromBrief(brief: { bedrooms?: number; roofStyle?: string; maxSqft?: number; lot?: GenerationIntent['lot'] }): GenerationIntent {
   const bedrooms = Math.max(1, Math.min(3, brief.bedrooms ?? 2));
   const style: 'a-frame' | 'gable' = brief.roofStyle === 'gable' ? 'gable' : 'a-frame';
-  const widthFt = bedrooms === 3 ? 36 : 28;
-  const depthFt = 28;
+
+  // Candidate footprints, largest first. Gables offer narrow/shallow variants
+  // for small lots; the constraint engine's default 35% coverage cap counts
+  // as a fit criterion so generated plans never fail their own report.
+  const CANDIDATE_FOOTPRINTS: Record<number, Record<'a-frame' | 'gable', Array<[number, number]>>> = {
+    1: { 'a-frame': [[28, 28]], gable: [[28, 28], [24, 28], [20, 28], [20, 24]] },
+    2: { 'a-frame': [[28, 28]], gable: [[28, 28], [24, 28]] },
+    3: { 'a-frame': [[36, 28]], gable: [[36, 28], [28, 28]] },
+  };
+  const candidates = CANDIDATE_FOOTPRINTS[bedrooms][style];
+  const setbacks = brief.lot?.setbacksFt ?? {};
+  const lotValid = brief.lot && Number.isFinite(brief.lot.widthFt) && Number.isFinite(brief.lot.depthFt);
+  const envelope = lotValid
+    ? {
+      w: brief.lot!.widthFt - (setbacks.left ?? 0) - (setbacks.right ?? 0),
+      d: brief.lot!.depthFt - (setbacks.front ?? 0) - (setbacks.rear ?? 0),
+    }
+    : null;
+  const maxCoverageSqft = lotValid
+    ? brief.lot!.widthFt * brief.lot!.depthFt * (brief.lot!.maxCoverageRatio ?? 0.35)
+    : null;
+  const fits = ([w, d]: [number, number]) =>
+    (!envelope || (w <= envelope.w + EPS && d <= envelope.d + EPS))
+    && (!brief.maxSqft || w * d <= brief.maxSqft + EPS)
+    && (!maxCoverageSqft || w * d <= maxCoverageSqft + EPS);
+  const [widthFt, depthFt] = candidates.find(fits) ?? candidates[candidates.length - 1];
+
   const rooms: IntentRoom[] = [];
   const doors: IntentDoor[] = [];
   const windows: IntentWindow[] = [];
   const openings: IntentOpening[] = [];
 
-  // Front band (z 0-12) and full-width hall band (z 12-16).
+  // Front band (z 0-12) and full-width hall band (z 12-16). The living room
+  // takes the west column; its width shrinks with the footprint.
+  const livingW = (bedrooms === 3 ? widthFt === 36 : widthFt > 20) ? 16 : 12;
   if (bedrooms === 3) {
     rooms.push(
-      { id: 'room-living', label: 'Living Room', type: 'living', x: 0, z: 0, w: 16, d: 12 },
-      { id: 'room-bath', label: 'Bath', type: 'bathroom', x: 16, z: 0, w: 8, d: 12 },
-      { id: 'room-kitchen', label: 'Kitchen', type: 'kitchen', x: 24, z: 0, w: 12, d: 12 },
+      { id: 'room-living', label: 'Living Room', type: 'living', x: 0, z: 0, w: livingW, d: 12 },
+      { id: 'room-bath', label: 'Bath', type: 'bathroom', x: livingW, z: 0, w: 8, d: 12 },
+      { id: 'room-kitchen', label: 'Kitchen', type: 'kitchen', x: livingW + 8, z: 0, w: widthFt - livingW - 8, d: 12 },
     );
-    doors.push({ id: 'door-bath', fromRoomId: 'room-hall', toRoomId: 'room-bath', openingType: 'interiorDoor', span: { x1: 18, z1: 12, x2: 20.5, z2: 12 } });
-    openings.push({ id: 'open-kitchen-hall', fromRoomId: 'room-kitchen', toRoomId: 'room-hall', span: { x1: 26, z1: 12, x2: 34, z2: 12 } });
+    doors.push({ id: 'door-bath', fromRoomId: 'room-hall', toRoomId: 'room-bath', openingType: 'interiorDoor', span: { x1: livingW + 2, z1: 12, x2: livingW + 4.5, z2: 12 } });
+    openings.push({ id: 'open-kitchen-hall', fromRoomId: 'room-kitchen', toRoomId: 'room-hall', span: { x1: livingW + 10, z1: 12, x2: widthFt - 2, z2: 12 } });
   } else {
     rooms.push(
-      { id: 'room-living', label: 'Living Room', type: 'living', x: 0, z: 0, w: 16, d: 12 },
-      { id: 'room-kitchen', label: 'Kitchen', type: 'kitchen', x: 16, z: 0, w: 12, d: 12 },
+      { id: 'room-living', label: 'Living Room', type: 'living', x: 0, z: 0, w: livingW, d: 12 },
+      { id: 'room-kitchen', label: 'Kitchen', type: 'kitchen', x: livingW, z: 0, w: widthFt - livingW, d: 12 },
     );
-    openings.push({ id: 'open-living-kitchen', fromRoomId: 'room-living', toRoomId: 'room-kitchen', span: { x1: 16, z1: 2, x2: 16, z2: 10 } });
+    openings.push({ id: 'open-living-kitchen', fromRoomId: 'room-living', toRoomId: 'room-kitchen', span: { x1: livingW, z1: 2, x2: livingW, z2: 10 } });
   }
   windows.push({ id: 'win-kitchen-e', roomId: 'room-kitchen', span: { x1: widthFt, z1: 4, x2: widthFt, z2: 8 } });
   rooms.push({ id: 'room-hall', label: 'Hall', type: 'hall', x: 0, z: 12, w: widthFt, d: 4 });
   doors.push({ id: 'door-entry', fromRoomId: 'exterior', toRoomId: 'room-living', openingType: 'exteriorDoor', span: { x1: 4, z1: 0, x2: 7, z2: 0 } });
-  windows.push({ id: 'win-living-n', roomId: 'room-living', span: { x1: 10, z1: 0, x2: 14, z2: 0 } });
-  openings.push({ id: 'open-living-hall', fromRoomId: 'room-living', toRoomId: 'room-hall', span: { x1: 4, z1: 12, x2: 12, z2: 12 } });
+  windows.push({ id: 'win-living-n', roomId: 'room-living', span: livingW === 16 ? { x1: 10, z1: 0, x2: 14, z2: 0 } : { x1: 8, z1: 0, x2: 11, z2: 0 } });
+  openings.push({ id: 'open-living-hall', fromRoomId: 'room-living', toRoomId: 'room-hall', span: { x1: 4, z1: 12, x2: livingW - 2, z2: 12 } });
 
-  // Rear band (z 16-28).
+  // Rear band (z 16 to depth; 12 ft deep on the standard 28 ft plans, 8 ft on
+  // the compact 20x24 variant).
+  const rearD = depthFt - 16;
   if (bedrooms === 1) {
     rooms.push(
-      { id: 'room-bed1', label: 'Bedroom 1', type: 'bedroom', x: 0, z: 16, w: 12, d: 12 },
+      { id: 'room-bed1', label: 'Bedroom 1', type: 'bedroom', x: 0, z: 16, w: 12, d: rearD },
       { id: 'room-bath', label: 'Bath', type: 'bathroom', x: 12, z: 16, w: 8, d: 4 },
-      { id: 'room-laundry', label: 'Laundry', type: 'laundry', x: 12, z: 20, w: 8, d: 4 },
-      { id: 'room-storage', label: 'Storage', type: 'storage', x: 12, z: 24, w: 8, d: 4 },
-      { id: 'room-closet', label: 'Closet', type: 'storage', x: 20, z: 16, w: 8, d: 12 },
     );
     doors.push(
       { id: 'door-bed1', fromRoomId: 'room-hall', toRoomId: 'room-bed1', openingType: 'interiorDoor', span: { x1: 4, z1: 16, x2: 6.5, z2: 16 } },
       { id: 'door-bath', fromRoomId: 'room-hall', toRoomId: 'room-bath', openingType: 'interiorDoor', span: { x1: 14, z1: 16, x2: 16.5, z2: 16 } },
-      { id: 'door-laundry', fromRoomId: 'room-bath', toRoomId: 'room-laundry', openingType: 'interiorDoor', span: { x1: 14, z1: 20, x2: 16.5, z2: 20 } },
-      { id: 'door-storage', fromRoomId: 'room-laundry', toRoomId: 'room-storage', openingType: 'interiorDoor', span: { x1: 14, z1: 24, x2: 16.5, z2: 24 } },
-      { id: 'door-closet', fromRoomId: 'room-hall', toRoomId: 'room-closet', openingType: 'interiorDoor', span: { x1: 22.5, z1: 16, x2: 25, z2: 16 } },
     );
-    windows.push({ id: 'win-bed1-w', roomId: 'room-bed1', span: { x1: 0, z1: 20, x2: 0, z2: 24 } });
+    windows.push({ id: 'win-bed1-w', roomId: 'room-bed1', span: { x1: 0, z1: 16 + rearD / 2 - 2, x2: 0, z2: 16 + rearD / 2 + 2 } });
+    if (widthFt === 20) {
+      rooms.push({ id: 'room-storage', label: 'Storage', type: 'storage', x: 12, z: 20, w: 8, d: depthFt - 20 });
+      doors.push({ id: 'door-storage', fromRoomId: 'room-bath', toRoomId: 'room-storage', openingType: 'interiorDoor', span: { x1: 14, z1: 20, x2: 16.5, z2: 20 } });
+    } else {
+      rooms.push(
+        { id: 'room-laundry', label: 'Laundry', type: 'laundry', x: 12, z: 20, w: 8, d: 4 },
+        { id: 'room-storage', label: 'Storage', type: 'storage', x: 12, z: 24, w: 8, d: 4 },
+        { id: 'room-closet', label: 'Closet', type: 'storage', x: 20, z: 16, w: widthFt - 20, d: 12 },
+      );
+      doors.push(
+        { id: 'door-laundry', fromRoomId: 'room-bath', toRoomId: 'room-laundry', openingType: 'interiorDoor', span: { x1: 14, z1: 20, x2: 16.5, z2: 20 } },
+        { id: 'door-storage', fromRoomId: 'room-laundry', toRoomId: 'room-storage', openingType: 'interiorDoor', span: { x1: 14, z1: 24, x2: 16.5, z2: 24 } },
+        { id: 'door-closet', fromRoomId: 'room-hall', toRoomId: 'room-closet', openingType: 'interiorDoor', span: { x1: (20 + widthFt) / 2 - 1.25, z1: 16, x2: (20 + widthFt) / 2 + 1.25, z2: 16 } },
+      );
+    }
   } else if (bedrooms === 2) {
-    rooms.push(
-      { id: 'room-bed1', label: 'Bedroom 1', type: 'bedroom', x: 0, z: 16, w: 12, d: 12 },
-      { id: 'room-bath', label: 'Bath', type: 'bathroom', x: 12, z: 16, w: 4, d: 8 },
-      { id: 'room-storage', label: 'Storage', type: 'storage', x: 12, z: 24, w: 4, d: 4 },
-      { id: 'room-bed2', label: 'Bedroom 2', type: 'bedroom', x: 16, z: 16, w: 12, d: 12 },
-    );
-    doors.push(
-      { id: 'door-bed1', fromRoomId: 'room-hall', toRoomId: 'room-bed1', openingType: 'interiorDoor', span: { x1: 4, z1: 16, x2: 6.5, z2: 16 } },
-      { id: 'door-bath', fromRoomId: 'room-hall', toRoomId: 'room-bath', openingType: 'interiorDoor', span: { x1: 12.75, z1: 16, x2: 15.25, z2: 16 } },
-      { id: 'door-bed2', fromRoomId: 'room-hall', toRoomId: 'room-bed2', openingType: 'interiorDoor', span: { x1: 18.5, z1: 16, x2: 21, z2: 16 } },
-      { id: 'door-storage', fromRoomId: 'room-bath', toRoomId: 'room-storage', openingType: 'interiorDoor', span: { x1: 13, z1: 24, x2: 15.5, z2: 24 } },
-    );
+    if (widthFt === 28) {
+      rooms.push(
+        { id: 'room-bed1', label: 'Bedroom 1', type: 'bedroom', x: 0, z: 16, w: 12, d: 12 },
+        { id: 'room-bath', label: 'Bath', type: 'bathroom', x: 12, z: 16, w: 4, d: 8 },
+        { id: 'room-storage', label: 'Storage', type: 'storage', x: 12, z: 24, w: 4, d: 4 },
+        { id: 'room-bed2', label: 'Bedroom 2', type: 'bedroom', x: 16, z: 16, w: 12, d: 12 },
+      );
+      doors.push(
+        { id: 'door-bed1', fromRoomId: 'room-hall', toRoomId: 'room-bed1', openingType: 'interiorDoor', span: { x1: 4, z1: 16, x2: 6.5, z2: 16 } },
+        { id: 'door-bath', fromRoomId: 'room-hall', toRoomId: 'room-bath', openingType: 'interiorDoor', span: { x1: 12.75, z1: 16, x2: 15.25, z2: 16 } },
+        { id: 'door-bed2', fromRoomId: 'room-hall', toRoomId: 'room-bed2', openingType: 'interiorDoor', span: { x1: 18.5, z1: 16, x2: 21, z2: 16 } },
+        { id: 'door-storage', fromRoomId: 'room-bath', toRoomId: 'room-storage', openingType: 'interiorDoor', span: { x1: 13, z1: 24, x2: 15.5, z2: 24 } },
+      );
+    } else {
+      // 24 ft gable: bedrooms 8 ft wide (96 sq ft) with the wet column centered.
+      rooms.push(
+        { id: 'room-bed1', label: 'Bedroom 1', type: 'bedroom', x: 0, z: 16, w: 8, d: 12 },
+        { id: 'room-bath', label: 'Bath', type: 'bathroom', x: 8, z: 16, w: 8, d: 4 },
+        { id: 'room-storage', label: 'Storage', type: 'storage', x: 8, z: 20, w: 8, d: 8 },
+        { id: 'room-bed2', label: 'Bedroom 2', type: 'bedroom', x: 16, z: 16, w: 8, d: 12 },
+      );
+      doors.push(
+        { id: 'door-bed1', fromRoomId: 'room-hall', toRoomId: 'room-bed1', openingType: 'interiorDoor', span: { x1: 3, z1: 16, x2: 5.5, z2: 16 } },
+        { id: 'door-bath', fromRoomId: 'room-hall', toRoomId: 'room-bath', openingType: 'interiorDoor', span: { x1: 10.5, z1: 16, x2: 13, z2: 16 } },
+        { id: 'door-bed2', fromRoomId: 'room-hall', toRoomId: 'room-bed2', openingType: 'interiorDoor', span: { x1: 18.5, z1: 16, x2: 21, z2: 16 } },
+        { id: 'door-storage', fromRoomId: 'room-bath', toRoomId: 'room-storage', openingType: 'interiorDoor', span: { x1: 10, z1: 20, x2: 12.5, z2: 20 } },
+      );
+    }
     windows.push(
       { id: 'win-bed1-w', roomId: 'room-bed1', span: { x1: 0, z1: 20, x2: 0, z2: 24 } },
       { id: 'win-bed2-e', roomId: 'room-bed2', span: { x1: widthFt, z1: 20, x2: widthFt, z2: 24 } },
     );
   } else {
+    const bed2W = widthFt === 36 ? 12 : 8;
     rooms.push(
       { id: 'room-bed1', label: 'Bedroom 1', type: 'bedroom', x: 0, z: 16, w: 12, d: 12 },
-      { id: 'room-bed2', label: 'Bedroom 2', type: 'bedroom', x: 12, z: 16, w: 12, d: 12 },
-      { id: 'room-bed3', label: 'Bedroom 3', type: 'bedroom', x: 24, z: 16, w: 12, d: 12 },
+      { id: 'room-bed2', label: 'Bedroom 2', type: 'bedroom', x: 12, z: 16, w: bed2W, d: 12 },
+      { id: 'room-bed3', label: 'Bedroom 3', type: 'bedroom', x: 12 + bed2W, z: 16, w: widthFt - 12 - bed2W, d: 12 },
     );
+    const bed2Mid = 12 + bed2W / 2;
+    const bed3Mid = (12 + bed2W + widthFt) / 2;
     doors.push(
       { id: 'door-bed1', fromRoomId: 'room-hall', toRoomId: 'room-bed1', openingType: 'interiorDoor', span: { x1: 4, z1: 16, x2: 6.5, z2: 16 } },
-      { id: 'door-bed2', fromRoomId: 'room-hall', toRoomId: 'room-bed2', openingType: 'interiorDoor', span: { x1: 16, z1: 16, x2: 18.5, z2: 16 } },
-      { id: 'door-bed3', fromRoomId: 'room-hall', toRoomId: 'room-bed3', openingType: 'interiorDoor', span: { x1: 28, z1: 16, x2: 30.5, z2: 16 } },
+      { id: 'door-bed2', fromRoomId: 'room-hall', toRoomId: 'room-bed2', openingType: 'interiorDoor', span: { x1: bed2Mid - 1.25, z1: 16, x2: bed2Mid + 1.25, z2: 16 } },
+      { id: 'door-bed3', fromRoomId: 'room-hall', toRoomId: 'room-bed3', openingType: 'interiorDoor', span: { x1: bed3Mid - 1.25, z1: 16, x2: bed3Mid + 1.25, z2: 16 } },
     );
     windows.push(
       { id: 'win-bed1-w', roomId: 'room-bed1', span: { x1: 0, z1: 20, x2: 0, z2: 24 } },
-      { id: 'win-bed2-s', roomId: 'room-bed2', span: { x1: 16, z1: depthFt, x2: 20, z2: depthFt } },
+      { id: 'win-bed2-s', roomId: 'room-bed2', span: { x1: bed2Mid - 2, z1: depthFt, x2: bed2Mid + 2, z2: depthFt } },
       { id: 'win-bed3-e', roomId: 'room-bed3', span: { x1: widthFt, z1: 20, x2: widthFt, z2: 24 } },
     );
   }

@@ -138,15 +138,20 @@ function statusOf(report, ruleId, subjectId) {
 
 // --- Battery -----------------------------------------------------------------
 const CASES = [
-  { name: 'canonical 2-bed a-frame', brief: '2-bed A-frame, ≤800 sqft, 40×60 lot, 5 ft side setbacks', bedrooms: 2, style: 'a-frame', hasLot: true },
-  { name: '1-bed gable', brief: '1-bed gable cabin, 40×60 lot, 5 ft setbacks', bedrooms: 1, style: 'gable', hasLot: true },
-  { name: '3-bed a-frame', brief: '3-bed a-frame ≤1200 sqft, 80×60 lot, 10 ft setbacks', bedrooms: 3, style: 'a-frame', hasLot: true },
-  { name: '1-bed a-frame, no lot', brief: '1-bed a-frame', bedrooms: 1, style: 'a-frame', hasLot: false },
-  { name: '2-bed gable', brief: '2-bed gable, lot 40x60, 5 ft side setbacks', bedrooms: 2, style: 'gable', hasLot: true },
-  { name: '3-bed gable, per-side setbacks', brief: '3-bed gable ≤1200 sqft, 50 x 100 lot, 20 ft front setback, 5 ft side setbacks, 10 ft rear setback', bedrooms: 3, style: 'gable', hasLot: true },
-  { name: 'barely fits envelope', brief: '2-bed a-frame, 40×58 lot, 5 ft setbacks', bedrooms: 2, style: 'a-frame', hasLot: true },
+  { name: 'canonical 2-bed a-frame', brief: '2-bed A-frame, ≤800 sqft, 40×60 lot, 5 ft side setbacks', bedrooms: 2, style: 'a-frame', hasLot: true, expectWidth: 28 },
+  { name: '1-bed gable', brief: '1-bed gable cabin, 40×60 lot, 5 ft setbacks', bedrooms: 1, style: 'gable', hasLot: true, expectWidth: 28 },
+  { name: '3-bed a-frame', brief: '3-bed a-frame ≤1200 sqft, 80×60 lot, 10 ft setbacks', bedrooms: 3, style: 'a-frame', hasLot: true, expectWidth: 36 },
+  { name: '1-bed a-frame, no lot', brief: '1-bed a-frame', bedrooms: 1, style: 'a-frame', hasLot: false, expectWidth: 28 },
+  { name: '2-bed gable', brief: '2-bed gable, lot 40x60, 5 ft side setbacks', bedrooms: 2, style: 'gable', hasLot: true, expectWidth: 28 },
+  { name: '3-bed gable, per-side setbacks', brief: '3-bed gable ≤1200 sqft, 50 x 100 lot, 20 ft front setback, 5 ft side setbacks, 10 ft rear setback', bedrooms: 3, style: 'gable', hasLot: true, expectWidth: 36 },
+  { name: 'barely fits envelope', brief: '2-bed a-frame, 40×58 lot, 5 ft setbacks', bedrooms: 2, style: 'a-frame', hasLot: true, expectWidth: 28 },
   { name: 'cannot fit envelope', brief: '3-bed a-frame ≤1200 sqft, 30×40 lot, 5 ft setbacks', expectCompileError: /exceeds the buildable envelope/ },
-  { name: 'default brief (no program)', brief: 'cozy cabin near the creek', bedrooms: 2, style: 'a-frame', hasLot: false },
+  { name: 'default brief (no program)', brief: 'cozy cabin near the creek', bedrooms: 2, style: 'a-frame', hasLot: false, expectWidth: 28 },
+  // Footprint-fit capability: gables shrink to the lot envelope / maxSqft.
+  { name: 'small-lot 1-bed gable shrinks to 20x24', brief: '1-bed gable cabin, 30x50 lot, 5 ft setbacks', bedrooms: 1, style: 'gable', hasLot: true, expectWidth: 20, expectDepth: 24 },
+  { name: 'maxSqft shrinks 2-bed gable to 24 ft', brief: '2-bed gable, ≤700 sqft', bedrooms: 2, style: 'gable', hasLot: false, expectWidth: 24 },
+  { name: 'small-lot 3-bed gable shrinks to 28 ft', brief: '3-bed gable, 40x70 lot, 5 ft setbacks', bedrooms: 3, style: 'gable', hasLot: true, expectWidth: 28 },
+  { name: 'a-frame cannot shrink below headroom', brief: '2-bed a-frame, 30x50 lot, 5 ft setbacks', expectCompileError: /exceeds the buildable envelope/ },
 ];
 
 for (const testCase of CASES) {
@@ -173,6 +178,12 @@ for (const testCase of CASES) {
   const bedroomsInPlan = artifact.rooms.filter((room) => room.type === 'bedroom');
   check(`bedroom count ${testCase.bedrooms}`, bedroomsInPlan.length === testCase.bedrooms, `got ${bedroomsInPlan.length}`);
   check(`roof style ${testCase.style}`, artifact.roof.style === testCase.style, artifact.roof.style);
+  if (testCase.expectWidth) {
+    check(`footprint width ${testCase.expectWidth} ft`, artifact.footprint.widthFt === testCase.expectWidth, `got ${artifact.footprint.widthFt}`);
+  }
+  if (testCase.expectDepth) {
+    check(`footprint depth ${testCase.expectDepth} ft`, artifact.footprint.depthFt === testCase.expectDepth, `got ${artifact.footprint.depthFt}`);
+  }
   if (Number.isFinite(parsed.maxSqft)) {
     const area = artifact.footprint.widthFt * artifact.footprint.depthFt;
     check(`footprint ${area} sq ft within max ${parsed.maxSqft}`, area <= parsed.maxSqft);
