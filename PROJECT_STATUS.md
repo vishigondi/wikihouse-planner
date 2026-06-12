@@ -1,6 +1,40 @@
 # Project Status
 
-Last updated: 2026-06-11 (overnight build + polish loop)
+Last updated: 2026-06-12 (generator hardening loop — closed)
+
+## 2026-06-12 Generator Hardening — Closed
+
+The brief→plan generator is now genuinely parametric and code-clean,
+with the constraint engine as the regression gate (`9710170`).
+
+- **Parametric template** (`mockIntentFromBrief`): 1–3 bedrooms, gable vs
+  a-frame from the brief, ridge-safe band layouts (28 ft wide for 1–2 bed,
+  36 ft for 3-bed). Habitable rooms and wet rooms sit in the central
+  headroom column; only storage/closets occupy the low eave edges, so
+  steep a-frames (eave 1 ft / ridge 18 ft) clear R304 effective-area and
+  R305 sloped-ceiling rules. This fixes the known bath-on-low-edge R305
+  flaw for all new generations (gen-001 keeps it for comparison).
+- **Honest lot-fit validation**: `compileIntent` refuses footprints that
+  exceed the lot's buildable envelope with a clear error instead of
+  emitting a plan the zoning report would flag.
+- **`npm run check:generation`**: 9-brief battery (1/2/3-bed, both roof
+  styles, per-side setbacks, no-lot, barely-fits, cannot-fit, default
+  brief) running brief → parse → intent → compile → Cherokee County
+  report with roof-derived ceiling profiles. Asserts zero constraint-fail
+  findings on every viable brief, egress per bedroom, 4 ft grid, callouts,
+  wall-hosted openings, and the envelope error on the impossible brief.
+- **End-to-end proof in real Chrome**: fresh mock generation (gen-002,
+  since deleted) rendered, orbited, and reported **17 pass / 0 fail /
+  3 not-evaluated** — bath ceiling 16.0 ft vs gen-001's 2.6 ft fail.
+- **Headless QA unwedged**: drawing-style sidecars now load only from
+  explicit manifest keys; guessed URLs 404'd on compiled plans and hung
+  Chromium's network-idle wait, which had broken `qa:brochure`.
+
+Gates at close: build ✓, check:code ✓, check:brief ✓, check:generation ✓,
+qa:brochure passed ✓, final-interactive-sweep clean (5 plans) ✓.
+
+Remaining generator backlog (not blocking): footprint sized from maxSqft,
+bath count from the brief, richer narrow-bath furnishing.
 
 ## 2026-06-11 Real-Browser Polish Loop — Closed
 
