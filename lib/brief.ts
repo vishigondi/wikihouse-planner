@@ -36,9 +36,20 @@ function num(value: string | undefined): number | undefined {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+const WORD_NUMBERS: Record<string, string> = { one: '1', two: '2', three: '3', four: '4', five: '5', six: '6' };
+
+/**
+ * "one bedroom" -> "1 bedroom" so the digit patterns match. Replacements are
+ * padded to the original word length, keeping every character offset stable
+ * for the consumed-range bookkeeping that feeds `unparsed`.
+ */
+function normalizeWordNumbers(text: string): string {
+  return text.replace(/\b(one|two|three|four|five|six)\b/g, (word) => WORD_NUMBERS[word] + ' '.repeat(word.length - 1));
+}
+
 export function parseBrief(text: string): ParsedBrief {
   const brief = text.trim();
-  const lower = brief.toLowerCase();
+  const lower = normalizeWordNumbers(brief.toLowerCase());
   const consumed: Array<[number, number]> = [];
   const take = (match: RegExpMatchArray | null): RegExpMatchArray | null => {
     if (match?.index !== undefined) consumed.push([match.index, match.index + match[0].length]);

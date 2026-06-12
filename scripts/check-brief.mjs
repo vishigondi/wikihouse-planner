@@ -62,6 +62,15 @@ check('no bedrooms', sparse.bedrooms, undefined);
 check('no lot', sparse.lot, undefined);
 check('unparsed surfaced', sparse.unparsed.length > 0, true);
 
+console.log('brief: word numbers');
+const wordy = parseBrief('tiny one bedroom a-frame cabin in the woods');
+check('one bedroom', wordy.bedrooms, 1);
+check('roofStyle', wordy.roofStyle, 'a-frame');
+const wordy2 = parseBrief('three bed gable house, two baths');
+check('three bed', wordy2.bedrooms, 3);
+check('two baths', wordy2.baths, 2);
+check('no number words left unparsed', wordy2.unparsed.some((part) => /two|three/.test(part)), false);
+
 // --- Prompt field rendering ---------------------------------------------------
 console.log('briefToPromptFields: canonical');
 const fields = briefToPromptFields(canonical);
