@@ -4117,6 +4117,7 @@ export default function Home() {
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [wallOpacity, setWallOpacity] = useState(RENDER_THEMES['product-presentation'].wallOpacity);
   const [roofVisible, setRoofVisible] = useState(true);
+  const [whiteModelView, setWhiteModelView] = useState(false);
   const [roomLabelsVisible, setRoomLabelsVisible] = useState(false);
   const [activeFloor, setActiveFloor] = useState<number | 'all'>('all');
   // A level filter left over from the previous plan reads as missing
@@ -4809,6 +4810,7 @@ export default function Home() {
                     showRoof={roofVisible}
                     activeFloor={activeFloor}
                     productMode
+                    whiteModel={whiteModelView}
                   />
                 </div>
               )
@@ -4903,6 +4905,15 @@ export default function Home() {
                   <label className="flex cursor-pointer items-center gap-2 text-[10px] text-stone-600">
                     <input type="checkbox" checked={roofVisible} onChange={(event) => setRoofVisible(event.target.checked)} className="accent-stone-500" />
                     Roof
+                  </label>
+                  <label className="flex items-center gap-1.5 text-[10px] text-stone-600">
+                    <input
+                      type="checkbox"
+                      checked={whiteModelView}
+                      onChange={(event) => setWhiteModelView(event.target.checked)}
+                      data-view-white-model
+                    />
+                    White
                   </label>
                   {viewPreset === 'debug-review' && (
                     <label className="flex cursor-pointer items-center gap-2 text-[10px] text-stone-600">

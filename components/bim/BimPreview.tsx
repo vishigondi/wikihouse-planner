@@ -23,6 +23,8 @@ interface Props {
   showRoof?: boolean;
   activeFloor?: number | 'all';
   productMode?: boolean;
+  /** Architect white model: matte white walls, light grey opaque roof. */
+  whiteModel?: boolean;
 }
 
 const BIM_THEME: Record<string, { color: string; opacity: number }> = {
@@ -72,7 +74,16 @@ function themeMaterial(category: string, opacityOverride?: number) {
   return material(style.color, opacityOverride ?? style.opacity);
 }
 
+let whiteModelActive = false;
+
 function productShellMaterial(kind: 'wall' | 'gable' | 'roof' | 'glassGable') {
+  if (whiteModelActive) {
+    // Architect white model: matte massing, no translucency.
+    if (kind === 'roof') return material('#e2dfd9', 1);
+    if (kind === 'glassGable') return material('#cfdde0', 0.65);
+    if (kind === 'gable') return material('#fafaf7', 1);
+    return material('#f3f1ec', 1);
+  }
   // Readability: shell walls warm mid-tone (not near-black), interiors light,
   // roof translucent enough that furnished rooms read at orbit angles.
   if (kind === 'roof') return material('#beb3a1', 0.78);
@@ -1071,14 +1082,38 @@ function shouldRenderElement(
 function populateWorld(
   model: SemanticBimModel,
   scene: THREE.Scene,
-  options: { viewPreset: NonNullable<Props['viewPreset']>; showRoof: boolean; activeFloor: number | 'all'; productMode: boolean },
+  options: { viewPreset: NonNullable<Props['viewPreset']>; showRoof: boolean; activeFloor: number | 'all'; productMode: boolean; whiteModel?: boolean },
 ) {
+  whiteModelActive = options.productMode && options.whiteModel === true;
   const root = new THREE.Group();
   root.name = 'buildable_bim_v1';
   const objectByElementId = new Map<string, THREE.Object3D>();
   const renderedCounts: Record<string, number> = {};
   let semanticProductShellWallCount = 0;
   if (options.productMode && options.viewPreset === 'presentation-3d') {
+    // Soft contact shadow: radial-gradient canvas texture under the model.
+    const shadowCanvas = document.createElement('canvas');
+    shadowCanvas.width = 256;
+    shadowCanvas.height = 256;
+    const ctx = shadowCanvas.getContext('2d');
+    if (ctx) {
+      const gradient = ctx.createRadialGradient(128, 128, 30, 128, 128, 128);
+      gradient.addColorStop(0, 'rgba(60,52,40,0.34)');
+      gradient.addColorStop(0.72, 'rgba(60,52,40,0.16)');
+      gradient.addColorStop(1, 'rgba(60,52,40,0)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 256, 256);
+      const shadow = new THREE.Mesh(
+        new THREE.PlaneGeometry(model.footprint.widthFt + 9, model.footprint.depthFt + 9),
+        new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false }),
+      );
+      shadow.rotation.x = -Math.PI / 2;
+      shadow.position.y = 0.015;
+      shadow.renderOrder = 2;
+      shadow.userData.semanticBim = { id: 'site-contact-shadow', category: 'siteShadow' } as unknown as SemanticBimElement;
+      root.add(shadow);
+      renderedCounts.siteShadow = 1;
+    }
     const base = new THREE.Mesh(
       new THREE.BoxGeometry(model.footprint.widthFt, 0.22, model.footprint.depthFt),
       material('#d8d1c4', 1),
@@ -1107,6 +1142,24 @@ function populateWorld(
     object.traverse((child) => {
       if ((child as THREE.Mesh).isMesh && !child.userData.semanticBim) child.userData.semanticBim = element;
     });
+    // Professional edge definition: subtle dark outlines on walls and roof
+    // so the geometry reads without relying on color. Line segments are not
+    // meshes, so envelope evidence is unaffected.
+    if (options.productMode && ['wall', 'roofPlane'].includes(element.category)) {
+      const edgeTargets: THREE.Mesh[] = [];
+      object.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh && (child as THREE.Mesh).geometry) edgeTargets.push(child as THREE.Mesh);
+      });
+      for (const target of edgeTargets) {
+        const edges = new THREE.LineSegments(
+          new THREE.EdgesGeometry(target.geometry, 24),
+          new THREE.LineBasicMaterial({ color: '#3a352e', transparent: true, opacity: whiteModelActive ? 0.45 : 0.5 }),
+        );
+        edges.userData.semanticBim = element;
+        edges.renderOrder = (target.renderOrder ?? 30) + 1;
+        target.add(edges);
+      }
+    }
     root.add(object);
     objectByElementId.set(element.id, object);
     renderedCounts[element.category] = (renderedCounts[element.category] ?? 0) + 1;
@@ -1255,6 +1308,7 @@ export default function BimPreview({
   showRoof = true,
   activeFloor = 'all',
   productMode = true,
+  whiteModel = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const worldRef = useRef<{ world: { camera: OBC.SimpleCamera }; model: SemanticBimModel; home: DenHome } | null>(null);
@@ -1304,7 +1358,7 @@ export default function BimPreview({
       grid.position.y = -0.01;
       world.scene.three.add(grid);
     }
-    const root = populateWorld(model, world.scene.three, { viewPreset, showRoof, activeFloor, productMode });
+    const root = populateWorld(model, world.scene.three, { viewPreset, showRoof, activeFloor, productMode, whiteModel });
     if (!productMode) attachCachedVisualAssets(root, model);
 
     applyCameraPreset(world, model, home, viewPreset);
@@ -1421,7 +1475,7 @@ export default function BimPreview({
       components.dispose();
       container.innerHTML = '';
     };
-  }, [activeFloor, home, home.height, model, productMode, showRoof, viewPreset]);
+  }, [activeFloor, home, home.height, model, productMode, showRoof, viewPreset, whiteModel]);
 
   return (
     <div className="relative h-full min-h-[480px] overflow-hidden bg-[#f5f0e8]">
