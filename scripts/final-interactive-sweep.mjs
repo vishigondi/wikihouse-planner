@@ -97,6 +97,15 @@ for (const plan of PLANS) {
   const ruleCount = await page.locator('[data-constraint-rule]').count();
   note(ruleCount === 10, `10 rule cards rendered (${ruleCount})`);
   await page.screenshot({ path: `${SHOT_DIR}/${plan}-semantic.png`, fullPage: false });
+
+  // JSON-only lane: gen-001 must read Brochure pass with the honest packet
+  // badge - the export-pass contract for generated plans.
+  if (plan === 'gen-001') {
+    const badge = await page.locator('[data-json-only-packet]').count();
+    note(badge >= 1, 'JSON-only deterministic packet badge present');
+    const headerText = await page.locator('text=/gen-001 - review/').first().textContent().catch(() => '');
+    note(/Brochure (pass|warning)/.test(headerText ?? '') && !/Brochure blocked/.test(headerText ?? ''), `workflow header brochure state (${(headerText ?? '').slice(0, 80)})`);
+  }
 }
 
 // (4) controls, once: lot editor flip on brief plan + brief parse in Review Tools

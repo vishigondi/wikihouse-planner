@@ -16,7 +16,7 @@ const OUT_DIR = resolve(ROOT, 'artifacts/brochure-qa');
 const LOOP_ROOT = resolve(ROOT, 'public/data/den-image-loop');
 const MANIFEST_PATH = resolve(LOOP_ROOT, 'proposal-manifest.json');
 const BASE_URL = process.env.BROCHURE_QA_URL ?? 'http://127.0.0.1:3000';
-const PLANS = (process.env.BROCHURE_QA_PLANS ?? 'a-frame-bunk,a-frame-22,outpost-medium')
+const PLANS = (process.env.BROCHURE_QA_PLANS ?? 'a-frame-bunk,a-frame-22,outpost-medium,gen-001')
   .split(',')
   .map((item) => item.trim())
   .filter(Boolean);
@@ -2510,7 +2510,10 @@ async function run() {
               if (!planResult.blockers.includes(blocker)) planResult.blockers.push(blocker);
             }
           }
-          if (tabId === 'semantic' && !metrics.semanticMentionsStyleProfile) {
+          // JSON-only plans (sourceKind constrained_json) have no extracted
+          // drawing style profile by design - the deterministic render is the
+          // canonical drawing language for that lane.
+          if (tabId === 'semantic' && !metrics.semanticMentionsStyleProfile && paths?.option?.sourceKind !== 'constrained_json') {
             planResult.blockers.push('review-semantic: semantic review does not expose drawing_style_profile_v1');
           }
         }

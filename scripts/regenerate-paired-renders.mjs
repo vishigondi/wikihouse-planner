@@ -19,7 +19,7 @@ const BASE_URL = process.env.BROCHURE_QA_URL ?? process.env.APP_URL ?? 'http://1
 
 function parseArgs(argv) {
   const args = {
-    plans: (process.env.BROCHURE_QA_PLANS ?? 'a-frame-bunk,a-frame-22,outpost-medium')
+    plans: (process.env.BROCHURE_QA_PLANS ?? 'a-frame-bunk,a-frame-22,outpost-medium,gen-001')
       .split(',')
       .map((item) => item.trim())
       .filter(Boolean),
