@@ -1644,6 +1644,98 @@ function escapeHtml(value: unknown) {
     .replace(/'/g, '&#39;');
 }
 
+/** Standalone elevation SVG (same geometry as SemanticElevationView). */
+function elevationSvgMarkup(home: DenHome, side: 'front' | 'side'): string {
+  const span = side === 'front' ? home.footprint.width : home.footprint.depth;
+  const roof = home.roofSemantics;
+  const ridge = roof?.ridgeHeightFt ?? home.height;
+  const eave = roof?.eaveHeightFt ?? Math.max(7, home.height * 0.45);
+  const overhang = roof?.overhangFt ?? 1.25;
+  const pad = 18;
+  const width = 760;
+  const height = 320;
+  const scaleX = (width - pad * 2) / (span + overhang * 2);
+  const scaleY = (height - pad * 2) / Math.max(ridge + 2, 12);
+  const x0 = pad + overhang * scaleX;
+  const x1 = x0 + span * scaleX;
+  const yBase = height - pad;
+  const yEave = yBase - eave * scaleY;
+  const yRidge = yBase - ridge * scaleY;
+  const xRidge = (x0 + x1) / 2;
+  const roofPoints = home.roofStyle === 'shed'
+    ? `${x0 - overhang * scaleX},${yEave} ${x1 + overhang * scaleX},${yRidge}`
+    : `${x0 - overhang * scaleX},${yEave} ${xRidge},${yRidge} ${x1 + overhang * scaleX},${yEave}`;
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" font-family="monospace">`,
+    `<rect x="0" y="0" width="${width}" height="${height}" fill="#fbfaf6"/>`,
+    `<text x="${pad}" y="14" font-size="11" fill="#8a8178">${escapeHtml(home.id)} - ${side} elevation - ${span}' span - ${Math.round(ridge)}' ridge</text>`,
+    `<rect x="${x0}" y="${yEave}" width="${x1 - x0}" height="${yBase - yEave}" fill="#f2eee7" stroke="#3d3933" stroke-width="2"/>`,
+    `<polyline points="${roofPoints}" fill="none" stroke="#3d3933" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>`,
+    `<line x1="${x0}" y1="${yBase}" x2="${x1}" y2="${yBase}" stroke="#8f867a" stroke-width="3"/>`,
+    `<line x1="${x0}" y1="${yEave}" x2="${x1}" y2="${yEave}" stroke="#b8ad9d" stroke-width="1.5" stroke-dasharray="6 5"/>`,
+    '</svg>',
+  ].join('');
+}
+
+/** Cherokee County constraint report as a standalone printable HTML page. */
+function constraintReportHtml(home: DenHome): string {
+  const report = codeAdvisoryReportForHome(home);
+  const statusColor: Record<string, string> = { pass: '#0a7a4a', fail: '#b42318', 'not-evaluated': '#8a8178' };
+  const rows = report.findings.map((finding) => [
+    '<tr>',
+    `<td>${escapeHtml(finding.ruleId)}</td>`,
+    `<td>${escapeHtml(finding.subjectLabel ?? '-')}</td>`,
+    `<td style="color:${statusColor[finding.status] ?? '#333'};font-weight:600">${escapeHtml(finding.status)}</td>`,
+    `<td>${escapeHtml(finding.detail)}</td>`,
+    `<td style="color:#666">${escapeHtml(finding.citation)}</td>`,
+    '</tr>',
+  ].join('')).join('\n');
+  return [
+    '<!doctype html><html><head><meta charset="utf-8"/>',
+    `<title>${escapeHtml(home.id)} - Constraint Report</title>`,
+    '<style>body{font-family:ui-monospace,Menlo,monospace;margin:32px;color:#27241f;background:#fbfaf6}',
+    'table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid #d8d2c6;padding:6px 8px;text-align:left;vertical-align:top}',
+    'th{background:#f2eee7;text-transform:uppercase;font-size:10px;letter-spacing:.06em}h1{font-size:18px}h2{font-size:13px;color:#6b6359}</style></head><body>',
+    `<h1>${escapeHtml(home.id)} - Code Advisory Report</h1>`,
+    `<h2>${escapeHtml(report.jurisdiction.label)} - ${escapeHtml(report.jurisdiction.codeEdition)}</h2>`,
+    report.jurisdiction.transitionNote ? `<p style="color:#9a6b00;font-size:12px">${escapeHtml(report.jurisdiction.transitionNote)}</p>` : '',
+    `<p style="font-size:12px">Summary: ${report.summary.pass} pass / ${report.summary.fail} fail / ${report.summary.notEvaluated} not evaluated</p>`,
+    '<table><thead><tr><th>Rule</th><th>Subject</th><th>Status</th><th>Detail</th><th>Citation</th></tr></thead><tbody>',
+    rows,
+    '</tbody></table>',
+    '<p style="color:#8a8178;font-size:11px;margin-top:16px">Advisory only - legal code compliance is not claimed without a jurisdiction rule pack and professional review.</p>',
+    '</body></html>',
+  ].join('\n');
+}
+
+/** Single self-contained client packet: plan, elevations, report, BOM. */
+function clientPacketHtml(home: DenHome, planSvg: string, groups: ValidationGroup[]): string {
+  const report = constraintReportHtml(home);
+  const reportBody = report.slice(report.indexOf('<body>') + 6, report.indexOf('</body>'));
+  const bom = home.buildValidation?.bom ?? [];
+  const bomRows = bom.map((item) => {
+    const record = item as unknown as Record<string, unknown>;
+    return `<tr><td>${escapeHtml(String(record.componentId ?? ''))}</td><td>${escapeHtml(String(record.quantity ?? record.count ?? 1))}</td><td>${escapeHtml(String(record.label ?? record.category ?? ''))}</td></tr>`;
+  }).join('\n');
+  const exportLane = groups.find((group) => group.id === 'export');
+  return [
+    '<!doctype html><html><head><meta charset="utf-8"/>',
+    `<title>${escapeHtml(home.id)} - Client Packet</title>`,
+    '<style>body{font-family:ui-monospace,Menlo,monospace;margin:32px;color:#27241f;background:#fbfaf6;max-width:980px}',
+    'section{margin-bottom:36px}h1{font-size:20px}h2{font-size:14px;border-bottom:1px solid #d8d2c6;padding-bottom:4px}',
+    'table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid #d8d2c6;padding:6px 8px;text-align:left}',
+    'svg{max-width:100%;height:auto;border:1px solid #e4ddd0;background:#fff}.badge{display:inline-block;border:1px solid #c9c2b4;background:#f2eee7;padding:2px 8px;font-size:10px;margin-left:8px}</style></head><body>',
+    `<h1>${escapeHtml(home.model || home.id)}<span class="badge">JSON-only deterministic packet</span></h1>`,
+    `<p style="font-size:12px;color:#6b6359">${escapeHtml(home.id)} - ${home.footprint.width}' x ${home.footprint.depth}' - ${home.sqft} sq ft - ${escapeHtml(home.bedBath ?? '')} - ${escapeHtml(home.roofStyle ?? '')} roof${exportLane ? ` - export lane: ${escapeHtml(exportLane.status)}` : ''}</p>`,
+    '<section><h2>Floor Plan</h2>', planSvg, '</section>',
+    '<section><h2>Front Elevation</h2>', elevationSvgMarkup(home, 'front'), '</section>',
+    '<section><h2>Side Elevation</h2>', elevationSvgMarkup(home, 'side'), '</section>',
+    `<section><h2>Build Kit (${bom.length} BOM items)</h2><table><thead><tr><th>Component</th><th>Qty</th><th>Label</th></tr></thead><tbody>`, bomRows, '</tbody></table></section>',
+    '<section>', reportBody, '</section>',
+    '</body></html>',
+  ].join('\n');
+}
+
 function brochureHtmlForHome(
   home: DenHome,
   groups: ValidationGroup[],
@@ -2561,6 +2653,12 @@ function WorkflowModal({
                 <button type="button" onClick={() => downloadJson(`${home.id}-${home.pairedProposalId ?? 'draft'}-standards-checks.json`, { standardsRegistry: standardsRegistrySummary(), standardsValidation: validateStandards(home), bcfIssues: validateStandards(home).issues })} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Standards + Issues JSON</button>
                 <button type="button" onClick={() => downloadJson(`${home.id}-${home.pairedProposalId ?? 'draft'}-bim-asset-registry.json`, bimAssetRegistrySummary())} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export BIM Asset Registry</button>
                 <button type="button" onClick={() => downloadText(`${home.id}-${home.pairedProposalId ?? 'draft'}-floorplan.svg`, currentDeterministicSvg() ?? semanticSvgForHome(home), 'image/svg+xml')} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export 2D SVG</button>
+                <button type="button" onClick={() => downloadText(`${home.id}-front-elevation.svg`, elevationSvgMarkup(home, 'front'), 'image/svg+xml')} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Front Elevation SVG</button>
+                <button type="button" onClick={() => downloadText(`${home.id}-side-elevation.svg`, elevationSvgMarkup(home, 'side'), 'image/svg+xml')} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Side Elevation SVG</button>
+                <button type="button" onClick={() => downloadText(`${home.id}-constraint-report.html`, constraintReportHtml(home), 'text/html')} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Constraint Report HTML</button>
+                <button type="button" onClick={() => downloadJson(`${home.id}-constraint-report.json`, codeAdvisoryReportForHome(home))} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Constraint Report JSON</button>
+                <button type="button" onClick={() => downloadJson(`${home.id}-build-kit-bom.json`, { planId: home.id, bom: home.buildValidation?.bom ?? [], componentsUsed: home.componentsUsed })} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Build Kit BOM JSON</button>
+                <button type="button" data-export-client-packet onClick={() => downloadText(`${home.id}-client-packet.html`, clientPacketHtml(home, currentDeterministicSvg() ?? semanticSvgForHome(home), groups), 'text/html')} className="w-full border border-emerald-800 bg-emerald-800 px-3 py-2 text-xs text-white">Download Client Packet (HTML)</button>
                 <button type="button" onClick={export3d} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Current 3D PNG</button>
                 <button type="button" onClick={onExportPacket} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Brochure Packet JSON</button>
                 <button type="button" onClick={() => downloadText(`${home.id}-${home.pairedProposalId ?? 'draft'}-brochure.html`, brochureHtmlForHome(home, groups, currentCanvasImage(true), localVisualAssetAttributions(), currentSourceImage(home), currentDeterministicSvg()), 'text/html')} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export HTML Brochure</button>
