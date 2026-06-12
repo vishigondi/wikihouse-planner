@@ -3587,11 +3587,16 @@ function MiniElevationPreview({ home }: { home: DenHome }) {
  * plan) must be reachable without opening Review Tools on a plan page.
  */
 function GalleryBriefGenerate() {
-  const [brief, setBrief] = useState('');
+  // Deliberately uncontrolled: on a cold load, keystrokes typed before
+  // hydration/data-load would be wiped by the first re-render of a
+  // controlled input. Reading the DOM value at generate time keeps every
+  // keystroke the customer saw.
+  const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
   const generate = async () => {
-    if (!brief.trim()) {
+    const brief = (inputRef.current?.value ?? '').trim();
+    if (!brief) {
       setStatus('Describe the home first - e.g. "2-bed A-frame, 40x60 lot, 5 ft side setbacks".');
       return;
     }
@@ -3620,8 +3625,8 @@ function GalleryBriefGenerate() {
     <div className="mt-4 max-w-3xl">
       <div className="flex gap-2">
         <input
-          value={brief}
-          onChange={(event) => setBrief(event.target.value)}
+          ref={inputRef}
+          defaultValue=""
           onKeyDown={(event) => { if (event.key === 'Enter' && !busy) generate(); }}
           placeholder="Describe it: 2-bed A-frame, ≤800 sqft, 40×60 lot, 5 ft side setbacks"
           data-home-brief-input
