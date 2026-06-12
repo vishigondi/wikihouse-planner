@@ -1652,8 +1652,10 @@ function sourceSpaceFaces(
 }
 
 function artifactInfo(planId: string, option: ProposalAvailability): PairedPlanArtifactInfo {
-  const drawingStyleProfileUrl = option.pairedDrawingStyleProfileUrl
-    ?? (option.pairedJsonUrl ? option.pairedJsonUrl.replace(/\.paired\.json$/i, '.drawing-style.json') : undefined);
+  // Sidecar URLs come only from explicit manifest keys. Guessing them from the
+  // paired JSON path 404s for compiled plans, and those 404s wedge Chromium's
+  // network-idle accounting (breaking headless QA waits).
+  const drawingStyleProfileUrl = option.pairedDrawingStyleProfileUrl ?? undefined;
   return {
     planId,
     proposalId: option.id,
@@ -2037,8 +2039,7 @@ async function loadPromotedPairedHomes(): Promise<DenHome[]> {
       if (!artifactRes.ok) continue;
       const artifact = await artifactRes.json() as PairedArtifact;
       const home = pairedToDenHome(artifact, option);
-      const drawingStyleProfileUrl = option.pairedDrawingStyleProfileUrl
-        ?? option.pairedJsonUrl.replace(/\.paired\.json$/i, '.drawing-style.json');
+      const drawingStyleProfileUrl = option.pairedDrawingStyleProfileUrl;
       if (drawingStyleProfileUrl) {
         try {
           const styleRes = await fetch(`/data/den-image-loop/${planId}/${drawingStyleProfileUrl}?t=${Date.now()}`, { cache: 'no-store' });
