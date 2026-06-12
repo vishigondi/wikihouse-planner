@@ -8,6 +8,7 @@
 //
 // Budget: at most 5 live OpenAI calls (artifacts/generation-calls.json).
 
+import { spawn } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
@@ -203,6 +204,7 @@ export async function POST(request: Request) {
     latestPairedArtifact: true,
     latestGptPairedArtifact: false,
     pairedJsonUrl: `paired/${planId}-proposal-paired-v1.paired.json`,
+    deterministicRenderUrl: `paired/${planId}-proposal-paired-v1.render.svg`,
     promotionEligible: false,
     legacyParserReady: false,
     archived: false,
@@ -213,6 +215,22 @@ export async function POST(request: Request) {
     reviewStatus: 'passed',
   }];
   await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  // Store the deterministic 2D render asynchronously (Playwright capture of
+  // the live renderer). The brochure packet uses this stored asset; the
+  // Compare pane keeps rendering live. Fire-and-forget: generation must not
+  // wait ~10s on a screenshot pipeline.
+  try {
+    const origin = new URL(request.url).origin;
+    const child = spawn(
+      process.execPath,
+      ['scripts/regenerate-paired-renders.mjs', '--plans', planId, '--url', origin],
+      { cwd: root, detached: true, stdio: 'ignore' },
+    );
+    child.unref();
+  } catch {
+    // Render backfill can be run manually via npm run render:paired.
+  }
 
   return NextResponse.json({ planId, mode: useMock ? 'mock' : 'live', url: `/?home=${planId}` });
 }
