@@ -73,10 +73,12 @@ function themeMaterial(category: string, opacityOverride?: number) {
 }
 
 function productShellMaterial(kind: 'wall' | 'gable' | 'roof' | 'glassGable') {
-  if (kind === 'roof') return material('#b9ad9a', 0.88);
+  // Readability: shell walls warm mid-tone (not near-black), interiors light,
+  // roof translucent enough that furnished rooms read at orbit angles.
+  if (kind === 'roof') return material('#beb3a1', 0.78);
   if (kind === 'glassGable') return material('#b7d0d3', 0.5);
   if (kind === 'gable') return material('#d6cdbc', 0.94);
-  return material('#746b60', 0.96);
+  return material('#8f8577', 0.97);
 }
 
 function isAFrameModel(model: SemanticBimModel) {
@@ -324,8 +326,10 @@ function clippedWallMesh(
   geometry.computeVertexNormals();
   const wallKind = `${element.metadata?.wallKind ?? ''} ${element.name}`.toLowerCase();
   const glassy = /glaz|glass/.test(wallKind);
+  // Exterior shell stays the darker tone; interior partitions render light so
+  // rooms read as rooms through the translucent roof.
   const baseMaterial = productMode
-    ? productShellMaterial(glassy ? 'glassGable' : 'wall')
+    ? productShellMaterial(glassy ? 'glassGable' : exterior ? 'wall' : 'gable')
     : themeMaterial('wall');
   const mat = baseMaterial.clone();
   mat.side = THREE.DoubleSide;
