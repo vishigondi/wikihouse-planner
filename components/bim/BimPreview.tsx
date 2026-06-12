@@ -250,7 +250,18 @@ function lineMesh(
       if (!exteriorDoor && viewPreset === 'presentation-3d') {
         return null;
       }
-      const doorHeight = Math.max(6.4, Math.min(7.2, Number(element.metadata?.heightFt) || height || 6.8));
+      let doorHeight = Math.max(6.4, Math.min(7.2, Number(element.metadata?.heightFt) || height || 6.8));
+      // Door leaf + header stay under the roof at the door's position; a
+      // genuinely low spot gets a shorter (honest) door, never one that
+      // pierces the envelope.
+      const doorPlanes = modelCeilingPlanes(model);
+      if (doorPlanes.length) {
+        let roofLimit = Infinity;
+        for (const [wx, wz] of [[x1, z1], [x2, z2], [(x1 + x2) / 2, (z1 + z2) / 2]] as Array<[number, number]>) {
+          roofLimit = Math.min(roofLimit, ceilingHeightAt(doorPlanes, wx, wz));
+        }
+        doorHeight = Math.max(4.5, Math.min(doorHeight, roofLimit - 0.3 - y1));
+      }
       const doorThickness = Math.max(0.06, Math.min(0.16, thickness));
       const panelMaterial = /sliding|glass|patio/i.test(`${element.metadata?.openingType ?? ''} ${element.name}`)
         ? material('#bfd4d6', 0.34)
@@ -1211,6 +1222,7 @@ export default function BimPreview({
       .filter((plane): plane is NonNullable<typeof plane> => plane !== null);
     let envelopeMaxExcess = 0;
     const envelopeOffenders: Array<{ id: string; category: string; excess: number }> = [];
+    let worstMesh: { id: string; category: string; excess: number } | null = null;
     if (roofPlaneEqs.length) {
       const centerOffsetX = model.footprint.widthFt / 2;
       const centerOffsetZ = model.footprint.depthFt / 2;
@@ -1238,8 +1250,15 @@ export default function BimPreview({
           }
           if (Number.isFinite(roofY)) meshExcess = Math.max(meshExcess, vertex.y - roofY);
         }
-        envelopeMaxExcess = Math.max(envelopeMaxExcess, meshExcess);
-        if (meshExcess > 2.0) {
+        if (meshExcess > envelopeMaxExcess) {
+          envelopeMaxExcess = meshExcess;
+          worstMesh = {
+            id: semantic?.id ?? mesh.name ?? 'untagged-mesh',
+            category: semantic?.category ?? 'untagged',
+            excess: Math.round(meshExcess * 100) / 100,
+          };
+        }
+        if (meshExcess > 0.5) {
           envelopeOffenders.push({
             id: semantic?.id ?? mesh.name ?? 'untagged-mesh',
             category: semantic?.category ?? 'untagged',
@@ -1253,6 +1272,7 @@ export default function BimPreview({
     world.renderer.three.domElement.dataset.bimEnvelopeOffenders = JSON.stringify(
       envelopeOffenders.sort((a, b) => b.excess - a.excess).slice(0, 12),
     );
+    world.renderer.three.domElement.dataset.bimEnvelopeWorstMesh = JSON.stringify(worstMesh);
 
     return () => {
       worldRef.current = null;

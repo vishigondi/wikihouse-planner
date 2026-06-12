@@ -530,8 +530,11 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
   }
   windows.push({ id: 'win-kitchen-e', roomId: 'room-kitchen', span: { x1: widthFt, z1: 4, x2: widthFt, z2: 8 } });
   rooms.push({ id: 'room-hall', label: 'Hall', type: 'hall', x: 0, z: 12, w: widthFt, d: 4 });
-  doors.push({ id: 'door-entry', fromRoomId: 'exterior', toRoomId: 'room-living', openingType: 'exteriorDoor', span: { x1: 4, z1: 0, x2: 7, z2: 0 } });
-  windows.push({ id: 'win-living-n', roomId: 'room-living', span: livingW === 16 ? { x1: 10, z1: 0, x2: 14, z2: 0 } : { x1: 8, z1: 0, x2: 11, z2: 0 } });
+  // Entry sits on the inner (ridge-side) half of the living facade so the
+  // door clears A-frame headroom; the living window takes the outer half.
+  const entryMid = livingW * 0.75;
+  doors.push({ id: 'door-entry', fromRoomId: 'exterior', toRoomId: 'room-living', openingType: 'exteriorDoor', span: { x1: entryMid - 1.5, z1: 0, x2: entryMid + 1.5, z2: 0 } });
+  windows.push({ id: 'win-living-n', roomId: 'room-living', span: livingW === 16 ? { x1: 4, z1: 0, x2: 8, z2: 0 } : { x1: 3, z1: 0, x2: 6, z2: 0 } });
   openings.push({ id: 'open-living-hall', fromRoomId: 'room-living', toRoomId: 'room-hall', span: { x1: 4, z1: 12, x2: livingW - 2, z2: 12 } });
 
   // Rear band (z 16 to depth; 12 ft deep on the standard 28 ft plans, 8 ft on

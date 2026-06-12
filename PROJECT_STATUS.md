@@ -1,6 +1,42 @@
 # Project Status
 
-Last updated: 2026-06-12 (customer-readiness loop — closed, READY TO TEST)
+Last updated: 2026-06-12 (3D geometry rebuild — constructive clipping shipped)
+
+## 2026-06-12 3D Geometry Rebuild — Closed
+
+The earlier READY TO TEST call was premature: the user caught two giant
+"sail fin" triangles on gen-001's 3D view that my review had rationalized
+away and my envelope gate could not see. Root cause: `aFrameGableCaps` —
+untagged decorative gable triangles HARDCODED for ridge-along-x roofs,
+glued onto the eave sides of every ridge-along-z compiled plan; the old
+gate sampled only wall-tagged meshes, so 15.84 ft of fin read as 1.14 ft.
+Eave-wall egress windows also floated ~5 ft through the roof.
+
+Fix was architectural, not another patch (3eae0f3, 13bd3f4, this commit):
+
+- **lib/bim/envelope-clip.ts** — constructive clipping as the single
+  source of 3D truth. Roof ceiling planes use the constraint engine's
+  plane math; `clipPrismToCeiling()` splits any convex prism by the
+  ridge/cap/floor lines and caps each region with its one active plane.
+  Exact construction; 20-check battery (`npm run check:clip`).
+- **BimPreview rebuilt on the clipper**: walls extrude-and-clip (gable
+  triangles, knee wedges, capped partitions from one call); windows and
+  door leaves clamp to the roof at their position; `gableEndWallMesh`,
+  wall-role/ridge-axis routing, knee clamps, and the fin caps DELETED.
+- **Evidence with no blind spots**: every rendered mesh is sampled;
+  offenders named with element id/category (`bimEnvelopeOffenders`,
+  `bimEnvelopeWorstMesh`); untagged geometry is itself a failure.
+  Sweep gates: compiled plans ≤ 0.5 ft excess + zero offenders; all
+  plans zero untagged (traced keep the designed-bay excess exemption).
+- Template nicety: entry door centered on the living facade so A-frame
+  doors sit in headroom (was riding the 0.5 ft gate at the old x4–7).
+
+Numbers: gen-001 15.84 ft → **0.01 ft**; brief-aframe-2br 0.32 ft; fresh
+2-bed a-frame 0.14 ft (worst mesh: a range fixture, 1.7 in); fresh 3/2
+gable 0.00 ft — all offenders []. Verified in real Chrome from the
+fin-exposing angle plus Cutaway/Front/Side; traced plans unchanged.
+Gates green two consecutive fires: build, check:code/brief/generation/
+clip, qa:brochure, final-interactive-sweep.
 
 ## READY TO TEST — 5-minute script
 
