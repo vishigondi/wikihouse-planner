@@ -3582,6 +3582,73 @@ function MiniElevationPreview({ home }: { home: DenHome }) {
   );
 }
 
+/**
+ * Landing-page brief box: the product promise (type a brief, get a checked
+ * plan) must be reachable without opening Review Tools on a plan page.
+ */
+function GalleryBriefGenerate() {
+  const [brief, setBrief] = useState('');
+  const [status, setStatus] = useState('');
+  const [busy, setBusy] = useState(false);
+  const generate = async () => {
+    if (!brief.trim()) {
+      setStatus('Describe the home first - e.g. "2-bed A-frame, 40x60 lot, 5 ft side setbacks".');
+      return;
+    }
+    setBusy(true);
+    setStatus('Generating plan...');
+    try {
+      const res = await fetch('/api/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brief }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setStatus(`Could not generate: ${body.error ?? res.status}${body.errors ? ` - ${body.errors.slice(0, 2).join('; ')}` : ''}`);
+        setBusy(false);
+        return;
+      }
+      setStatus(`Generated ${body.planId}. Opening...`);
+      window.location.href = body.url;
+    } catch (error) {
+      setStatus(`Could not generate: ${(error as Error).message}`);
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="mt-4 max-w-3xl">
+      <div className="flex gap-2">
+        <input
+          value={brief}
+          onChange={(event) => setBrief(event.target.value)}
+          onKeyDown={(event) => { if (event.key === 'Enter' && !busy) generate(); }}
+          placeholder="Describe it: 2-bed A-frame, ≤800 sqft, 40×60 lot, 5 ft side setbacks"
+          data-home-brief-input
+          className="flex-1 border border-stone-300 bg-white px-3 py-2.5 font-mono text-xs text-stone-800 outline-none focus:border-stone-500"
+        />
+        <button
+          type="button"
+          data-home-generate
+          onClick={generate}
+          disabled={busy}
+          className="border border-emerald-800 bg-emerald-800 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-white hover:bg-emerald-700 disabled:opacity-60"
+        >
+          Generate Plan
+        </button>
+      </div>
+      {status && (
+        <div className="mt-2 border border-stone-200 bg-stone-50 p-2 text-[11px] text-stone-600" data-home-generate-status>
+          {status}
+        </div>
+      )}
+      <div className="mt-1.5 text-[10px] text-stone-400">
+        Bedrooms, roof style (A-frame/gable), max sq ft, lot size, and setbacks are parsed from the sentence; the plan is checked against Cherokee County, NC rules.
+      </div>
+    </div>
+  );
+}
+
 function ProductGallery({
   homes,
   lifecycleStates,
@@ -3661,6 +3728,7 @@ function ProductGallery({
           <h2 className="max-w-3xl text-3xl font-semibold tracking-tight text-stone-800">
             Browse Den-style paired plans, repair blocked artifacts, and export only what passes brochure review.
           </h2>
+          <GalleryBriefGenerate />
         </div>
         <div className="self-end rounded border border-stone-200 bg-white p-4 text-xs text-stone-600">
           <div className="mb-3 grid grid-cols-3 gap-2">
