@@ -1,6 +1,37 @@
 # Project Status
 
-Last updated: 2026-06-12 (3D geometry rebuild — constructive clipping shipped)
+Last updated: 2026-06-12 (3D quality loop — closed; 3D reads like the 2D)
+
+## 2026-06-12 3D Quality Loop — Closed
+
+Four capabilities on top of the constructive-clipping geometry, one per
+fire (0e25374, f50972d, b334e25, 76e73ec):
+
+1. **Delete plan from the UI** — gallery cards + plan header for
+   compiled, non-promoted gen-NNN plans only; POST /api/delete-plan
+   enforces the same rule server-side (traced ids can't match, promoted
+   refused). Verified end-to-end in Chrome; gallery updates in place.
+2. **Openings cut into walls** — clipWallSegmentWithOpenings() in
+   lib/bim/envelope-clip.ts subtracts door/window/passthrough holes
+   constructively (sill + header pieces, all still roof-clipped; a door
+   in a knee wall degenerates honestly). windowGlassExtent() is the
+   single source for glazing extent shared by pane and hole. Windows are
+   real openings now — outpost-medium stopped being a monolith.
+3. **Fixtures clamped under the roof** — clampFixtureToEnvelope() scales
+   fixtures about their base using BOUNDED roof planes (traced decks
+   outside the roof span untouched). Compiled envelope gate tightened to
+   <= 0.25 ft + zero offenders; plans read 0.00-0.01 ft.
+4. **Readability** — warm mid-tone shell (#8f8577), light interior
+   partitions, roof opacity 0.78: furnished rooms read at orbit angles
+   and in Cutaway. Traced plans unchanged (before/afters in
+   artifacts/customer-readiness/fire4-*.png).
+
+Stop verified twice consecutively: fresh a-frame + fresh gable +
+outpost-medium show real openings in Chrome at 0.00 ft / offenders [];
+delete works end-to-end and never appears on traced/promoted plans; all
+gates green (build, check:clip/code/brief/generation, qa:brochure,
+final-interactive-sweep). Known cosmetic residue: URL keeps ?home=<id>
+after deleting the open plan until next navigation.
 
 ## 2026-06-12 3D Geometry Rebuild — Closed
 
