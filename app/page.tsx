@@ -3533,6 +3533,13 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
       spaceFaces={home.spaceFaces}
       dimensionLines={home.dimensionLines}
       dimensionFrame={home.dimensionFrame}
+      annotations={{
+        planId: home.id,
+        areaSqft: home.sqft,
+        bedBath: home.bedBath,
+        roofStyle: home.roofStyle,
+        jsonOnly: isJsonOnlyPlan(home),
+      }}
       floorFrames={home.floorFrames}
       traceMode={home.pairedArtifact}
       drawingStyleProfile={home.drawingStyleProfile}

@@ -54,6 +54,14 @@ function fixtureOpacity(traceMode = false): number {
   return traceMode ? 0.72 : 1;
 }
 
+export interface PlanAnnotations {
+  planId: string;
+  areaSqft?: number;
+  bedBath?: string;
+  roofStyle?: string;
+  jsonOnly?: boolean;
+}
+
 interface Props {
   rooms: RoomLayout[];
   footprint: { width: number; depth: number };
@@ -67,6 +75,8 @@ interface Props {
   /** Trace mode keeps parsed GPT comparisons close to the source proposal style. */
   traceMode?: boolean;
   drawingStyleProfile?: DrawingStyleProfile;
+  /** Title block / north arrow / scale bar overlay (Compare + stored renders). */
+  annotations?: PlanAnnotations;
 }
 
 function drawingStyleCss(profile: DrawingStyleProfile): string {
@@ -2978,6 +2988,14 @@ function FloorLevel({
                   {room.area} sf
                 </text>
               )}
+              {traceMode && !isOpenPlan && Number.isFinite(room.gw) && Number.isFinite(room.gd) && room.gw * GRID >= 6 && room.gd * GRID >= 4 && (
+                <text x={center.cx} y={center.cy + 10}
+                  textAnchor="middle" dominantBaseline="central"
+                  fontFamily={FONT} fontSize={7}
+                  fill={drawingStyle.dimensions.stroke} opacity={0.5}>
+                  {formatFt(room.gw * GRID)}&apos; × {formatFt(room.gd * GRID)}&apos;
+                </text>
+              )}
               {/* Elevation badge for split-level rooms */}
               {isSplit && (
                 <g>
@@ -3071,6 +3089,58 @@ function FloorLevel({
           </text>
         ) : null}
       </g> : null}
+
+      {/* Chained band dimensions: room cuts along the top and left edges */}
+      {traceMode ? (() => {
+        const eps = 0.05;
+        const segLabel = (ft: number) => (Number.isInteger(ft) ? `${ft}'-0\"` : `${formatFt(ft)}'`);
+        const topCutsG = [...new Set(
+          floorRooms
+            .filter((room) => Number.isFinite(room.gx) && Math.abs((room.gz ?? 0) - frame.gz) < eps)
+            .flatMap((room) => [room.gx, room.gx + room.gw]),
+        )].filter((g) => g >= frame.gx - eps && g <= frame.gx + frame.gw + eps).sort((a, b) => a - b);
+        const leftCutsG = [...new Set(
+          floorRooms
+            .filter((room) => Number.isFinite(room.gz) && Math.abs((room.gx ?? 0) - frame.gx) < eps)
+            .flatMap((room) => [room.gz, room.gz + room.gd]),
+        )].filter((g) => g >= frame.gz - eps && g <= frame.gz + frame.gd + eps).sort((a, b) => a - b);
+        const chainY = dimensionLineY - 11;
+        const chainX = dimensionLineX - 11;
+        const tick = 3;
+        const renderChain = (cuts: number[], horizontal: boolean) => {
+          if (cuts.length < 3) return null;
+          const items: React.ReactElement[] = [];
+          for (let i = 0; i < cuts.length; i += 1) {
+            const p = g2p(cuts[i]);
+            items.push(horizontal
+              ? <line key={`t${i}`} x1={p} y1={chainY - tick} x2={p} y2={chainY + tick} stroke={dimensionStroke} strokeWidth={0.7} opacity={dimensionOpacity} />
+              : <line key={`t${i}`} x1={chainX - tick} y1={p} x2={chainX + tick} y2={p} stroke={dimensionStroke} strokeWidth={0.7} opacity={dimensionOpacity} />);
+          }
+          for (let i = 0; i + 1 < cuts.length; i += 1) {
+            const ft = (cuts[i + 1] - cuts[i]) * GRID;
+            if (ft < 3) continue;
+            const mid = g2p((cuts[i] + cuts[i + 1]) / 2);
+            items.push(horizontal
+              ? <text key={`l${i}`} x={mid} y={chainY - 4} textAnchor="middle" fontFamily={FONT} fontSize={Math.max(8, drawingStyle.dimensions.fontSizePx - 3)} fill={dimensionStroke} opacity={dimensionOpacity}>{segLabel(ft)}</text>
+              : <text key={`l${i}`} x={chainX - 4} y={mid} textAnchor="middle" fontFamily={FONT} fontSize={Math.max(8, drawingStyle.dimensions.fontSizePx - 3)} fill={dimensionStroke} opacity={dimensionOpacity} transform={`rotate(-90, ${chainX - 4}, ${mid})`}>{segLabel(ft)}</text>);
+          }
+          const a = g2p(cuts[0]);
+          const b = g2p(cuts[cuts.length - 1]);
+          items.unshift(horizontal
+            ? <line key="base" x1={a} y1={chainY} x2={b} y2={chainY} stroke={dimensionStroke} strokeWidth={0.7} opacity={dimensionOpacity} />
+            : <line key="base" x1={chainX} y1={a} x2={chainX} y2={b} stroke={dimensionStroke} strokeWidth={0.7} opacity={dimensionOpacity} />);
+          return items;
+        };
+        const top = renderChain(topCutsG, true);
+        const left = renderChain(leftCutsG, false);
+        if (!top && !left) return null;
+        return (
+          <g data-role="dimension" data-drawing-layer="dimension" data-source-kind="band-dimension" data-source-floor={floorNum}>
+            {top}
+            {left}
+          </g>
+        );
+      })() : null}
 
       {/* Scale marker */}
       {!traceMode ? <g transform={`translate(${fw - GRID * PX_PER_FT - 8}, ${fh + MARGIN * 0.45})`}>
@@ -3225,6 +3295,7 @@ export default function FloorPlanView({
   floorFrames,
   traceMode = false,
   drawingStyleProfile,
+  annotations,
 }: Props) {
   const activeDrawingStyleProfile = drawingStyleOrDefault(drawingStyleProfile);
   // Group rooms by level: floor < 1 = ground (includes split-level), floor >= 1 = upper
@@ -3500,13 +3571,14 @@ export default function FloorPlanView({
     display: 'block',
   };
 
+  const annotationBandH = annotations ? 40 : 0;
   return (
     <svg
       data-drawing-style-schema={traceMode ? activeDrawingStyleProfile.schemaVersion : undefined}
       data-drawing-style-profile={traceMode ? activeDrawingStyleProfile.profileId : undefined}
       width={svgW}
-      height={svgH}
-      viewBox={`0 0 ${svgW} ${svgH}`}
+      height={svgH + annotationBandH}
+      viewBox={`0 0 ${svgW} ${svgH + annotationBandH}`}
       preserveAspectRatio="xMidYMid meet"
       style={responsiveStyle}
       xmlns="http://www.w3.org/2000/svg"
@@ -3592,6 +3664,47 @@ export default function FloorPlanView({
           <polygon points="0,0 8,3 0,6" fill={LABEL_COLOR} opacity={0.3} />
         </marker>
       </defs>
+      {annotations ? (
+        <g data-plan-title-block fontFamily={FONT}>
+          <line x1={6} y1={svgH + 1} x2={svgW - 6} y2={svgH + 1} stroke="#3d3933" strokeWidth={1.1} />
+          <text x={8} y={svgH + 15} fontSize={10} fontWeight={700} fill="#3d3933">
+            {annotations.planId.toUpperCase()}
+          </text>
+          <text x={8} y={svgH + 29} fontSize={7.5} fill="#6f675c">
+            {[
+              annotations.areaSqft ? `${annotations.areaSqft} sq ft` : null,
+              annotations.bedBath ? `${annotations.bedBath} bed/bath` : null,
+              annotations.roofStyle ? `${annotations.roofStyle} roof` : null,
+              annotations.jsonOnly ? 'JSON-only deterministic' : null,
+              'dimensions in feet',
+            ].filter(Boolean).join('  ·  ')}
+          </text>
+          {(() => {
+            const pxPerFt = PX_PER_FT * traceScale;
+            const barFt = 8;
+            const barW = barFt * pxPerFt;
+            const bx = svgW - barW - 10;
+            const by = svgH + 22;
+            return (
+              <g data-scale-bar>
+                <line x1={bx} y1={by} x2={bx + barW} y2={by} stroke="#3d3933" strokeWidth={1} />
+                {[0, 0.5, 1].map((t) => (
+                  <line key={t} x1={bx + barW * t} y1={by - 3.5} x2={bx + barW * t} y2={by + 3.5} stroke="#3d3933" strokeWidth={1} />
+                ))}
+                <rect x={bx} y={by - 2.4} width={barW / 2} height={2.4} fill="#3d3933" opacity={0.85} />
+                <text x={bx - 4} y={by + 3} fontSize={6.5} fill="#6f675c" textAnchor="end">0</text>
+                <text x={bx + barW / 2} y={by - 6} fontSize={6.5} fill="#6f675c" textAnchor="middle">4&apos;</text>
+                <text x={bx + barW} y={by - 6} fontSize={6.5} fill="#6f675c" textAnchor="middle">8&apos;</text>
+              </g>
+            );
+          })()}
+          <g data-north-arrow transform={`translate(${svgW - 20}, 22)`}>
+            <circle r={11} fill="none" stroke="#3d3933" strokeWidth={1} opacity={0.85} />
+            <polygon points="0,-8 3.4,4 0,1.6 -3.4,4" fill="#3d3933" opacity={0.9} />
+            <text x={0} y={-13} textAnchor="middle" fontSize={7.5} fontWeight={700} fill="#3d3933">N</text>
+          </g>
+        </g>
+      ) : null}
     </svg>
   );
 }
