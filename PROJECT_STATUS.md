@@ -1,6 +1,42 @@
 # Project Status
 
-Last updated: 2026-06-12 (generator hardening loop — closed)
+Last updated: 2026-06-12 (customer-readiness loop — closed, READY TO TEST)
+
+## READY TO TEST — 5-minute script
+
+App: `npx next dev -p 3002` → http://localhost:3002 (left running, open in
+your Chrome tab). Type each brief into the box under the headline and press
+Enter or GENERATE PLAN.
+
+1. **"2-bed A-frame, ≤800 sqft, 40×60 lot, 5 ft side setbacks"**
+   Watch the live echo confirm the program before you generate. Expect a
+   784 sf 28'×28' A-frame, 2/1, that opens automatically. Orbit it; cycle
+   Plan Top / Cutaway / Front / Side; toggle Roof. Click **Semantic** →
+   constraint report: Cherokee County NC, all rules pass, R305 ceilings
+   derived from the roof. In LOT, set lot W to 30 → setback + coverage flip
+   to fail; **reset** restores.
+2. **"tiny one bedroom a-frame cabin in the woods"**
+   Word numbers parse ("1 bed"); "tiny/woods" show as Ignored — nothing is
+   silently dropped. Expect 1/1 with bath AND laundry passing R305.
+3. **"2 bed 2 bath gable, ≤900 sqft, 45x75 lot, 15 ft front setback, 5 ft
+   side setbacks"** — expect 2/2 (ensuite Bath 2 off Bedroom 2), 784 sf
+   ≤ 900, asymmetric setbacks in the report (front 15, sides 5).
+4. **"1-bed gable cabin, 30x50 lot, 5 ft setbacks"** — small lot: the
+   footprint shrinks to 20'×24' (480 sf) and coverage stays under 35%.
+5. **"5 bedroom mansion with a pool on a 20x20 lot"** — honest refusal:
+   "footprint … exceeds the buildable envelope", nothing broken.
+
+Test plans you generate land in the gallery as gen-NNN ("In review").
+Traced plans (a-frame-22, a-frame-bunk, outpost-medium) are untouched
+references. gen-001 is the keeper demo of the older template (its bath
+R305 fail is intentional contrast with new generations).
+
+Loop receipts: 8 fires, 6 fixes — lot-fit + coverage-aware footprints
+(7a84d31), landing generate flow (06fde9b), bath count w/ ensuite
+(562a853), word-number briefs (94c8672), brief-box input hardening
+(eb35e7f), parse honesty + live echo (a176dc2). Gates green throughout:
+build, check:code, check:brief, check:generation, qa:brochure, final
+interactive sweep. Evidence: artifacts/customer-readiness/.
 
 ## 2026-06-12 Generator Hardening — Closed
 
