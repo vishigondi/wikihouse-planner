@@ -152,6 +152,11 @@ const CASES = [
   { name: 'maxSqft shrinks 2-bed gable to 24 ft', brief: '2-bed gable, ≤700 sqft', bedrooms: 2, style: 'gable', hasLot: false, expectWidth: 24 },
   { name: 'small-lot 3-bed gable shrinks to 28 ft', brief: '3-bed gable, 40x70 lot, 5 ft setbacks', bedrooms: 3, style: 'gable', hasLot: true, expectWidth: 28 },
   { name: 'a-frame cannot shrink below headroom', brief: '2-bed a-frame, 30x50 lot, 5 ft setbacks', expectCompileError: /exceeds the buildable envelope/ },
+  // Bath count capability: 2-bath on primary footprints, honest downgrade
+  // when only a narrow single-bath variant fits the size limit.
+  { name: '2-bed 2-bath a-frame ensuite', brief: '2 bed 2 bath a-frame, 40x60 lot, 5 ft side setbacks', bedrooms: 2, style: 'a-frame', hasLot: true, expectWidth: 28, expectBaths: 2 },
+  { name: '3-bed 2-bath a-frame', brief: '3 bed 2 bath a-frame ≤1200 sqft, 80x60 lot, 10 ft setbacks', bedrooms: 3, style: 'a-frame', hasLot: true, expectWidth: 36, expectBaths: 2 },
+  { name: '2-bath downgrades when only narrow fits', brief: '2 bed 2 bath gable, ≤700 sqft', bedrooms: 2, style: 'gable', hasLot: false, expectWidth: 24, expectBaths: 1 },
 ];
 
 for (const testCase of CASES) {
@@ -183,6 +188,10 @@ for (const testCase of CASES) {
   }
   if (testCase.expectDepth) {
     check(`footprint depth ${testCase.expectDepth} ft`, artifact.footprint.depthFt === testCase.expectDepth, `got ${artifact.footprint.depthFt}`);
+  }
+  if (testCase.expectBaths) {
+    const bathsInPlan = artifact.rooms.filter((room) => room.type === 'bathroom').length;
+    check(`bath count ${testCase.expectBaths}`, bathsInPlan === testCase.expectBaths, `got ${bathsInPlan}`);
   }
   if (Number.isFinite(parsed.maxSqft)) {
     const area = artifact.footprint.widthFt * artifact.footprint.depthFt;
