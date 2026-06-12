@@ -2203,12 +2203,14 @@ function WorkflowActionBar({
   lifecycle,
   groups,
   onOpen,
+  onDeletePlan,
   showAllChips = true,
 }: {
   home: DenHome | null;
   lifecycle: ArtifactLifecycle;
   groups: ValidationGroup[];
   onOpen: (dialog: WorkflowDialog, layer?: RepairLayer) => void;
+  onDeletePlan?: (id: string) => void;
   showAllChips?: boolean;
 }) {
   const lanes = readinessLanes(groups);
@@ -2244,6 +2246,16 @@ function WorkflowActionBar({
               {item.label}
             </button>
           ))}
+          {home && onDeletePlan && isDeletablePlan(home, lifecycle) && (
+            <button
+              type="button"
+              data-delete-plan={home.id}
+              onClick={() => onDeletePlan(home.id)}
+              className="border border-stone-300 bg-white px-3 py-1.5 text-[11px] text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700"
+            >
+              Delete Plan
+            </button>
+          )}
         </div>
       </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -3682,18 +3694,33 @@ function GalleryBriefGenerate() {
   );
 }
 
+/**
+ * Review-lane generated plans (gen-NNN, not promoted) can be deleted from the
+ * UI; traced reference plans and promoted plans never qualify. The API route
+ * enforces the same rule server-side.
+ */
+function isDeletablePlan(home: DenHome | null | undefined, lifecycle: ArtifactLifecycle | string) {
+  if (!home) return false;
+  if (!/^gen-\d{3}$/.test(home.id)) return false;
+  if (lifecycle === 'promoted' || lifecycle === 'exported') return false;
+  if (home.pairedArtifactInfo?.promotionEligible) return false;
+  return true;
+}
+
 function ProductGallery({
   homes,
   lifecycleStates,
   onOpenPlan,
   onRepairPlan,
   onNewPlan,
+  onDeletePlan,
 }: {
   homes: DenHome[];
   lifecycleStates: Record<string, ArtifactLifecycle>;
   onOpenPlan: (id: string) => void;
   onRepairPlan: (id: string) => void;
   onNewPlan: () => void;
+  onDeletePlan: (id: string) => void;
 }) {
   const [query, setQuery] = useState('');
   const [bedFilter, setBedFilter] = useState('all');
@@ -3938,6 +3965,16 @@ function ProductGallery({
                   <div className="truncate text-[9px] text-stone-500">Next repair: {nextRepairLabel}</div>
                 </div>
                 <div className="flex gap-2">
+                  {isDeletablePlan(home, lifecycle) && (
+                    <button
+                      type="button"
+                      data-delete-plan={home.id}
+                      onClick={() => onDeletePlan(home.id)}
+                      className="border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700"
+                    >
+                      Delete
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => onRepairPlan(home.id)}
@@ -4086,6 +4123,23 @@ export default function Home() {
     await refreshData();
     setRefreshCount((count) => count + 1);
   }, []);
+
+  const deletePlan = useCallback(async (planId: string) => {
+    const res = await fetch('/api/delete-plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ planId }),
+    });
+    if (!res.ok) return;
+    setSelectedHomeId((current) => {
+      if (current === planId) {
+        setShowGallery(true);
+        return '';
+      }
+      return current;
+    });
+    await doRefresh();
+  }, [doRefresh]);
 
   useEffect(() => {
     const refreshTimer = window.setTimeout(() => {
@@ -4480,6 +4534,7 @@ export default function Home() {
           onOpenPlan={selectHome}
           onRepairPlan={repairHomeFromGallery}
           onNewPlan={() => openWorkflowDialog('new-plan')}
+          onDeletePlan={deletePlan}
         />
       </div>
     );
@@ -4578,6 +4633,7 @@ export default function Home() {
         lifecycle={currentLifecycle}
         groups={currentValidationGroups}
         onOpen={openWorkflowDialog}
+        onDeletePlan={deletePlan}
         showAllChips={reviewToolsVisible}
       />
 
