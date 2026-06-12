@@ -110,7 +110,7 @@ export function parseBrief(text: string): ParsedBrief {
   // Setbacks: "5 ft side setbacks", "setbacks: front 20, rear 5, sides 5",
   // "20 ft front setback". Uniform "5 ft setbacks" applies to all sides.
   const setbacks: NonNullable<ParsedLot['setbacksFt']> = {};
-  const sidePattern = /(\d+(?:\.\d+)?)\s*(?:ft|feet|['′])?\s*(front|rear|back|side|sides)\s*setbacks?/g;
+  const sidePattern = /(\d+(?:\.\d+)?)\s*(?:ft|foot|feet|['′])?\s*(front|rear|back|side|sides)\s*setbacks?/g;
   const reversedPattern = /(front|rear|back|side|sides)\s*setbacks?\s*(?:of\s*)?(\d+(?:\.\d+)?)/g;
   for (const match of brief.toLowerCase().matchAll(sidePattern)) {
     take(match as unknown as RegExpMatchArray);
@@ -130,7 +130,7 @@ export function parseBrief(text: string): ParsedBrief {
     else if (side === 'rear' || side === 'back') setbacks.rear = value;
     else { setbacks.left = value; setbacks.right = value; }
   }
-  const uniform = take(lower.match(/(\d+(?:\.\d+)?)\s*(?:ft|feet|['′])?\s*setbacks?(?:\s+all\s+(?:around|sides))?/));
+  const uniform = take(lower.match(/(\d+(?:\.\d+)?)\s*(?:ft|foot|feet|['′])?\s*setbacks?(?:\s+all\s+(?:around|sides))?/));
   if (uniform && !Object.keys(setbacks).length) {
     const value = num(uniform[1]);
     if (value !== undefined) {
@@ -149,13 +149,29 @@ export function parseBrief(text: string): ParsedBrief {
     if (pct !== undefined && pct > 0 && pct <= 100) result.lot.maxCoverageRatio = pct / 100;
   }
 
-  // Anything not consumed and not pure punctuation/fillers is surfaced.
+  // Anything not consumed is surfaced word-by-word (minus connective filler
+  // and the generic dwelling noun), so whole-sentence briefs cannot hide a
+  // silently dropped phrase inside an otherwise-matched segment.
+  const FILLER_WORD = /^(?:with|and|on|in|of|a|an|the|for|near|by|to|at|cabin|house|home|cottage|dwelling|plan|floorplan)$/i;
   const segments = brief.split(/[,;]+/).map((segment) => segment.trim()).filter(Boolean);
   for (const segment of segments) {
     const start = brief.indexOf(segment);
     const end = start + segment.length;
-    const covered = consumed.some(([from, to]) => from < end && to > start);
-    if (!covered && !/^(with|and|on|a|an|the)$/i.test(segment)) result.unparsed.push(segment);
+    const hits = consumed
+      .map(([from, to]) => [Math.max(from, start), Math.min(to, end)] as [number, number])
+      .filter(([from, to]) => from < to)
+      .sort((a, b) => a[0] - b[0]);
+    let cursor = start;
+    const leftovers: string[] = [];
+    for (const [from, to] of hits) {
+      if (from > cursor) leftovers.push(brief.slice(cursor, from));
+      cursor = Math.max(cursor, to);
+    }
+    if (cursor < end) leftovers.push(brief.slice(cursor, end));
+    for (const piece of leftovers) {
+      const words = piece.split(/[^a-zA-Z0-9'-]+/).filter((word) => word && !FILLER_WORD.test(word));
+      if (words.length) result.unparsed.push(words.join(' '));
+    }
   }
 
   return result;

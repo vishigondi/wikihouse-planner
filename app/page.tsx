@@ -3594,6 +3594,8 @@ function GalleryBriefGenerate() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
+  // Live echo of what the parser understood — silent drops are the enemy.
+  const [echo, setEcho] = useState<ReturnType<typeof parseBrief> | null>(null);
   const generate = async () => {
     const brief = (inputRef.current?.value ?? '').trim();
     if (!brief) {
@@ -3627,6 +3629,10 @@ function GalleryBriefGenerate() {
         <input
           ref={inputRef}
           defaultValue=""
+          onChange={(event) => {
+            const text = event.target.value.trim();
+            setEcho(text ? parseBrief(text) : null);
+          }}
           onKeyDown={(event) => { if (event.key === 'Enter' && !busy) generate(); }}
           placeholder="Describe it: 2-bed A-frame, ≤800 sqft, 40×60 lot, 5 ft side setbacks"
           data-home-brief-input
@@ -3642,6 +3648,28 @@ function GalleryBriefGenerate() {
           Generate Plan
         </button>
       </div>
+      {echo && (
+        <div className="mt-1.5 text-[10px]" data-home-brief-echo>
+          <span className="text-stone-500">
+            Understood: {[
+              `${Math.max(1, Math.min(3, echo.bedrooms ?? 2))} bed${(echo.bedrooms ?? 2) > 3 ? ' (max 3)' : ''}`,
+              `${Math.max(1, Math.min(2, Math.round(echo.baths ?? 1)))} bath${Math.round(echo.baths ?? 1) > 2 ? ' (max 2)' : ''}`,
+              echo.roofStyle ?? 'a-frame',
+              echo.maxSqft ? `≤${echo.maxSqft} sqft` : null,
+              echo.lot ? `${echo.lot.widthFt}×${echo.lot.depthFt} lot` : 'no lot',
+              echo.lot?.setbacksFt
+                ? `setbacks F${echo.lot.setbacksFt.front ?? 0}/B${echo.lot.setbacksFt.rear ?? 0}/L${echo.lot.setbacksFt.left ?? 0}/R${echo.lot.setbacksFt.right ?? 0}`
+                : null,
+              echo.lot?.maxCoverageRatio ? `≤${Math.round(echo.lot.maxCoverageRatio * 100)}% coverage` : null,
+            ].filter(Boolean).join(' · ')}
+          </span>
+          {echo.unparsed.length > 0 && (
+            <span className="ml-2 text-amber-700" data-home-brief-ignored>
+              Ignored: {echo.unparsed.join(', ')}
+            </span>
+          )}
+        </div>
+      )}
       {status && (
         <div className="mt-2 border border-stone-200 bg-stone-50 p-2 text-[11px] text-stone-600" data-home-generate-status>
           {status}

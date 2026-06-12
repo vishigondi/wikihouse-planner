@@ -119,6 +119,16 @@ await page.waitForTimeout(600);
 const inputs = await page.locator('input').evaluateAll((nodes) => nodes.map((n) => n.value));
 note(Boolean(inputs.find((v) => /bed \//.test(v))) && inputs.includes('a-frame'), 'brief parse fills fields');
 
+// (5) landing brief box: live parse echo + ignored-word honesty
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(6000);
+await page.locator('[data-home-brief-input]').fill('three bedroom two bath gable farmhouse on a 60 x 90 lot with 10 foot setbacks');
+await page.waitForTimeout(400);
+const echoText = await page.locator('[data-home-brief-echo]').textContent().catch(() => '');
+note(/3 bed/.test(echoText) && /2 bath/.test(echoText) && /gable/.test(echoText) && /60×90 lot/.test(echoText) && /F10\/B10\/L10\/R10/.test(echoText), `landing echo parses program (${echoText.trim().slice(0, 90)})`);
+const ignoredText = await page.locator('[data-home-brief-ignored]').textContent().catch(() => '');
+note(/farmhouse/.test(ignoredText), 'landing echo surfaces ignored words');
+
 await browser.close();
 if (failures) {
   console.error(`\n${failures} sweep check(s) failed`);

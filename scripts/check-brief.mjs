@@ -71,6 +71,14 @@ check('three bed', wordy2.bedrooms, 3);
 check('two baths', wordy2.baths, 2);
 check('no number words left unparsed', wordy2.unparsed.some((part) => /two|three/.test(part)), false);
 
+console.log('brief: foot-unit setbacks + honest unparsed inside sentences');
+const footy = parseBrief('three bedroom two bath gable farmhouse on a 60 x 90 lot with 10 foot setbacks');
+check('bedrooms', footy.bedrooms, 3);
+check('baths', footy.baths, 2);
+check('lot dims', [footy.lot?.widthFt, footy.lot?.depthFt], [60, 90]);
+check('foot setbacks parse uniformly', footy.lot?.setbacksFt, { front: 10, rear: 10, left: 10, right: 10 });
+check('dropped phrase surfaces', footy.unparsed.includes('farmhouse'), true);
+
 // --- Prompt field rendering ---------------------------------------------------
 console.log('briefToPromptFields: canonical');
 const fields = briefToPromptFields(canonical);
