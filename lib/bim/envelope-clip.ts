@@ -233,3 +233,96 @@ export function rectFootprint(x: number, z: number, w: number, d: number): Point
     { x, z: z + d },
   ];
 }
+
+export interface WallOpeningSpec {
+  /** Span along the wall run, in feet from the wall's first endpoint. */
+  start: number;
+  end: number;
+  /** Vertical extent of the hole (absolute Y, feet). */
+  bottomY: number;
+  topY: number;
+}
+
+/**
+ * A wall segment with door/window holes subtracted, still clipped to the
+ * ceiling envelope. The run is split at each opening edge; solid intervals
+ * become full prisms, opening intervals become a sill piece below the hole
+ * (windows) and a header piece above it — and every piece passes through
+ * clipPrismToCeiling, so a header that would sit above a low roof simply
+ * does not exist (a door hole in a knee wall degenerates honestly).
+ */
+export function clipWallSegmentWithOpenings(
+  a: Point2,
+  b: Point2,
+  thickness: number,
+  y0: number,
+  capY: number,
+  ceilingPlanes: CeilingPlane[],
+  openings: WallOpeningSpec[],
+): ClippedSolid {
+  const length = Math.hypot(b.x - a.x, b.z - a.z);
+  if (length < 0.05) return { positions: [], maxY: Number.NaN, minTopY: Number.NaN, empty: true };
+  const ux = (b.x - a.x) / length;
+  const uz = (b.z - a.z) / length;
+  const px = (-uz * thickness) / 2;
+  const pz = (ux * thickness) / 2;
+  const footprintAt = (s: number, e: number): Point2[] => [
+    { x: a.x + ux * s + px, z: a.z + uz * s + pz },
+    { x: a.x + ux * e + px, z: a.z + uz * e + pz },
+    { x: a.x + ux * e - px, z: a.z + uz * e - pz },
+    { x: a.x + ux * s - px, z: a.z + uz * s - pz },
+  ];
+
+  // Clamp, sort, and merge overlapping spans so intervals alternate cleanly.
+  const spans = openings
+    .map((opening) => ({
+      start: Math.max(0, Math.min(length, Math.min(opening.start, opening.end))),
+      end: Math.max(0, Math.min(length, Math.max(opening.start, opening.end))),
+      bottomY: Math.min(opening.bottomY, opening.topY),
+      topY: Math.max(opening.bottomY, opening.topY),
+    }))
+    .filter((opening) => opening.end - opening.start > 0.05)
+    .sort((lhs, rhs) => lhs.start - rhs.start);
+  const merged: typeof spans = [];
+  for (const span of spans) {
+    const last = merged[merged.length - 1];
+    if (last && span.start < last.end + 0.01) {
+      last.end = Math.max(last.end, span.end);
+      last.bottomY = Math.min(last.bottomY, span.bottomY);
+      last.topY = Math.max(last.topY, span.topY);
+    } else {
+      merged.push({ ...span });
+    }
+  }
+
+  const pieces: ClippedSolid[] = [];
+  let cursor = 0;
+  const pushPiece = (s: number, e: number, bottom: number, top: number) => {
+    if (e - s < 0.02 || top - bottom < 0.02) return;
+    pieces.push(clipPrismToCeiling(footprintAt(s, e), bottom, top, ceilingPlanes));
+  };
+  for (const span of merged) {
+    pushPiece(cursor, span.start, y0, capY);
+    if (span.bottomY > y0 + 0.02) pushPiece(span.start, span.end, y0, Math.min(span.bottomY, capY));
+    if (span.topY < capY - 0.02) pushPiece(span.start, span.end, span.topY, capY);
+    cursor = span.end;
+  }
+  pushPiece(cursor, length, y0, capY);
+
+  const positions: number[] = [];
+  let maxY = -Infinity;
+  let minTopY = Infinity;
+  for (const piece of pieces) {
+    if (piece.empty) continue;
+    positions.push(...piece.positions);
+    maxY = Math.max(maxY, piece.maxY);
+    minTopY = Math.min(minTopY, piece.minTopY);
+  }
+  const empty = positions.length === 0;
+  return {
+    positions,
+    maxY: empty ? Number.NaN : maxY,
+    minTopY: empty ? Number.NaN : minTopY,
+    empty,
+  };
+}

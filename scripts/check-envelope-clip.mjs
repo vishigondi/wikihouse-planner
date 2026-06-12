@@ -94,6 +94,58 @@ console.log('case: solid entirely above the roof');
 const floating = clipPrismToCeiling(rectFootprint(0, 10, 0.4, 4), 19, 22, aFramePlanes);
 check('clips to empty', floating.empty);
 
+// --- Openings cut into walls --------------------------------------------------
+const { clipWallSegmentWithOpenings } = await import(join(root, 'lib/bim/envelope-clip.ts'));
+
+function vertsInRegion(solid, alongAxis, lo, hi, yLo, yHi) {
+  let count = 0;
+  for (let i = 0; i < solid.positions.length; i += 3) {
+    const along = alongAxis === 'x' ? solid.positions[i] : solid.positions[i + 2];
+    const y = solid.positions[i + 1];
+    if (along > lo && along < hi && y > yLo && y < yHi) count += 1;
+  }
+  return count;
+}
+
+console.log('case: door hole in a gable-roof wall');
+const doorWall = clipWallSegmentWithOpenings(
+  { x: 0, z: 0 }, { x: 24, z: 0 }, 0.5, 0, 8, gablePlanes,
+  [{ start: 4, end: 7, bottomY: 0, topY: 6.8 }],
+);
+check('not empty', !doorWall.empty);
+check('hole is open (no vertex inside)', vertsInRegion(doorWall, 'x', 4.3, 6.7, 0.3, 6.5) === 0);
+// A clean box header only has corner vertices; probe its bottom edge at the
+// door head height across the full span.
+check('header above the door exists', vertsInRegion(doorWall, 'x', 3.9, 7.1, 6.7, 6.9) > 0);
+check('no envelope violation', vertexViolations(doorWall, gablePlanes, 0) < 1e-6);
+
+console.log('case: window hole -> sill + header');
+const windowWall = clipWallSegmentWithOpenings(
+  { x: 0, z: 0 }, { x: 24, z: 0 }, 0.5, 0, 8, gablePlanes,
+  [{ start: 10, end: 14, bottomY: 3, topY: 7 }],
+);
+check('hole is open', vertsInRegion(windowWall, 'x', 10.3, 13.7, 3.3, 6.7) === 0);
+check('sill below the window exists', vertsInRegion(windowWall, 'x', 10.3, 13.7, -0.01, 3.01) > 0);
+check('header above the window exists', vertsInRegion(windowWall, 'x', 10.3, 13.7, 6.99, 8.01) > 0);
+
+console.log('case: window on the a-frame gable end under the slope');
+const slopedWindow = clipWallSegmentWithOpenings(
+  { x: 0, z: 0 }, { x: 24, z: 0 }, 0.5, 0, 99, aFramePlanes,
+  [{ start: 2, end: 5, bottomY: 1.2, topY: 6 }],
+);
+check('not empty', !slopedWindow.empty);
+check('no envelope violation', vertexViolations(slopedWindow, aFramePlanes, 0) < 1e-6);
+check('wall still peaks at the ridge', Math.abs(slopedWindow.maxY - 18) < 0.1, String(slopedWindow.maxY));
+
+console.log('case: door hole through a knee wall degenerates honestly');
+const kneeDoor = clipWallSegmentWithOpenings(
+  { x: 0.25, z: 0 }, { x: 0.25, z: 28 }, 0.5, 0, 99, aFramePlanes,
+  [{ start: 10, end: 13, bottomY: 0, topY: 6.8 }],
+);
+check('no header materializes above the low roof', vertsInRegion(kneeDoor, 'z', 10.3, 12.7, 2.9, 99) === 0);
+check('side pieces remain', !kneeDoor.empty);
+check('no envelope violation', vertexViolations(kneeDoor, aFramePlanes, 0) < 1e-6);
+
 console.log('');
 if (failures) {
   console.error(`${failures} envelope-clip check(s) failed`);

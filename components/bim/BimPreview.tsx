@@ -12,7 +12,9 @@ import {
   ceilingHeightAt,
   ceilingPlanesFromRoofPoints,
   clipPrismToCeiling,
+  clipWallSegmentWithOpenings,
   type CeilingPlane,
+  type WallOpeningSpec,
 } from '@/lib/bim/envelope-clip';
 
 interface Props {
@@ -124,8 +126,82 @@ function modelCeilingPlanes(model: SemanticBimModel): CeilingPlane[] {
 }
 
 /**
+ * Single source for a window's glazing extent (sill/top), shared by the
+ * glazing mesh and the wall-hole cut so they always agree. Returns null when
+ * no viable pane fits under the roof at the window's position.
+ */
+function windowGlassExtent(element: SemanticBimElement, model: SemanticBimModel): { sill: number; top: number } | null {
+  if (!element.segment) return null;
+  const { x1, z1, x2, z2, y1, height } = element.segment;
+  const windowText = `${element.name} ${element.metadata?.windowKind ?? ''} ${element.metadata?.sillType ?? ''} ${element.metadata?.openingType ?? ''}`.toLowerCase();
+  const fullHeightGlass = /full.?height|folding|glass.?wall|glaz/.test(windowText);
+  const guardGlazing = /guard|rail|low/.test(windowText);
+  let sill = guardGlazing ? y1 + 0.35 : fullHeightGlass ? y1 + 0.3 : y1 + 3.15;
+  let glassHeight = guardGlazing ? 1.1 : fullHeightGlass ? Math.max(2.8, Math.min(4.8, height)) : Math.max(2.4, Math.min(4.6, height));
+  const planes = modelCeilingPlanes(model);
+  if (planes.length) {
+    let roofLimit = Infinity;
+    for (const [wx, wz] of [[x1, z1], [x2, z2], [(x1 + x2) / 2, (z1 + z2) / 2]] as Array<[number, number]>) {
+      roofLimit = Math.min(roofLimit, ceilingHeightAt(planes, wx, wz));
+    }
+    const maxHead = roofLimit - 0.15;
+    const top = Math.min(sill + glassHeight, maxHead);
+    if (top - sill < 1.0) sill = Math.max(y1 + 0.3, top - 2.4);
+    if (top - sill < 0.5) return null;
+    return { sill, top };
+  }
+  return { sill, top: sill + glassHeight };
+}
+
+/**
+ * Openings hosted on a wall, matched geometrically (host wall ids are not
+ * stable across wall segmentation): both endpoints near the wall line, with
+ * projections inside the run. Doors and passthroughs cut from the wall base;
+ * windows cut exactly the glazing extent.
+ */
+function wallOpeningSpecs(wall: SemanticBimElement, model: SemanticBimModel): WallOpeningSpec[] {
+  if (!wall.segment) return [];
+  const { x1, z1, x2, z2, thickness, y1 } = wall.segment;
+  const length = Math.hypot(x2 - x1, z2 - z1);
+  if (length < 0.05) return [];
+  const ux = (x2 - x1) / length;
+  const uz = (z2 - z1) / length;
+  const near = Math.max(0.16, thickness) / 2 + 0.4;
+  const specs: WallOpeningSpec[] = [];
+  for (const element of model.elements) {
+    if (!['door', 'window', 'opening'].includes(element.category) || !element.segment) continue;
+    const seg = element.segment;
+    const points: Array<[number, number]> = [[seg.x1, seg.z1], [seg.x2, seg.z2]];
+    let hosted = true;
+    const projections: number[] = [];
+    for (const [px, pz] of points) {
+      const dx = px - x1;
+      const dz = pz - z1;
+      const t = dx * ux + dz * uz;
+      const perp = Math.abs(dx * -uz + dz * ux);
+      if (perp > near || t < -0.35 || t > length + 0.35) {
+        hosted = false;
+        break;
+      }
+      projections.push(t);
+    }
+    if (!hosted || projections.length < 2 || Math.abs(projections[1] - projections[0]) < 0.4) continue;
+    if (element.category === 'window') {
+      const extent = windowGlassExtent(element, model);
+      if (!extent) continue;
+      specs.push({ start: projections[0], end: projections[1], bottomY: extent.sill - 0.04, topY: extent.top + 0.04 });
+    } else {
+      const headY = seg.y1 + Math.max(6.4, Math.min(7.2, Number(element.metadata?.heightFt) || seg.height || 6.8));
+      specs.push({ start: projections[0], end: projections[1], bottomY: Math.min(seg.y1, y1), topY: headY });
+    }
+  }
+  return specs;
+}
+
+/**
  * Constructive wall geometry: the wall's footprint rectangle extruded from
- * its base and clipped against the roof envelope (lib/bim/envelope-clip).
+ * its base and clipped against the roof envelope (lib/bim/envelope-clip),
+ * with door/window/passthrough holes subtracted constructively.
  * Gable ends, knee walls, and ridge-straddling partitions are all the same
  * call — no wall-role routing, no ridge-axis guessing, no sampling.
  */
@@ -161,7 +237,10 @@ function clippedWallMesh(
   const intentCap = exterior ? 1e6 : y1 + Math.max(0.5, height);
   const styleCap = cutaway ? y1 + Math.max(0.08, Math.min(height, exterior ? 4.8 : 3.45)) : Infinity;
   const capY = Math.min(intentCap, styleCap === Infinity ? 1e6 : styleCap);
-  const solid = clipPrismToCeiling(footprint, y1, capY, planes);
+  const openings = wallOpeningSpecs(element, model);
+  const solid = openings.length
+    ? clipWallSegmentWithOpenings({ x: x1, z: z1 }, { x: x2, z: z2 }, t, y1, capY, planes, openings)
+    : clipPrismToCeiling(footprint, y1, capY, planes);
   if (solid.empty) return null;
   const positions = new Float32Array(solid.positions.length);
   for (let i = 0; i < solid.positions.length; i += 3) {
@@ -367,31 +446,13 @@ function lineMesh(
     const windowText = `${element.name} ${element.metadata?.windowKind ?? ''} ${element.metadata?.sillType ?? ''} ${element.metadata?.openingType ?? ''}`.toLowerCase();
     const fullHeightGlass = /full.?height|folding|glass.?wall|glaz/.test(windowText);
     const guardGlazing = /guard|rail|low/.test(windowText);
-    let sillHeight = guardGlazing
-      ? y1 + 0.35
-      : fullHeightGlass
-        ? y1 + 0.3
-        : y1 + 3.15;
-    let glassHeight = guardGlazing
-      ? 1.1
-      : fullHeightGlass
-        ? Math.max(2.8, Math.min(4.8, height))
-        : Math.max(2.4, Math.min(4.6, height));
-    // Clamp glazing to the roof envelope: a window on a low eave wall slides
-    // its sill down and shrinks; if no viable pane fits under the roof at
-    // this position, render nothing rather than float glass above the roof.
-    const ceilingPlanes = modelCeilingPlanes(model);
-    if (ceilingPlanes.length) {
-      let roofLimit = Infinity;
-      for (const [wx, wz] of [[x1, z1], [x2, z2], [(x1 + x2) / 2, (z1 + z2) / 2]] as Array<[number, number]>) {
-        roofLimit = Math.min(roofLimit, ceilingHeightAt(ceilingPlanes, wx, wz));
-      }
-      const maxHead = roofLimit - 0.15;
-      let top = Math.min(sillHeight + glassHeight, maxHead);
-      if (top - sillHeight < 1.0) sillHeight = Math.max(y1 + 0.3, top - 2.4);
-      if (top - sillHeight < 0.5) return null;
-      glassHeight = top - sillHeight;
-    }
+    // Shared with the wall-hole cut (wallOpeningSpecs) so glazing always
+    // sits exactly inside its opening; null means no viable pane fits under
+    // the roof here and the wall stays solid.
+    const extent = windowGlassExtent(element, model);
+    if (!extent) return null;
+    const sillHeight = extent.sill;
+    const glassHeight = extent.top - extent.sill;
     const glassOpacity = viewPreset === 'white-cutaway' ? 0.22 : fullHeightGlass ? 0.38 : 0.34;
     const glass = new THREE.Mesh(
       new THREE.BoxGeometry(length, glassHeight, Math.max(0.04, thickness * 0.42)),
