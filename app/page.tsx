@@ -3672,6 +3672,30 @@ function SemanticElevationView({ home, side }: { home: DenHome; side: 'front' | 
 }
 
 function MiniElevationPreview({ home }: { home: DenHome }) {
+  // Real elevation from the artifact — cards should differ the way the
+  // buildings differ. Prefer the gable face: at thumbnail size the roof
+  // profile carries the identity; a low eave face reads as a flat bar.
+  // Generic box+roofline drawing is the fallback for plans whose artifact
+  // cannot produce an elevation model.
+  let real: { svg: string; openings: number } | null = null;
+  try {
+    const front = elevationModelForHome(home, 'front');
+    const side = elevationModelForHome(home, 'side');
+    const model = front.gableFacing ? front : side.gableFacing ? side : front;
+    real = { svg: elevationSvgString(model), openings: model.openings.length };
+  } catch {
+    real = null;
+  }
+  if (real) {
+    return (
+      <div
+        className="flex h-full w-full items-center justify-center bg-[#f7f3ec] p-1.5 [&>svg]:h-full [&>svg]:w-full"
+        data-elevation-openings={real.openings}
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: real.svg }}
+      />
+    );
+  }
   const span = home.footprint.width;
   const roof = home.roofSemantics;
   const ridge = roof?.ridgeHeightFt ?? home.height;
