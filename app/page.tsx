@@ -2384,6 +2384,10 @@ function WorkflowActionBar({
           // Tools is open; chips stay in the DOM (hidden) so QA scripts can
           // keep reading the data-validation-* attributes.
           const collapsed = !showAllChips && group.status === 'pass';
+          const issueLines = [...group.blockers, ...group.warnings];
+          const chipTitle = hasIssues
+            ? `${issueLines.slice(0, 3).join('\n')}${issueLines.length > 3 ? `\n(+${issueLines.length - 3} more)` : ''}`
+            : group.label;
           return (
             <div
               key={group.id}
@@ -2394,6 +2398,7 @@ function WorkflowActionBar({
               data-validation-blockers={group.blockers.join('\n')}
               data-validation-warnings={group.warnings.join('\n')}
               data-validation-action={group.action}
+              title={chipTitle}
               className={`${collapsed ? 'hidden ' : ''}flex items-center gap-1 border border-stone-200 bg-white px-2 py-1 text-[9px] uppercase tracking-wide`}
             >
               <span className="text-stone-500">{group.label}</span>
