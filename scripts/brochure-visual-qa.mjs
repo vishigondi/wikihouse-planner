@@ -2473,7 +2473,17 @@ async function run() {
         }
 
         await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }));
+        const jsonOnlyLane = paths?.option?.sourceKind === 'constrained_json';
         for (const [tabId, label] of REVIEW_TABS) {
+          if (tabId === 'overlay' && jsonOnlyLane) {
+            // JSON-only plans have no GPT image to overlay; the tab must be
+            // hidden for them. Present means the lane leaked — block it.
+            const overlayCount = await page.getByText('Overlay', { exact: true }).count();
+            if (overlayCount > 0) {
+              planResult.blockers.push('review-overlay: JSON-only plan still exposes the GPT Overlay tab');
+            }
+            continue;
+          }
           await clickVisibleText(page, label, { minX: 900 });
           const screenshot = await saveViewport(page, planId, viewport.id, `review-${tabId}`);
           const metrics = await drawingStyleReviewMetrics(page, deterministicSvgUrl);

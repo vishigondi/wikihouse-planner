@@ -1902,18 +1902,22 @@ function ProductWorkflowPanel({
         </span>
       </div>
       <div className="mt-2 space-y-2 text-[10px]">
-        <div className="grid grid-cols-2 gap-1">
-          {(['draft', 'review', 'promoted', 'exported'] as ArtifactLifecycle[]).map((state) => (
-            <button
-              key={state}
-              type="button"
-              onClick={() => onLifecycleChange(state)}
-              disabled={state === 'promoted' && !canPromote}
-              className={`border px-2 py-1 ${lifecycle === state ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-white text-stone-600 disabled:opacity-40'}`}
-            >
-              {state}
-            </button>
-          ))}
+        <div>
+          <div className="text-stone-400">Plan status - where this plan sits in your workflow (saved in this browser). Promote needs every gate green.</div>
+          <div className="mt-1 grid grid-cols-2 gap-1">
+            {(['draft', 'review', 'promoted', 'exported'] as ArtifactLifecycle[]).map((state) => (
+              <button
+                key={state}
+                type="button"
+                onClick={() => onLifecycleChange(state)}
+                disabled={state === 'promoted' && !canPromote}
+                title={state === 'promoted' && !canPromote ? 'Blocked: clear the product blockers first' : `Mark ${state}`}
+                className={`border px-2 py-1 ${lifecycle === state ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-white text-stone-600 disabled:opacity-40'}`}
+              >
+                {state}
+              </button>
+            ))}
+          </div>
         </div>
         <label className="block">
           <span className="mb-1 block text-stone-400">brief (one line, parsed deterministically)</span>
@@ -2662,7 +2666,9 @@ function WorkflowModal({
                 <div className="pt-2 text-[10px] font-semibold uppercase tracking-wide text-amber-700">Experimental export</div>
                 <button type="button" onClick={() => downloadText(`${home.id}-${home.pairedProposalId ?? 'draft'}-experimental.ifc`, exportExperimentalIfc(home).ifcText, 'application/x-step')} className="w-full border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">Export Experimental IFC STEP</button>
                 <div className="text-[10px] leading-snug text-amber-700">IFC STEP is a handoff placeholder until full web-ifc/fragments entity writing is enabled. Semantic BIM JSON is the stable BIM export.</div>
-                <div className="grid grid-cols-2 gap-1 pt-2">
+                <div className="pt-3 text-[10px] font-semibold uppercase tracking-wide text-stone-500">Plan status</div>
+                <div className="text-[10px] leading-snug text-stone-400">Where this plan sits in your workflow (saved in this browser). Draft &gt; review &gt; promoted &gt; exported.</div>
+                <div className="grid grid-cols-2 gap-1 pt-1">
                   {(['draft', 'review', 'promoted', 'exported'] as ArtifactLifecycle[]).map((state) => (
                     <button key={state} type="button" onClick={() => onLifecycleChange(state)} className={`border px-2 py-1 text-[10px] ${lifecycle === state ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-white text-stone-600'}`}>
                       {state}
@@ -3514,11 +3520,16 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
     );
   }
 
+  // Overlay measures drift between a GPT proposal image and the render;
+  // a JSON-only plan has no image to drift from, so the tab would only
+  // ghost stale reference art over the sheet.
   const buttons: Array<{ id: CompareMode; label: string }> = [
     { id: 'compare', label: 'Compare' },
-    { id: 'overlay', label: 'Overlay' },
+    ...(isJsonOnlyPlan(home) ? [] : [{ id: 'overlay' as CompareMode, label: 'Overlay' }]),
     { id: 'semantic', label: 'Semantic' },
   ];
+  // Mode can arrive as 'overlay' when switching from a GPT plan; fall back.
+  const effectiveMode: CompareMode = isJsonOnlyPlan(home) && mode === 'overlay' ? 'compare' : mode;
   const renderUrl = info.deterministicRenderUrl;
   const storedDeterministicRender = renderUrl ? (
     <img src={renderUrl} alt={`${home.model} deterministic render`} className="block h-auto w-full object-contain" />
@@ -3591,7 +3602,7 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
               type="button"
               onClick={() => onModeChange(button.id)}
               className={`border-l border-stone-200 px-2 py-1 text-[10px] first:border-l-0 ${
-                mode === button.id ? 'bg-stone-800 text-white' : 'text-stone-500 hover:bg-stone-50'
+                effectiveMode === button.id ? 'bg-stone-800 text-white' : 'text-stone-500 hover:bg-stone-50'
               }`}
             >
               {button.label}
@@ -3600,7 +3611,7 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
         </div>
       </div>
 
-      {mode === 'compare' ? (
+      {effectiveMode === 'compare' ? (
         <div className="relative z-0 grid gap-4 xl:grid-cols-2">
           <figure className="border border-stone-200 bg-white p-3 shadow-sm">
             {isJsonOnlyPlan(home) ? (
@@ -3634,7 +3645,7 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
             </div>
           </figure>
         </div>
-      ) : mode === 'overlay' ? (
+      ) : effectiveMode === 'overlay' ? (
         <div className="relative z-0 mx-auto max-w-5xl border border-stone-200 bg-white p-3 shadow-sm">
           {info.sourceImageUrl ? (
             <div className="relative overflow-hidden">

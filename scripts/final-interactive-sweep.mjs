@@ -79,13 +79,21 @@ for (const plan of PLANS) {
   await page.screenshot({ path: `${SHOT_DIR}/${plan}-views.png` });
   note(true, 'views + level/roof toggles cycled');
 
-  // (3) Compare -> Overlay -> Semantic
-  await page.locator('button', { hasText: /^Overlay$/ }).first().click();
-  await page.waitForTimeout(900);
-  const overlayBroken = await page.locator('img[alt*="GPT proposal"]').evaluateAll(
-    (imgs) => imgs.some((img) => img.complete && img.naturalWidth === 0),
-  ).catch(() => false);
-  note(!overlayBroken, 'overlay has no broken image');
+  // (3) Compare -> Overlay -> Semantic. Overlay only exists for GPT-paired
+  // lanes; for JSON-only plans its absence must coincide with the badge.
+  const overlayButtons = await page.locator('button', { hasText: /^Overlay$/ }).count();
+  const jsonOnlyBadges = await page.locator('[data-json-only-packet]').count();
+  if (overlayButtons > 0) {
+    note(jsonOnlyBadges === 0, 'overlay tab present only on GPT-paired plan');
+    await page.locator('button', { hasText: /^Overlay$/ }).first().click();
+    await page.waitForTimeout(900);
+    const overlayBroken = await page.locator('img[alt*="GPT proposal"]').evaluateAll(
+      (imgs) => imgs.some((img) => img.complete && img.naturalWidth === 0),
+    ).catch(() => false);
+    note(!overlayBroken, 'overlay has no broken image');
+  } else {
+    note(jsonOnlyBadges === 1, 'overlay hidden for JSON-only plan (badge present)');
+  }
   await page.locator('button', { hasText: /^Semantic$/ }).first().click();
   await page.waitForTimeout(1600);
   const jurisdiction = await page.locator('[data-jurisdiction]').first().getAttribute('data-jurisdiction').catch(() => null);
