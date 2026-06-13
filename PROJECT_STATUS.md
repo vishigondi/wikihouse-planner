@@ -1,6 +1,48 @@
 # Project Status
 
-Last updated: 2026-06-13 (UX review loop — closed; every feature tested, app customer-ready)
+Last updated: 2026-06-13 (design-system redesign — closed; all surfaces on Geist + interaction layer)
+
+## 2026-06-13 Design-System Redesign — Closed
+
+Applied the taste/redesign skill across every surface as a precision tool,
+not a marketing site — no magnetic buttons, gooey menus, bento, or
+parallax. Foundation + five surfaces, one per fire, each verified in real
+Chrome with the console clean and the full gate suite green
+(3efa32d, 6c2a0b0, 214e784, 26817e6, dcf259a, 77328fd):
+
+- **Foundation** — type system is Geist (display, opt-in via font-sans)
+  + Geist Mono (the technical default for every label, dimension, and
+  data readout); dropped the unused Inter (a banned AI tell) + Playfair.
+  globals.css carries an element-level interaction layer: one calibrated
+  transition curve, a tactile :active press on buttons, a palette-tinted
+  :focus-visible ring (keyboard a11y), warm ::selection, smooth scroll —
+  all behind prefers-reduced-motion. Lifts every surface at once with no
+  markup change.
+- **Gallery cards** — rounded containers, resting tinted shadow + hover
+  lift (transform-only), tabular dimension meta, composed empty state.
+- **Plan-detail header + workflow + gate chips** — Geist brand mark;
+  gate chips carry a status-tinted wash (amber/red) so state reads at a
+  glance; consistent rounded controls.
+- **VIEW panel + compare/sheet** — rounded segmented controls; compare/
+  overlay panels get rounded-lg with tinted depth.
+- **Four modals** — shared shell: blurred backdrop, rounded-xl container
+  with deep shadow, Geist display titles, rounded controls throughout.
+- **Review Tools sidebar** — constraint rule cards take a status wash
+  (failing IRC-R305.1 reads red at a glance), rounded lot editor + brief
+  controls, Semantic Source panel depth.
+
+Held the line throughout: monospace for all data/dimensions, CAD density
+intact, and not one gate-asserted string or data-* hook touched. Closed
+on two consecutive clean gate runs (6 batteries, build, qa:brochure 10/10
+on prod :3000, final-interactive-sweep) with the traced plans unchanged
+(a-frame-22 Overlay lane + 7.05 ft designed-bay exemption preserved).
+
+Loft check (asked during the loop): traced loft plans (a-frame-bunk,
+a-frame-22) render correctly — Ground/Loft/All toggle isolates levels,
+the loft sits at the right height with its ladder. Compiled generation
+has NO loft capability (compile-plan.ts hardcodes floor-0); the brief
+parser honestly lists "loft" as ignored. Adding compiled lofts is a
+separate, fenced feature (multi-level compilation), not done here.
 
 ## 2026-06-13 UX Review Loop — Closed
 
