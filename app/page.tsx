@@ -2562,16 +2562,16 @@ function WorkflowModal({
   })();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-stone-950/35 p-6">
-      <div className="w-full max-w-5xl border border-stone-200 bg-[#fffdf9] shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-stone-950/40 p-6 backdrop-blur-sm">
+      <div className="w-full max-w-5xl rounded-xl border border-stone-200 bg-[#fffdf9] shadow-[0_40px_80px_-32px_rgba(41,37,36,0.45)]">
         <div className="flex items-center justify-between border-b border-stone-200 px-4 py-3">
           <div>
-            <h2 className="text-sm font-semibold text-stone-800">
+            <h2 className="font-sans text-base font-semibold tracking-tight text-stone-900">
               {dialog === 'new-plan' ? 'New Plan Handoff' : dialog === 'import' ? 'Import Paired Artifact' : dialog === 'export' ? 'Export Plan' : 'Repair With GPT'}
             </h2>
             <div className="mt-0.5 text-[10px] text-stone-400">{home?.model ?? 'No active plan'} - {lifecycle}</div>
           </div>
-          <button type="button" onClick={onClose} className="border border-stone-300 bg-white px-3 py-1 text-xs text-stone-700">Close</button>
+          <button type="button" onClick={onClose} className="rounded-sm border border-stone-300 bg-white px-3 py-1 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Close</button>
         </div>
 
         <div className="max-h-[78vh] overflow-y-auto p-4">
@@ -2580,7 +2580,7 @@ function WorkflowModal({
               <section className="space-y-3">
                 <label className="block text-[10px] text-stone-500">
                   Reference plan
-                  <select value={selectedHomeId} onChange={(event) => onSelectHome(event.target.value)} className="mt-1 w-full border border-stone-200 bg-white px-2 py-2 text-xs text-stone-700">
+                  <select value={selectedHomeId} onChange={(event) => onSelectHome(event.target.value)} className="mt-1 w-full rounded-sm border border-stone-200 bg-white px-2 py-2 text-xs text-stone-700">
                     {availableHomes.map((item) => (
                       <option key={item.id} value={item.id}>{item.model} - {item.sqft}sf{item.bedBath ? ` - ${item.bedBath}` : ''}</option>
                     ))}
@@ -2601,8 +2601,8 @@ function WorkflowModal({
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Generated GPT prompt preview</h3>
                   <div className="flex gap-1">
-                    <button type="button" onClick={() => navigator.clipboard?.writeText(generationPrompt)} className="border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700">Copy</button>
-                    <button type="button" onClick={() => downloadJson(`${home?.id ?? 'plan'}-handoff-packet.json`, { request: promptRequest, prompt: generationPrompt, referencePlan: home })} className="border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700">Download Handoff Packet</button>
+                    <button type="button" onClick={() => navigator.clipboard?.writeText(generationPrompt)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50">Copy</button>
+                    <button type="button" onClick={() => downloadJson(`${home?.id ?? 'plan'}-handoff-packet.json`, { request: promptRequest, prompt: generationPrompt, referencePlan: home })} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50">Download Handoff Packet</button>
                   </div>
                 </div>
                 <textarea readOnly value={generationPrompt} className="h-[560px] w-full resize-none border border-stone-200 bg-white p-3 font-mono text-[10px] leading-relaxed text-stone-700" />
@@ -2651,7 +2651,7 @@ function WorkflowModal({
                   <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Import result</h3>
                   <div className="mt-2 text-[10px] leading-snug text-stone-500">{importStatus || 'No import attempted yet.'}</div>
                 </div>
-                <button type="button" onClick={onImportPlan} className="w-full border border-stone-800 bg-stone-800 px-3 py-2 text-xs text-white">Import Draft</button>
+                <button type="button" onClick={onImportPlan} className="w-full rounded-sm border border-stone-800 bg-stone-800 px-3 py-2 text-xs text-white hover:bg-stone-700">Import Draft</button>
               </section>
             </div>
           )}
@@ -2660,20 +2660,20 @@ function WorkflowModal({
             <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
               <section className="space-y-2">
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">Stable product exports</div>
-                <button type="button" onClick={() => downloadJson(`${home.id}-${home.pairedProposalId ?? 'draft'}-semantic-plan.json`, home)} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Semantic JSON</button>
-                <button type="button" onClick={() => downloadJson(`${home.id}-${home.pairedProposalId ?? 'draft'}-semantic-bim-v1.json`, semanticBimFromHome(home))} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Semantic BIM JSON</button>
-                <button type="button" onClick={() => downloadJson(`${home.id}-${home.pairedProposalId ?? 'draft'}-standards-checks.json`, { standardsRegistry: standardsRegistrySummary(), standardsValidation: validateStandards(home), bcfIssues: validateStandards(home).issues })} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Standards + Issues JSON</button>
-                <button type="button" onClick={() => downloadJson(`${home.id}-${home.pairedProposalId ?? 'draft'}-bim-asset-registry.json`, bimAssetRegistrySummary())} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export BIM Asset Registry</button>
-                <button type="button" onClick={() => downloadText(`${home.id}-${home.pairedProposalId ?? 'draft'}-floorplan.svg`, currentDeterministicSvg() ?? semanticSvgForHome(home), 'image/svg+xml')} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export 2D SVG</button>
-                <button type="button" onClick={() => downloadText(`${home.id}-front-elevation.svg`, elevationSvgMarkup(home, 'front'), 'image/svg+xml')} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Front Elevation SVG</button>
-                <button type="button" onClick={() => downloadText(`${home.id}-side-elevation.svg`, elevationSvgMarkup(home, 'side'), 'image/svg+xml')} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Side Elevation SVG</button>
-                <button type="button" onClick={() => downloadText(`${home.id}-constraint-report.html`, constraintReportHtml(home), 'text/html')} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Constraint Report HTML</button>
-                <button type="button" onClick={() => downloadJson(`${home.id}-constraint-report.json`, codeAdvisoryReportForHome(home))} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Constraint Report JSON</button>
-                <button type="button" onClick={() => downloadJson(`${home.id}-build-kit-bom.json`, { planId: home.id, bom: home.buildValidation?.bom ?? [], componentsUsed: home.componentsUsed })} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Build Kit BOM JSON</button>
-                <button type="button" data-export-client-packet onClick={() => downloadText(`${home.id}-client-packet.html`, clientPacketHtml(home, currentDeterministicSvg() ?? semanticSvgForHome(home), groups), 'text/html')} className="w-full border border-emerald-800 bg-emerald-800 px-3 py-2 text-xs text-white">Download Client Packet (HTML)</button>
-                <button type="button" onClick={export3d} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Current 3D PNG</button>
-                <button type="button" onClick={onExportPacket} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export Brochure Packet JSON</button>
-                <button type="button" onClick={() => downloadText(`${home.id}-${home.pairedProposalId ?? 'draft'}-brochure.html`, brochureHtmlForHome(home, groups, currentCanvasImage(true), localVisualAssetAttributions(), currentSourceImage(home), currentDeterministicSvg()), 'text/html')} className="w-full border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700">Export HTML Brochure</button>
+                <button type="button" onClick={() => downloadJson(`${home.id}-${home.pairedProposalId ?? 'draft'}-semantic-plan.json`, home)} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export Semantic JSON</button>
+                <button type="button" onClick={() => downloadJson(`${home.id}-${home.pairedProposalId ?? 'draft'}-semantic-bim-v1.json`, semanticBimFromHome(home))} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export Semantic BIM JSON</button>
+                <button type="button" onClick={() => downloadJson(`${home.id}-${home.pairedProposalId ?? 'draft'}-standards-checks.json`, { standardsRegistry: standardsRegistrySummary(), standardsValidation: validateStandards(home), bcfIssues: validateStandards(home).issues })} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export Standards + Issues JSON</button>
+                <button type="button" onClick={() => downloadJson(`${home.id}-${home.pairedProposalId ?? 'draft'}-bim-asset-registry.json`, bimAssetRegistrySummary())} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export BIM Asset Registry</button>
+                <button type="button" onClick={() => downloadText(`${home.id}-${home.pairedProposalId ?? 'draft'}-floorplan.svg`, currentDeterministicSvg() ?? semanticSvgForHome(home), 'image/svg+xml')} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export 2D SVG</button>
+                <button type="button" onClick={() => downloadText(`${home.id}-front-elevation.svg`, elevationSvgMarkup(home, 'front'), 'image/svg+xml')} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export Front Elevation SVG</button>
+                <button type="button" onClick={() => downloadText(`${home.id}-side-elevation.svg`, elevationSvgMarkup(home, 'side'), 'image/svg+xml')} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export Side Elevation SVG</button>
+                <button type="button" onClick={() => downloadText(`${home.id}-constraint-report.html`, constraintReportHtml(home), 'text/html')} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export Constraint Report HTML</button>
+                <button type="button" onClick={() => downloadJson(`${home.id}-constraint-report.json`, codeAdvisoryReportForHome(home))} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export Constraint Report JSON</button>
+                <button type="button" onClick={() => downloadJson(`${home.id}-build-kit-bom.json`, { planId: home.id, bom: home.buildValidation?.bom ?? [], componentsUsed: home.componentsUsed })} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export Build Kit BOM JSON</button>
+                <button type="button" data-export-client-packet onClick={() => downloadText(`${home.id}-client-packet.html`, clientPacketHtml(home, currentDeterministicSvg() ?? semanticSvgForHome(home), groups), 'text/html')} className="w-full rounded-sm border border-emerald-800 bg-emerald-800 px-3 py-2 text-xs text-white hover:bg-emerald-700">Download Client Packet (HTML)</button>
+                <button type="button" onClick={export3d} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export Current 3D PNG</button>
+                <button type="button" onClick={onExportPacket} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export Brochure Packet JSON</button>
+                <button type="button" onClick={() => downloadText(`${home.id}-${home.pairedProposalId ?? 'draft'}-brochure.html`, brochureHtmlForHome(home, groups, currentCanvasImage(true), localVisualAssetAttributions(), currentSourceImage(home), currentDeterministicSvg()), 'text/html')} className="w-full rounded-sm border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 hover:border-stone-800 hover:bg-stone-50">Export HTML Brochure</button>
                 <div className="pt-2 text-[10px] font-semibold uppercase tracking-wide text-amber-700">Experimental export</div>
                 <button type="button" onClick={() => downloadText(`${home.id}-${home.pairedProposalId ?? 'draft'}-experimental.ifc`, exportExperimentalIfc(home).ifcText, 'application/x-step')} className="w-full border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">Export Experimental IFC STEP</button>
                 <div className="text-[10px] leading-snug text-amber-700">IFC STEP is a handoff placeholder until full web-ifc/fragments entity writing is enabled. Semantic BIM JSON is the stable BIM export.</div>
@@ -2772,7 +2772,7 @@ function WorkflowModal({
                         setRepairPatchText('');
                         setRepairPatchStatus('Patch input cleared. Current plan unchanged.');
                       }}
-                      className="border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700"
+                      className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50"
                     >
                       Rollback/Clear
                     </button>
@@ -2784,7 +2784,7 @@ function WorkflowModal({
                     <button
                       type="button"
                       onClick={() => navigator.clipboard?.writeText(repairCliCommands)}
-                      className="border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700"
+                      className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50"
                     >
                       Copy
                     </button>
@@ -2803,8 +2803,8 @@ function WorkflowModal({
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Targeted repair prompt</h3>
                   <div className="flex gap-1">
-                    <button type="button" onClick={() => navigator.clipboard?.writeText(targetedPrompt || feedbackPrompt)} className="border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700">Copy Prompt</button>
-                    <button type="button" onClick={() => downloadJson(`${home?.id ?? 'plan'}-targeted-repair-packet.json`, { recommendation, targetedPrompt, driftReport: activeReport, validation: groups, semanticPlan: home ? semanticPlanForHome(home) : null })} className="border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700">Download Packet</button>
+                    <button type="button" onClick={() => navigator.clipboard?.writeText(targetedPrompt || feedbackPrompt)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50">Copy Prompt</button>
+                    <button type="button" onClick={() => downloadJson(`${home?.id ?? 'plan'}-targeted-repair-packet.json`, { recommendation, targetedPrompt, driftReport: activeReport, validation: groups, semanticPlan: home ? semanticPlanForHome(home) : null })} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50">Download Packet</button>
                   </div>
                 </div>
                 <textarea readOnly value={targetedPrompt || feedbackPrompt} className="h-[560px] w-full resize-none border border-stone-200 bg-white p-3 font-mono text-[10px] leading-relaxed text-stone-700" />
