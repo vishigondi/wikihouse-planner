@@ -3575,7 +3575,7 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
       <div className="relative z-20 mb-3 flex items-center justify-between gap-3">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
-            GPT Proposal + Deterministic Render
+            {isJsonOnlyPlan(home) ? 'Plan Sheet + Elevations' : 'GPT Proposal + Deterministic Render'}
             {isJsonOnlyPlan(home) && (
               <span className="ml-2 border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[9px] normal-case tracking-normal text-stone-600" data-json-only-packet>
                 JSON-only deterministic packet
@@ -3603,17 +3603,29 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
       {mode === 'compare' ? (
         <div className="relative z-0 grid gap-4 xl:grid-cols-2">
           <figure className="border border-stone-200 bg-white p-3 shadow-sm">
-            <figcaption className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-stone-500">GPT Proposal</figcaption>
-            <div className="flex h-[min(72vh,760px)] items-center justify-center overflow-hidden bg-white">
-              {info.sourceImageUrl ? (
-                <img src={info.sourceImageUrl} alt={`${home.model} GPT proposal`} className="max-h-full max-w-full object-contain" />
-              ) : (
-                <div className="px-8 text-center text-[11px] leading-relaxed text-stone-400">
-                  <div className="mb-1 font-semibold uppercase tracking-wide">No proposal image</div>
-                  This plan was authored as semantic JSON only. The deterministic render on the right is the design — a GPT proposal image is optional reference art.
+            {isJsonOnlyPlan(home) ? (
+              <>
+                <figcaption className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-stone-500">Elevations - Front + Side</figcaption>
+                <div className="flex h-[min(72vh,760px)] flex-col gap-3 overflow-auto">
+                  <SemanticElevationView home={home} side="front" />
+                  <SemanticElevationView home={home} side="side" />
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <>
+                <figcaption className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-stone-500">GPT Proposal</figcaption>
+                <div className="flex h-[min(72vh,760px)] items-center justify-center overflow-hidden bg-white">
+                  {info.sourceImageUrl ? (
+                    <img src={info.sourceImageUrl} alt={`${home.model} GPT proposal`} className="max-h-full max-w-full object-contain" />
+                  ) : (
+                    <div className="px-8 text-center text-[11px] leading-relaxed text-stone-400">
+                      <div className="mb-1 font-semibold uppercase tracking-wide">No proposal image</div>
+                      This plan was authored as semantic JSON only. The deterministic render on the right is the design — a GPT proposal image is optional reference art.
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </figure>
           <figure className="border border-stone-200 bg-white p-3 shadow-sm">
             <figcaption className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-stone-500">Deterministic Render</figcaption>
@@ -3644,8 +3656,8 @@ function SemanticElevationView({ home, side }: { home: DenHome; side: 'front' | 
   const model = elevationModelForHome(home, side);
   const svg = elevationSvgString(model);
   return (
-    <div className="flex h-full items-center justify-center bg-[#f7f3ec] p-8">
-      <div className="w-full max-w-5xl border border-stone-200 bg-[#fbfaf6] p-6 shadow-sm">
+    <div className="flex items-center justify-center bg-[#f7f3ec] p-4">
+      <div className="w-full max-w-5xl border border-stone-200 bg-[#fbfaf6] p-4 shadow-sm">
         <div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-wide text-stone-500">
           <span>{side} elevation - {model.gableFacing ? 'gable face' : 'eave face'}</span>
           <span>
@@ -3653,7 +3665,7 @@ function SemanticElevationView({ home, side }: { home: DenHome; side: 'front' | 
           </span>
         </div>
         {/* eslint-disable-next-line react/no-danger */}
-        <div className="h-[min(42vh,360px)] w-full [&>svg]:h-full [&>svg]:w-full" data-elevation-openings={model.openings.length} dangerouslySetInnerHTML={{ __html: svg }} />
+        <div className="h-[min(32vh,300px)] w-full [&>svg]:h-full [&>svg]:w-full" data-elevation-openings={model.openings.length} dangerouslySetInnerHTML={{ __html: svg }} />
       </div>
     </div>
   );
