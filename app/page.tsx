@@ -1926,7 +1926,7 @@ function ProductWorkflowPanel({
             onChange={(event) => setBriefText(event.target.value)}
             placeholder={'2-bed A-frame, ≤800 sqft, 40×60 lot, 5 ft side setbacks'}
             data-brief-input
-            className="h-12 w-full resize-none border border-stone-200 bg-white px-2 py-1 font-mono text-stone-700"
+            className="h-12 w-full resize-none rounded-sm border border-stone-200 bg-white px-2 py-1 font-mono text-stone-700 focus:border-stone-400"
           />
         </label>
         <button
@@ -1941,12 +1941,12 @@ function ProductWorkflowPanel({
               intent: briefText.trim() || promptRequest.intent,
             });
           }}
-          className="w-full border border-stone-800 bg-stone-800 px-2 py-1 text-white hover:bg-stone-700"
+          className="w-full rounded-sm border border-stone-800 bg-stone-800 px-2 py-1 text-white hover:bg-stone-700"
         >
           Parse Brief Into Request
         </button>
         {briefUnparsed.length > 0 && (
-          <div className="border border-amber-200 bg-amber-50 p-1.5 text-amber-800" data-brief-unparsed>
+          <div className="rounded-sm border border-amber-200 bg-amber-50 p-1.5 text-amber-800" data-brief-unparsed>
             Not understood (add manually below): {briefUnparsed.join('; ')}
           </div>
         )}
@@ -1954,7 +1954,7 @@ function ProductWorkflowPanel({
           type="button"
           data-generate-plan
           onClick={onGeneratePlan}
-          className="w-full border border-emerald-800 bg-emerald-800 px-2 py-1 text-white hover:bg-emerald-700"
+          className="w-full rounded-sm border border-emerald-800 bg-emerald-800 px-2 py-1 text-white hover:bg-emerald-700"
         >
           Generate Plan From Brief
         </button>
@@ -2118,37 +2118,37 @@ function ConstraintReportPanel({ home }: { home: DenHome }) {
         value={draft[key]}
         onChange={(event) => updateDraft(key, event.target.value)}
         data-lot-field={key}
-        className="w-full border border-stone-200 bg-white px-1.5 py-0.5 font-mono text-[10px] text-stone-700"
+        className="w-full rounded-sm border border-stone-200 bg-white px-1.5 py-1 font-mono text-[10px] text-stone-700 focus:border-stone-400"
       />
     </label>
   );
   return (
-    <section className="border border-stone-200 bg-white p-3" data-constraint-report={report.reportVersion}>
+    <section className="rounded-lg border border-stone-200 bg-white p-3" data-constraint-report={report.reportVersion}>
       <div className="mb-2 flex items-center justify-between gap-2">
         <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Constraint Report</h3>
         <span className="font-mono text-[10px] text-stone-500">
           {report.summary.pass} pass / {report.summary.fail} fail / {report.summary.notEvaluated} not evaluated
         </span>
       </div>
-      <div className="mb-2 border border-stone-200 bg-stone-50 p-2" data-jurisdiction={report.jurisdiction.id}>
+      <div className="mb-2 rounded-sm border border-stone-200 bg-stone-50 p-2" data-jurisdiction={report.jurisdiction.id}>
         <div className="text-[10px] font-semibold text-stone-600">{report.jurisdiction.label}</div>
         <div className="mt-0.5 text-[9px] leading-snug text-stone-500">{report.jurisdiction.codeEdition}</div>
         {report.jurisdiction.transitionNote && (
           <div className="mt-1 text-[9px] leading-snug text-amber-700">{report.jurisdiction.transitionNote}</div>
         )}
       </div>
-      <div className="mb-2 border border-stone-200 bg-stone-50 p-2" data-lot-editor>
+      <div className="mb-2 rounded-sm border border-stone-200 bg-stone-50 p-2" data-lot-editor>
         <div className="mb-1 flex items-center justify-between gap-2">
           <span className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
             Lot {lotEdited ? '(what-if, not saved)' : artifactLot ? '(from artifact)' : '(none in artifact)'}
           </span>
           <div className="flex gap-1">
             {lotEdited && (
-              <button type="button" onClick={() => setLotDraft(null)} className="border border-stone-300 bg-white px-1.5 py-0.5 text-[9px] text-stone-600 hover:bg-stone-100">
+              <button type="button" onClick={() => setLotDraft(null)} className="rounded-sm border border-stone-300 bg-white px-1.5 py-0.5 text-[9px] text-stone-600 hover:border-stone-700 hover:bg-stone-100">
                 reset
               </button>
             )}
-            <button type="button" onClick={exportWithLot} data-lot-export className="border border-stone-300 bg-white px-1.5 py-0.5 text-[9px] text-stone-600 hover:bg-stone-100">
+            <button type="button" onClick={exportWithLot} data-lot-export className="rounded-sm border border-stone-300 bg-white px-1.5 py-0.5 text-[9px] text-stone-600 hover:border-stone-700 hover:bg-stone-100">
               export JSON with lot
             </button>
           </div>
@@ -2177,7 +2177,13 @@ function ConstraintReportPanel({ home }: { home: DenHome }) {
           return (
             <div
               key={rule.ruleId}
-              className="border border-stone-200 bg-stone-50 p-2"
+              className={`rounded-sm border p-2 ${
+                ruleStatus === 'fail'
+                  ? 'border-red-200 bg-red-50/60'
+                  : ruleStatus === 'pass'
+                    ? 'border-stone-200 bg-stone-50'
+                    : 'border-stone-200 bg-stone-50/50'
+              }`}
               data-constraint-rule={rule.ruleId}
               data-constraint-status={ruleStatus}
             >
@@ -2209,7 +2215,7 @@ function ConstraintReportPanel({ home }: { home: DenHome }) {
           <div className="mt-2 space-y-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Site checks (jurisdiction)</div>
             {siteFindings.map((item) => (
-              <div key={item.ruleId} className="border border-stone-200 bg-stone-50 p-2" data-constraint-rule={item.ruleId} data-constraint-status={item.status}>
+              <div key={item.ruleId} className="rounded-sm border border-stone-200 bg-stone-50 p-2" data-constraint-rule={item.ruleId} data-constraint-status={item.status}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-mono text-[10px] text-stone-700">{item.ruleId}</span>
                   <span className="font-mono text-[10px] text-stone-400">{item.status}</span>
@@ -3461,7 +3467,7 @@ function SemanticReviewPanel({ home }: { home: DenHome }) {
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.8fr)]">
-      <section className="border border-stone-200 bg-white p-3 shadow-sm">
+      <section className="rounded-lg border border-stone-200 bg-white p-3 shadow-[0_14px_30px_-22px_rgba(41,37,36,0.25)]">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
             <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Semantic Source</h3>
