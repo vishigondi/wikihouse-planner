@@ -4034,16 +4034,16 @@ function ProductGallery({
             ['Brochure', audit.brochureQuality.status],
           ] as const;
           return (
-            <article key={home.id} className="group overflow-hidden border border-stone-200 bg-white shadow-sm transition hover:border-stone-400">
+            <article key={home.id} className="group overflow-hidden rounded-lg border border-stone-200 bg-white shadow-[0_1px_2px_rgba(41,37,36,0.04)] transition duration-200 hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-[0_20px_38px_-20px_rgba(41,37,36,0.30)]">
               <button type="button" onClick={() => onOpenPlan(home.id)} className="block w-full bg-[#f7f4ee] p-4 text-left">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-sm font-semibold text-stone-800">{home.model}</h3>
-                    <p className="mt-0.5 text-[10px] text-stone-400">
+                    <h3 className="text-sm font-semibold tracking-tight text-stone-800">{home.model}</h3>
+                    <p className="mt-0.5 text-[10px] tabular-nums text-stone-400">
                       {home.sqft} sf - {home.footprint.width}&apos;x{home.footprint.depth}&apos;{home.bedBath ? ` - ${home.bedBath}` : ''}
                     </p>
                   </div>
-                  <span className={`shrink-0 border px-2 py-1 text-[9px] uppercase tracking-wide ${
+                  <span className={`shrink-0 rounded-sm border px-2 py-1 text-[9px] uppercase tracking-wide ${
                     lifecycle === 'blocked'
                       ? 'border-red-200 bg-red-50 text-red-700'
                       : lifecycle === 'exported'
@@ -4089,7 +4089,7 @@ function ProductGallery({
                   {qualityChips.map(([label, status]) => (
                     <span
                       key={label}
-                      className={`border px-2 py-1 text-center text-[9px] uppercase tracking-wide ${
+                      className={`rounded-sm border px-2 py-1 text-center text-[9px] uppercase tracking-wide ${
                         status === 'pass'
                           ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                           : status === 'warning'
@@ -4127,7 +4127,7 @@ function ProductGallery({
                       type="button"
                       data-delete-plan={home.id}
                       onClick={() => onDeletePlan(home.id)}
-                      className="border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700"
+                      className="rounded-sm border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700"
                     >
                       Delete
                     </button>
@@ -4135,7 +4135,7 @@ function ProductGallery({
                   <button
                     type="button"
                     onClick={() => onRepairPlan(home.id)}
-                    className={`border px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide ${
+                    className={`rounded-sm border px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide ${
                       audit.blockers.length > 0
                         ? 'border-red-200 bg-red-50 text-red-700 hover:border-red-700'
                         : 'border-stone-300 bg-white text-stone-700 hover:border-stone-800'
@@ -4143,7 +4143,7 @@ function ProductGallery({
                   >
                     Repair Prompt
                   </button>
-                  <button type="button" onClick={() => onOpenPlan(home.id)} className="border border-stone-300 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800 hover:bg-stone-800 hover:text-white">
+                  <button type="button" onClick={() => onOpenPlan(home.id)} className="rounded-sm border border-stone-300 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800 hover:bg-stone-800 hover:text-white">
                     Open Plan
                   </button>
                 </div>
@@ -4154,8 +4154,9 @@ function ProductGallery({
       </section>
 
       {!filteredHomes.length && (
-        <div className="border border-stone-200 bg-white p-8 text-center text-xs text-stone-500">
-          No plans match those filters.
+        <div className="rounded-lg border border-dashed border-stone-300 bg-white p-12 text-center">
+          <div className="font-sans text-base font-medium text-stone-700">No plans match those filters.</div>
+          <div className="mt-1 text-xs text-stone-400">Clear a filter, or describe a new home in the brief box above to generate one.</div>
         </div>
       )}
     </main>
