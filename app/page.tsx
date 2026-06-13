@@ -2567,7 +2567,7 @@ function WorkflowModal({
                   Reference plan
                   <select value={selectedHomeId} onChange={(event) => onSelectHome(event.target.value)} className="mt-1 w-full border border-stone-200 bg-white px-2 py-2 text-xs text-stone-700">
                     {availableHomes.map((item) => (
-                      <option key={item.id} value={item.id}>{item.model} - {item.sqft}sf - {item.bedBath}</option>
+                      <option key={item.id} value={item.id}>{item.model} - {item.sqft}sf{item.bedBath ? ` - ${item.bedBath}` : ''}</option>
                     ))}
                   </select>
                 </label>
@@ -3891,7 +3891,7 @@ function ProductGallery({
         <div>
           <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Prompt-to-plan studio</div>
           <h2 className="max-w-3xl text-3xl font-semibold tracking-tight text-stone-800">
-            Browse Den-style paired plans, repair blocked artifacts, and export only what passes brochure review.
+            Type a one-line brief. Get a dimensioned, code-checked floor plan you can hand to a client.
           </h2>
           <GalleryBriefGenerate />
         </div>
@@ -3903,7 +3903,7 @@ function ProductGallery({
             </div>
             <div className="border border-stone-200 p-2">
               <div className="font-mono text-lg text-emerald-700">{homes.filter((home) => !productAudit(home, null).blockers.length).length}</div>
-              <div className="text-[10px] uppercase tracking-wide text-stone-400">Clean</div>
+              <div className="text-[10px] uppercase tracking-wide text-stone-400">Export Ready</div>
             </div>
             <div className="border border-stone-200 p-2">
               <div className="font-mono text-lg text-red-700">{homes.filter((home) => productAudit(home, null).blockers.length).length}</div>
@@ -3988,7 +3988,7 @@ function ProductGallery({
                   <div>
                     <h3 className="text-sm font-semibold text-stone-800">{home.model}</h3>
                     <p className="mt-0.5 text-[10px] text-stone-400">
-                      {home.sqft} sf - {home.footprint.width}&apos;x{home.footprint.depth}&apos; - {home.bedBath}
+                      {home.sqft} sf - {home.footprint.width}&apos;x{home.footprint.depth}&apos;{home.bedBath ? ` - ${home.bedBath}` : ''}
                     </p>
                   </div>
                   <span className={`shrink-0 border px-2 py-1 text-[9px] uppercase tracking-wide ${
@@ -4590,7 +4590,7 @@ export default function Home() {
           <div>
             <h1 className="text-sm font-semibold tracking-tight text-stone-800">Floorplan Studio</h1>
             <span className="text-[10px] text-stone-400">
-              {homes.length} validated plan{homes.length === 1 ? '' : 's'} - browse + prompt handoff + repair + export
+              {homes.length} code-checked plan{homes.length === 1 ? '' : 's'} - from brief to client-ready packet
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -4605,9 +4605,10 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => selectHome(displayHome.id)}
+                title={`Back to ${displayHome.id}`}
                 className="border border-stone-800 bg-stone-800 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-white hover:bg-stone-700"
               >
-                Continue Detail
+                Resume {displayHome.id}
               </button>
             )}
           </div>
@@ -4652,7 +4653,7 @@ export default function Home() {
         <div>
           <h1 className="text-sm font-semibold tracking-tight text-stone-800">Floorplan Studio</h1>
           <span className="text-[10px] text-stone-400">
-            {homes.length} validated plan{homes.length === 1 ? '' : 's'} - prompt handoff + import + approve + export
+            {homes.length} code-checked plan{homes.length === 1 ? '' : 's'} - from brief to client-ready packet
           </span>
         </div>
         {displayHome && (
@@ -4681,7 +4682,7 @@ export default function Home() {
             <div className="text-right">
               <div className="text-xs font-medium text-stone-600">{displayHome.model}</div>
               <div className="text-[10px] text-stone-400">
-                {displayHome.sqft} sf - {displayHome.footprint.width}&apos;x{displayHome.footprint.depth}&apos; - {displayHome.bedBath}
+                {displayHome.sqft} sf - {displayHome.footprint.width}&apos;x{displayHome.footprint.depth}&apos;{displayHome.bedBath ? ` - ${displayHome.bedBath}` : ''}
               </div>
             </div>
           </div>
