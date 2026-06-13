@@ -2354,7 +2354,7 @@ function WorkflowActionBar({
               key={item.id}
               type="button"
               onClick={() => onOpen(item.id)}
-              className="border border-stone-300 bg-white px-3 py-1.5 text-[11px] text-stone-700 hover:bg-stone-50"
+              className="rounded-sm border border-stone-300 bg-white px-3 py-1.5 text-[11px] text-stone-700 hover:border-stone-800 hover:bg-stone-50"
             >
               {item.label}
             </button>
@@ -2364,7 +2364,7 @@ function WorkflowActionBar({
               type="button"
               data-delete-plan={home.id}
               onClick={() => onDeletePlan(home.id)}
-              className="border border-stone-300 bg-white px-3 py-1.5 text-[11px] text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700"
+              className="rounded-sm border border-stone-300 bg-white px-3 py-1.5 text-[11px] text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700"
             >
               Delete Plan
             </button>
@@ -2373,7 +2373,7 @@ function WorkflowActionBar({
       </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {!showAllChips && (
-          <div className="flex items-center gap-1 border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] uppercase tracking-wide text-emerald-800">
+          <div className="flex items-center gap-1 rounded-sm border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] uppercase tracking-wide text-emerald-800">
             {groups.filter((group) => group.status === 'pass').length} gates pass
           </div>
         )}
@@ -2399,14 +2399,20 @@ function WorkflowActionBar({
               data-validation-warnings={group.warnings.join('\n')}
               data-validation-action={group.action}
               title={chipTitle}
-              className={`${collapsed ? 'hidden ' : ''}flex items-center gap-1 border border-stone-200 bg-white px-2 py-1 text-[9px] uppercase tracking-wide`}
+              className={`${collapsed ? 'hidden ' : ''}flex items-center gap-1 rounded-sm border px-2 py-1 text-[9px] uppercase tracking-wide ${
+                group.status === 'blocked'
+                  ? 'border-red-200 bg-red-50/60'
+                  : group.status === 'warning'
+                    ? 'border-amber-200 bg-amber-50/60'
+                    : 'border-stone-200 bg-white'
+              }`}
             >
               <span className="text-stone-500">{group.label}</span>
               {hasIssues && (
                 <button
                   type="button"
                   onClick={() => onOpen('repair', repairLayer)}
-                  className="border border-stone-300 px-1 text-[8px] lowercase text-stone-500 hover:bg-stone-50"
+                  className="rounded-sm border border-stone-300 px-1 text-[8px] lowercase text-stone-500 hover:border-stone-700 hover:bg-stone-50"
                   title={`Generate ${repairLayer} repair prompt`}
                 >
                   repair
@@ -4641,7 +4647,7 @@ export default function Home() {
       <div className="min-h-screen bg-[#faf8f5]">
         <header className="flex items-center justify-between border-b border-stone-200 bg-white/90 px-5 py-3 backdrop-blur">
           <div>
-            <h1 className="text-sm font-semibold tracking-tight text-stone-800">Floorplan Studio</h1>
+            <h1 className="font-sans text-[15px] font-semibold tracking-tight text-stone-900">Floorplan Studio</h1>
             <span className="text-[10px] text-stone-400">
               {homes.length} code-checked plan{homes.length === 1 ? '' : 's'} - from brief to client-ready packet
             </span>
@@ -4650,7 +4656,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => openWorkflowDialog('new-plan')}
-              className="border border-stone-300 bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800"
+              className="rounded-sm border border-stone-300 bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800"
             >
               New Plan
             </button>
@@ -4659,7 +4665,7 @@ export default function Home() {
                 type="button"
                 onClick={() => selectHome(displayHome.id)}
                 title={`Back to ${displayHome.id}`}
-                className="border border-stone-800 bg-stone-800 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-white hover:bg-stone-700"
+                className="rounded-sm border border-stone-800 bg-stone-800 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-white hover:bg-stone-700"
               >
                 Resume {displayHome.id}
               </button>
@@ -4717,14 +4723,14 @@ export default function Home() {
                 setShowGallery(true);
                 window.history.replaceState(null, '', '/');
               }}
-              className="border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-600 hover:border-stone-800"
+              className="rounded-sm border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-600 hover:border-stone-800"
             >
               Browse Plans
             </button>
             <button
               type="button"
               onClick={() => setReviewToolsVisible((visible) => !visible)}
-              className={`border px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide ${
+              className={`rounded-sm border px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide ${
                 reviewToolsVisible
                   ? 'border-stone-800 bg-stone-800 text-white'
                   : 'border-stone-300 bg-white text-stone-600 hover:border-stone-800'
@@ -4734,7 +4740,7 @@ export default function Home() {
             </button>
             <div className="text-right">
               <div className="text-xs font-medium text-stone-600">{displayHome.model}</div>
-              <div className="text-[10px] text-stone-400">
+              <div className="text-[10px] tabular-nums text-stone-400">
                 {displayHome.sqft} sf - {displayHome.footprint.width}&apos;x{displayHome.footprint.depth}&apos;{displayHome.bedBath ? ` - ${displayHome.bedBath}` : ''}
               </div>
             </div>
