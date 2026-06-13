@@ -1,6 +1,48 @@
 # Project Status
 
-Last updated: 2026-06-12 (architect-ready polish — closed; ARCHITECT REVIEW READY)
+Last updated: 2026-06-13 (UX review loop — closed; every feature tested, app customer-ready)
+
+## 2026-06-13 UX Review Loop — Closed
+
+Seven fires as a first-time customer + UX designer in real Chrome; every
+feature exercised end to end (landing/brief/echo/generate, gallery cards
++ filters + search + empty state, delete, all view presets + Roof/White,
+Compare/Overlay/Semantic, all four modals, plan arrows, lot editor,
+exports). One worst-problem fix per fire (45edab7, 6abd28f, f49a8c2,
+f454db6, 34f2bbe, 85cfe79), each verified live + full gates:
+
+1. **Customer-language pass** — hero states the product ("Type a
+   one-line brief. Get a dimensioned, code-checked floor plan you can
+   hand to a client."); taglines drop pipeline jargon; Continue Detail
+   is now Resume <plan>; Clean tile reads Export Ready; no dangling
+   meta separators. New Plan Handoff / Repair Prompt kept (gate-bound
+   labels, dev-lane controls).
+2. **JSON-only compare pane** — blank/stale "GPT Proposal" pane replaced
+   by artifact-true front + side elevations (SemanticElevationView,
+   lib/elevations); section header reads Plan Sheet + Elevations.
+3. **Front/Side camera fit** — elevation presets now frame the whole
+   facade from real fov/aspect (gable was cropping past the canvas).
+4. **Real gallery thumbnails** — cards draw each plan's gable-face
+   elevation from the artifact (front, else side; generic fallback).
+5. **Lane coherence + labels** — Overlay tab hidden for constrained_json
+   plans (nothing to drift against); qa:brochure + sweep assert the
+   contract both ways (stricter). Plan-status segmented control labeled
+   with an explanation in both surfaces.
+6. **Self-explaining gate chips** — warning/blocked chips carry their
+   findings as hover tooltips (panel-module mismatch, IFC placeholder,
+   R305.1 citation).
+
+Fire 7 was a no-change verification pass: fresh a-frame generation
+echo -> 13 GATES PASS -> sheet + elevations, 0.00 ft envelope excess,
+chips tooltips live, traced GPT lane intact (Overlay present, panes
+unchanged). All gates green (6 batteries, build, qa:brochure 10/10 on
+prod :3000, final-interactive-sweep).
+
+Known minor leftovers (below the fix bar): Repair-With-GPT prompt text
+references a GPT image path on JSON-only plans (dev surface); gallery
+thumbnail elevations render small in the card cell; first synthetic
+click after navigation is swallowed by browser automation (extension
+input layer, not the app — DOM click works first try).
 
 ## ARCHITECT REVIEW READY — what to demo
 
