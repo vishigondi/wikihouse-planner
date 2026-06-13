@@ -3599,20 +3599,20 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
           <div className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
             {isJsonOnlyPlan(home) ? 'Plan Sheet + Elevations' : 'GPT Proposal + Deterministic Render'}
             {isJsonOnlyPlan(home) && (
-              <span className="ml-2 border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[9px] normal-case tracking-normal text-stone-600" data-json-only-packet>
+              <span className="ml-2 rounded-sm border border-stone-300 bg-stone-100 px-1.5 py-0.5 text-[9px] normal-case tracking-normal text-stone-600" data-json-only-packet>
                 JSON-only deterministic packet
               </span>
             )}
           </div>
           <div className="mt-0.5 font-mono text-[10px] text-stone-400">{info.proposalId}</div>
         </div>
-        <div className="relative z-20 flex border border-stone-200 bg-white">
+        <div className="relative z-20 flex overflow-hidden rounded-sm border border-stone-200 bg-white">
           {buttons.map((button) => (
             <button
               key={button.id}
               type="button"
               onClick={() => onModeChange(button.id)}
-              className={`border-l border-stone-200 px-2 py-1 text-[10px] first:border-l-0 ${
+              className={`border-l border-stone-200 px-2.5 py-1 text-[10px] first:border-l-0 ${
                 effectiveMode === button.id ? 'bg-stone-800 text-white' : 'text-stone-500 hover:bg-stone-50'
               }`}
             >
@@ -3624,7 +3624,7 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
 
       {effectiveMode === 'compare' ? (
         <div className="relative z-0 grid gap-4 xl:grid-cols-2">
-          <figure className="border border-stone-200 bg-white p-3 shadow-sm">
+          <figure className="rounded-lg border border-stone-200 bg-white p-3 shadow-[0_14px_30px_-22px_rgba(41,37,36,0.25)]">
             {isJsonOnlyPlan(home) ? (
               <>
                 <figcaption className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-stone-500">Elevations - Front + Side</figcaption>
@@ -3649,7 +3649,7 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
               </>
             )}
           </figure>
-          <figure className="border border-stone-200 bg-white p-3 shadow-sm">
+          <figure className="rounded-lg border border-stone-200 bg-white p-3 shadow-[0_14px_30px_-22px_rgba(41,37,36,0.25)]">
             <figcaption className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-stone-500">Deterministic Render</figcaption>
             <div className="mx-auto flex h-[min(72vh,760px)] w-full items-center justify-center overflow-hidden bg-white [&>img]:max-h-full [&>img]:max-w-full [&>img]:object-contain [&>svg]:max-h-full [&>svg]:max-w-full">
               {deterministicRender}
@@ -3657,7 +3657,7 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
           </figure>
         </div>
       ) : effectiveMode === 'overlay' ? (
-        <div className="relative z-0 mx-auto max-w-5xl border border-stone-200 bg-white p-3 shadow-sm">
+        <div className="relative z-0 mx-auto max-w-5xl rounded-lg border border-stone-200 bg-white p-3 shadow-[0_14px_30px_-22px_rgba(41,37,36,0.25)]">
           {info.sourceImageUrl ? (
             <div className="relative overflow-hidden">
               <img src={info.sourceImageUrl} alt={`${home.model} GPT proposal`} className="block h-auto w-full opacity-55" />
@@ -4896,10 +4896,10 @@ export default function Home() {
                     key={item.id}
                     type="button"
                     onClick={() => applyViewPreset(item.id)}
-                    className={`border px-2 py-0.5 text-[10px] ${
+                    className={`rounded-sm border px-2 py-1 text-[10px] ${
                       viewPreset === item.id
                         ? 'border-stone-800 bg-stone-800 text-white'
-                        : 'border-stone-200 bg-stone-100 text-stone-600 hover:bg-stone-200'
+                        : 'border-stone-200 bg-stone-100 text-stone-600 hover:border-stone-400 hover:bg-stone-200'
                     }`}
                   >
                     {item.label}
@@ -4917,8 +4917,8 @@ export default function Home() {
                       key={item.label}
                       type="button"
                       onClick={() => setActiveFloor(item.id)}
-                      className={`border px-1.5 py-0.5 text-[9px] ${
-                        activeFloor === item.id ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-stone-50 text-stone-600'
+                      className={`rounded-sm border px-1.5 py-1 text-[9px] ${
+                        activeFloor === item.id ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-400'
                       }`}
                     >
                       {item.label}
@@ -4937,8 +4937,8 @@ export default function Home() {
                           setRenderThemeId(theme.id);
                           setWallOpacity(theme.wallOpacity);
                         }}
-                        className={`border px-1.5 py-0.5 text-[9px] ${
-                          renderThemeId === theme.id ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-stone-50 text-stone-600'
+                        className={`rounded-sm border px-1.5 py-1 text-[9px] ${
+                          renderThemeId === theme.id ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-400'
                         }`}
                       >
                         {theme.label}
