@@ -1277,7 +1277,19 @@ function applyCameraPreset(
   const maxDim = Math.max(model.footprint.widthFt, model.footprint.depthFt, home.height);
   const targetY = Math.max(2, home.height * 0.24);
   const elevationTargetY = Math.max(3, home.height * 0.42);
-  const elevationDistance = Math.max(model.footprint.widthFt, model.footprint.depthFt) * 1.05;
+  // Fit the whole facade in frame: the facade plane sits half the footprint
+  // closer than the model center, and the frustum must clear both the ridge
+  // and the horizontal span at the camera's real fov/aspect.
+  const elevationDistance = (spanFt: number, facadeOffsetFt: number) => {
+    const three = (world.camera as { three?: { fov?: number; aspect?: number } }).three;
+    const fovRad = ((three?.fov ?? 50) * Math.PI) / 180;
+    const halfV = Math.tan(fovRad / 2);
+    const halfH = halfV * (three?.aspect ?? 1.8);
+    const ridgeFt = Math.max(home.height, 8);
+    const vNeed = (Math.max(elevationTargetY, ridgeFt - elevationTargetY) * 1.18) / halfV;
+    const hNeed = (spanFt * 0.5 * 1.12) / halfH;
+    return facadeOffsetFt + Math.max(vNeed, hNeed);
+  };
   if (preset === 'plan-top') {
     // Offset only along z so the top view reads square/north-up; an x==z
     // offset makes the straight-down camera inherit a 45-degree azimuth.
@@ -1285,11 +1297,13 @@ function applyCameraPreset(
     return;
   }
   if (preset === 'front-elevation') {
-    world.camera.controls.setLookAt(0, elevationTargetY, elevationDistance, 0, elevationTargetY, 0, false);
+    const distance = elevationDistance(model.footprint.widthFt, model.footprint.depthFt / 2);
+    world.camera.controls.setLookAt(0, elevationTargetY, distance, 0, elevationTargetY, 0, false);
     return;
   }
   if (preset === 'side-elevation') {
-    world.camera.controls.setLookAt(elevationDistance, elevationTargetY, 0, 0, elevationTargetY, 0, false);
+    const distance = elevationDistance(model.footprint.depthFt, model.footprint.widthFt / 2);
+    world.camera.controls.setLookAt(distance, elevationTargetY, 0, 0, elevationTargetY, 0, false);
     return;
   }
   if (preset === 'white-cutaway') {
