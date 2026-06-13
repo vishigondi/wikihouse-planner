@@ -3941,31 +3941,31 @@ function ProductGallery({
     <main className="mx-auto max-w-7xl px-5 py-6">
       <section className="mb-6 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
         <div>
-          <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Prompt-to-plan studio</div>
-          <h2 className="max-w-3xl text-3xl font-semibold tracking-tight text-stone-800">
+          <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Prompt-to-plan studio</div>
+          <h2 className="max-w-3xl font-sans text-4xl font-semibold leading-[1.05] tracking-tight text-stone-900 text-balance md:text-5xl">
             Type a one-line brief. Get a dimensioned, code-checked floor plan you can hand to a client.
           </h2>
           <GalleryBriefGenerate />
         </div>
-        <div className="self-end rounded border border-stone-200 bg-white p-4 text-xs text-stone-600">
-          <div className="mb-3 grid grid-cols-3 gap-2">
-            <div className="border border-stone-200 p-2">
-              <div className="font-mono text-lg text-stone-800">{homes.length}</div>
-              <div className="text-[10px] uppercase tracking-wide text-stone-400">Plans</div>
+        <div className="self-end rounded-lg border border-stone-200 bg-white p-4 text-xs text-stone-600 shadow-[0_18px_36px_-24px_rgba(41,37,36,0.28)]">
+          <div className="mb-3 grid grid-cols-3 divide-x divide-stone-200 border border-stone-200 bg-stone-50/40">
+            <div className="px-3 py-2.5">
+              <div className="font-mono text-2xl tabular-nums text-stone-800">{homes.length}</div>
+              <div className="mt-0.5 text-[10px] uppercase tracking-wide text-stone-400">Plans</div>
             </div>
-            <div className="border border-stone-200 p-2">
-              <div className="font-mono text-lg text-emerald-700">{homes.filter((home) => !productAudit(home, null).blockers.length).length}</div>
-              <div className="text-[10px] uppercase tracking-wide text-stone-400">Export Ready</div>
+            <div className="px-3 py-2.5">
+              <div className="font-mono text-2xl tabular-nums text-emerald-700">{homes.filter((home) => !productAudit(home, null).blockers.length).length}</div>
+              <div className="mt-0.5 text-[10px] uppercase tracking-wide text-stone-400">Export Ready</div>
             </div>
-            <div className="border border-stone-200 p-2">
-              <div className="font-mono text-lg text-red-700">{homes.filter((home) => productAudit(home, null).blockers.length).length}</div>
-              <div className="text-[10px] uppercase tracking-wide text-stone-400">Blocked</div>
+            <div className="px-3 py-2.5">
+              <div className="font-mono text-2xl tabular-nums text-red-700">{homes.filter((home) => productAudit(home, null).blockers.length).length}</div>
+              <div className="mt-0.5 text-[10px] uppercase tracking-wide text-stone-400">Blocked</div>
             </div>
           </div>
           <button
             type="button"
             onClick={onNewPlan}
-            className="w-full border border-stone-800 bg-stone-800 px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-white hover:bg-stone-700"
+            className="w-full border border-stone-800 bg-stone-800 px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-white hover:bg-stone-700"
           >
             New Plan Handoff
           </button>
