@@ -299,11 +299,16 @@ worse.
 
 Recording these so they stay visible (and so nobody "discovers" them as bugs):
 
-- **Compiled generation cannot build lofts.** `lib/generate/compile-plan.ts`
-  hardcodes `floor-0`/`levelIndex: 0`. Traced loft plans render correctly; the
-  brief parser honestly lists "loft" as ignored. Adding compiled lofts is a
-  fenced multi-level-compilation feature (loft frame, stair/ladder, loft
-  envelope clipping, gated to 0.25 ft), not a polish task.
+- **~~Compiled generation cannot build lofts.~~ SHIPPED 2026-06-15.** A brief
+  with "loft" on an a-frame or steep gable now compiles a level-1 loft over
+  the roof's headroom band (frame + room + gable wall + window + ladder),
+  derived from the same ceiling-plane math the roof uses, clipped within the
+  0.25 ft envelope, and R305-checked from the loft floor (not the ground).
+  Single-level plans compile unchanged; a roof too shallow degrades honestly.
+  Gates: `check:brief` (loft recognized), `check:generation` (level-1 frame +
+  R305 from the loft floor, a-frame + steep gable, no-headroom degrade),
+  `check:elevations` (loft window at loft sill height), `check:code` (loft
+  sloped-ceiling fixtures). Commits `bd0e3d0`, `516c066`, `671d095`, `b923bc6`.
 - **Chrome blocks a 2nd programmatic download per session** — a constraint,
   not a bug; user-initiated clicks are unaffected.
 - **First synthetic click after navigation can be swallowed** by the browser

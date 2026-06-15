@@ -67,6 +67,8 @@ Reusable loop prompt: `docs/HARDENING_LOOP_TEMPLATE.md`.
 
 ## Known debts (visible on purpose)
 
-Compiled generation has no loft (`compile-plan.ts` hardcodes floor-0; parser
-honestly lists "loft" as ignored). Chrome blocks a 2nd programmatic download
-per session. See the playbook §7.
+Chrome blocks a 2nd programmatic download per session. See the playbook §7.
+
+(Shipped 2026-06-15: compiled lofts — "...with loft" on an a-frame or steep
+gable builds a level-1 loft over the roof's headroom band, R305-checked from
+the loft floor. Single-level plans compile unchanged.)

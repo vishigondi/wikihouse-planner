@@ -1,6 +1,38 @@
 # Project Status
 
-Last updated: 2026-06-13 (design-system redesign — closed; all surfaces on Geist + interaction layer)
+Last updated: 2026-06-15 (compiled lofts — shipped; a-frame + steep-gable lofts from a brief)
+
+## 2026-06-15 Compiled Lofts — Shipped
+
+"…with loft" now builds a real level-1 loft, end to end, one capability per
+fire (bd0e3d0, 516c066, 671d095, b923bc6), each verified in real Chrome with
+the full gate ladder green, closed on two consecutive clean runs.
+
+1. **Parser** — `parseBrief` recognizes loft/lofts → `hasLoft`, surfaced in the
+   landing echo ("Understood: … a-frame · loft · …"), not the ignored list.
+2. **Compiler** — when a loft is requested AND the roof gives headroom,
+   `compileIntent` derives a loft from the same ridge/eave geometry the roof
+   planes use (one source of truth): `buildLoft()` finds the central band
+   clearing 8 + 5 ft, and emits a floor-1 panel, a level-1 `loft` room, and a
+   hall ladder. Appended AFTER level-0 validation (roof-derived, not authored),
+   so single-level plans compile unchanged. A shallow roof degrades honestly.
+3. **Geometry** — full-depth loft reaches the gable ends; a floor-1 gable wall
+   (`ext-l1-front`) hosts the floor-1 loft window so it aligns (same-floor) and
+   the elevation draws it at loft sill height. Clipped within 0.25 ft; the
+   deterministic sheet renders MAIN LEVEL + LOFT LEVEL.
+4. **Code compliance** — the loft passes R305 on its real headroom (clearance
+   measured from the loft floor, not the ground — the app's ceiling derivation
+   was already loft-aware). An open loft is non-sleeping, so R310 is n/a. A
+   loft request steepens a gable (ridge 14 → 20) so a gable can earn a loft.
+
+Gates carry the loft invariants (every new invariant, a new assertion):
+check:brief, check:generation (R305 from the loft floor, a-frame + steep
+gable, no-headroom degrade), check:elevations (loft window at loft sill
+height), check:code (loft sloped-ceiling fixtures). Verified in Chrome: a
+fresh a-frame loft AND a fresh steep-gable loft both show Ground/Loft/All,
+0.00 ft envelope / offenders [], R305 pass, no blockers, console clean.
+Guardrails held: constraint-engine semantics unchanged (loft meets the real
+rule), traced plans untouched, gen-001 untouched, all data-* hooks intact.
 
 ## 2026-06-13 Design-System Redesign — Closed
 
