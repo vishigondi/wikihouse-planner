@@ -21,6 +21,8 @@ export interface ParsedBrief {
   maxSqft?: number;
   roofStyle?: string;
   levels?: number;
+  /** Brief asked for a loft. The compiler builds one only if the roof supports headroom. */
+  hasLoft?: boolean;
   footprintWidthFt?: number;
   footprintDepthFt?: number;
   lot?: ParsedLot;
@@ -85,6 +87,12 @@ export function parseBrief(text: string): ParsedBrief {
     const word = levels[1];
     result.levels = word === 'one' || word === 'single' ? 1 : word === 'two' ? 2 : num(word);
   }
+
+  // "with loft", "sleeping loft", "loft bedroom" — a habitable loft level. The
+  // token is consumed so it never lands in `unparsed`; whether a loft is
+  // actually built is the compiler's call (it needs roof headroom).
+  const loft = take(lower.match(/\blofts?\b/));
+  if (loft) result.hasLoft = true;
 
   // Lot: "40x60 lot", "lot 40 x 60", "40' x 60' lot"
   const lot = take(

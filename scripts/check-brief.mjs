@@ -71,6 +71,16 @@ check('three bed', wordy2.bedrooms, 3);
 check('two baths', wordy2.baths, 2);
 check('no number words left unparsed', wordy2.unparsed.some((part) => /two|three/.test(part)), false);
 
+console.log('brief: loft is recognized program intent, not ignored');
+const lofty = parseBrief('2 bed a-frame with loft, 40x60 lot, 5 ft side setbacks');
+check('hasLoft set', lofty.hasLoft, true);
+check('roofStyle', lofty.roofStyle, 'a-frame');
+check('loft not in unparsed', lofty.unparsed.some((part) => /loft/i.test(part)), false);
+const sleepingLoft = parseBrief('3 bed gable, sleeping loft, 60x90 lot');
+check('sleeping loft sets hasLoft', sleepingLoft.hasLoft, true);
+const noLoft = parseBrief('2 bed a-frame, 40x60 lot');
+check('no loft stays undefined', noLoft.hasLoft, undefined);
+
 console.log('brief: foot-unit setbacks + honest unparsed inside sentences');
 const footy = parseBrief('three bedroom two bath gable farmhouse on a 60 x 90 lot with 10 foot setbacks');
 check('bedrooms', footy.bedrooms, 3);

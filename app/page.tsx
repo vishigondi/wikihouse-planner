@@ -3831,6 +3831,7 @@ function GalleryBriefGenerate() {
               `${Math.max(1, Math.min(3, echo.bedrooms ?? 2))} bed${(echo.bedrooms ?? 2) > 3 ? ' (max 3)' : ''}`,
               `${Math.max(1, Math.min(2, Math.round(echo.baths ?? 1)))} bath${Math.round(echo.baths ?? 1) > 2 ? ' (max 2)' : ''}`,
               echo.roofStyle ?? 'a-frame',
+              echo.hasLoft ? 'loft' : null,
               echo.maxSqft ? `≤${echo.maxSqft} sqft` : null,
               echo.lot ? `${echo.lot.widthFt}×${echo.lot.depthFt} lot` : 'no lot',
               echo.lot?.setbacksFt
