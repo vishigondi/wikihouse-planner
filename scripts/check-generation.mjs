@@ -241,9 +241,13 @@ const loftRoom = (aLoft.artifact?.rooms ?? []).find((room) => room.levelIndex ==
 check('loft room sits at level 1', loftRoom?.type === 'loft', JSON.stringify(loftRoom ?? null));
 check('loft band stays inside the footprint', Boolean(loftRoom) && loftRoom.bounds.x >= 0 && loftRoom.bounds.x + loftRoom.bounds.w <= aLoft.artifact.footprint.widthFt + 1e-6);
 check('loft access ladder is emitted', (aLoft.artifact?.fixtures ?? []).some((fx) => fx.type === 'loft_access_ladder'));
-// The loft window is a geometry-fire concern (it needs the loft's gable-end
-// wall to align to); fire 2 must NOT emit a window that can't yet host.
-check('no orphan loft window in the frame-only fire', !(aLoft.artifact?.windows ?? []).some((win) => win.id === 'win-loft'));
+// The loft window must host on a same-floor loft wall (alignment requires it),
+// and be named/leveled so the elevation draws it at loft sill height.
+const loftWall = (aLoft.artifact?.exteriorWalls ?? []).find((wall) => wall.floor === 1);
+check('a floor-1 loft wall is emitted', Boolean(loftWall), JSON.stringify(loftWall ?? null));
+const loftWindow = (aLoft.artifact?.windows ?? []).find((win) => win.id === 'win-l1-loft');
+check('loft window emitted at level 1', loftWindow?.floor === 1 && loftWindow?.levelIndex === 1, JSON.stringify(loftWindow ?? null));
+check('loft window hosts on the loft wall', Boolean(loftWall) && loftWindow?.wallId === loftWall.id);
 
 console.log('loft: single-level plan unchanged when no loft requested');
 const noLoft = compileIntent(mockIntentFromBrief(parseBrief('2 bed a-frame, 40x60 lot, 5 ft side setbacks')), 'battery-noloft', 'a-frame');

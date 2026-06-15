@@ -111,13 +111,12 @@ function buildLoft(
   const low = Math.max(0, Math.ceil(offset * 2) / 2);
   const high = Math.min(span, span - low);
   if (high - low < MIN_LOFT_SPAN_FT) return null; // central band too narrow
-  // Inset from the gable ends along the ridge for an edge/railing margin.
-  const perp = ridgeAlongZ ? depthFt : widthFt;
-  const perpLow = Math.min(2, perp / 4);
-  const perpHigh = perp - perpLow;
+  // The loft runs the full depth in the headroom band so it reaches the gable
+  // ends — that's where its window gets daylight at loft height. The long
+  // sides of the band stay open to the floor below (mezzanine).
   const bounds = ridgeAlongZ
-    ? { x: low, z: perpLow, w: high - low, d: perpHigh - perpLow }
-    : { x: perpLow, z: low, w: perpHigh - perpLow, d: high - low };
+    ? { x: low, z: 0, w: high - low, d: depthFt }
+    : { x: 0, z: low, w: widthFt, d: high - low };
   return { bounds, baseFt: LOFT_BASE_FT };
 }
 
@@ -518,10 +517,32 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
         bounds: { x: bounds.x, z: bounds.z, w: bounds.w, d: bounds.d },
         polygon: poly(bounds.x, bounds.z, bounds.w, bounds.d),
       });
-      // NOTE: the loft daylight/egress window is deferred to the geometry fire,
-      // where the loft's gable-end wall is emitted and clipped — a window with
-      // no loft-level source wall to align to would (correctly) read as a
-      // doors/openings blocker.
+      // Loft gable-end wall (floor 1) at the front gable, so the loft window
+      // has a same-floor source wall to align to and the renderer clips it to
+      // the roof from the loft floor up. Coincident with the gable plane, so
+      // it stays inside the envelope.
+      const loftGableSpan = ridgeAlongZ
+        ? { x1: bounds.x, z1: 0, x2: bounds.x + bounds.w, z2: 0 }
+        : { x1: 0, z1: bounds.z, x2: 0, z2: bounds.z + bounds.d };
+      const loftGableBounds = ridgeAlongZ
+        ? { x: bounds.x, z: -0.25, w: bounds.w, d: 0.5 }
+        : { x: -0.25, z: bounds.z, w: 0.5, d: bounds.d };
+      (artifact.exteriorWalls as unknown[]).push({
+        id: 'ext-l1-front', levelFrameId: 'floor-1', levelIndex: 1, floor: 1,
+        kind: 'solidExterior', wallKind: 'solidExterior', facing: ridgeAlongZ ? 'N' : 'W',
+        sourceAnchorId: 'ext-l1-front', span: loftGableSpan, bounds: loftGableBounds,
+      });
+      // Loft daylight window, hosted on the loft gable wall, drawn at loft sill
+      // height (the elevation reads levelIndex/the win-l1 id -> loft base).
+      const loftCtr = ridgeAlongZ ? bounds.x + bounds.w / 2 : bounds.z + bounds.d / 2;
+      (artifact.windows as unknown[]).push({
+        id: 'win-l1-loft', levelFrameId: 'floor-1', levelIndex: 1, floor: 1,
+        wallId: 'ext-l1-front', windowKind: 'fixed', facing: ridgeAlongZ ? 'N' : 'W',
+        roomIds: ['room-loft', 'exterior'],
+        span: ridgeAlongZ
+          ? { x1: loftCtr - 2, z1: 0, x2: loftCtr + 2, z2: 0 }
+          : { x1: 0, z1: loftCtr - 2, x2: 0, z2: loftCtr + 2 },
+      });
       // Ladder up from the hall (present in every program) at the loft band edge.
       (artifact.fixtures as unknown[]).push({
         id: 'fx-loft-ladder', roomId: 'room-hall', type: 'loft_access_ladder', floor: 0,
