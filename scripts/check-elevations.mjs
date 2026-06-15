@@ -76,6 +76,13 @@ const gSide = assertHonest('gable side', gable, 'side');
 const gSideWindow = gSide.openings.find((o) => o.kind === 'window');
 check('gable side window keeps normal sill under 8 ft eave', !gSideWindow || (gSideWindow.sillFt > 2.5 && gSideWindow.headFt <= 8), gSideWindow ? `${gSideWindow.sillFt}..${gSideWindow.headFt}` : 'none');
 
+console.log('plan: fresh a-frame with loft (loft window drawn at loft height)');
+const aLoftPlan = compiled('2 bed a-frame with loft, 40x60 lot, 5 ft side setbacks');
+const aLoftFront = buildElevationModel(aLoftPlan, 'front');
+const loftOpening = aLoftFront.openings.find((o) => o.sillFt >= 8);
+check('loft window drawn at loft sill height (>= 8 ft)', Boolean(loftOpening), JSON.stringify(aLoftFront.openings.map((o) => [o.id, Math.round(o.sillFt * 10) / 10])));
+check('loft window stays under the ridge', !loftOpening || loftOpening.headFt <= aLoftFront.ridgeFt + 1e-6);
+
 console.log('plan: traced a-frame-22 (ridge along x, inset openings, loft level)');
 const { readFileSync } = await import('node:fs');
 const traced = JSON.parse(readFileSync(join(root, 'public/data/den-image-loop/a-frame-22/paired/a-frame-22-proposal-paired-v10.paired.json'), 'utf8'));

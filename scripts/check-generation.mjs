@@ -51,7 +51,11 @@ function planeEquation(points) {
 }
 
 const STEP = 0.5;
-function ceilingProfileForRect(rect, planes, fallbackY) {
+// floorElevationFt mirrors the app's loft-aware ceiling derivation: a loft
+// room's clearance is measured from the loft floor, not the ground — so the
+// loft satisfies R305 on its real headroom, never via a ground-referenced
+// shortcut.
+function ceilingProfileForRect(rect, planes, fallbackY, floorElevationFt = 0) {
   let minFt = Infinity;
   let maxFt = -Infinity;
   let at5 = 0;
@@ -59,12 +63,13 @@ function ceilingProfileForRect(rect, planes, fallbackY) {
   let cells = 0;
   for (let x = rect.x0 + STEP / 2; x < rect.x1; x += STEP) {
     for (let z = rect.z0 + STEP / 2; z < rect.z1; z += STEP) {
-      let y = Infinity;
+      let ceilingY = Infinity;
       for (const plane of planes) {
         if (x < plane.minX - 1e-6 || x > plane.maxX + 1e-6 || z < plane.minZ - 1e-6 || z > plane.maxZ + 1e-6) continue;
-        y = Math.min(y, plane.a * x + plane.b * z + plane.c);
+        ceilingY = Math.min(ceilingY, plane.a * x + plane.b * z + plane.c);
       }
-      if (!Number.isFinite(y)) y = fallbackY;
+      if (!Number.isFinite(ceilingY)) ceilingY = fallbackY;
+      const y = ceilingY - floorElevationFt;
       minFt = Math.min(minFt, y);
       maxFt = Math.max(maxFt, y);
       cells += 1;
@@ -87,24 +92,29 @@ function reportForArtifact(artifact) {
     .map((plane) => planeEquation(plane.points ?? []))
     .filter(Boolean);
   const fallbackY = artifact.roof?.ridgeHeightFt ?? 8;
-  const rooms = (artifact.rooms ?? []).map((room) => ({
-    id: room.id,
-    label: room.label,
-    type: room.type,
-    floor: 0,
-    widthFt: room.bounds?.w,
-    depthFt: room.bounds?.d,
-    grid: room.bounds
-      ? { gx: room.bounds.x, gz: room.bounds.z, gw: room.bounds.w, gd: room.bounds.d, unitFt: 1 }
-      : undefined,
-    ceiling: room.bounds && planes.length
-      ? ceilingProfileForRect(
-        { x0: room.bounds.x, z0: room.bounds.z, x1: room.bounds.x + room.bounds.w, z1: room.bounds.z + room.bounds.d },
-        planes,
-        fallbackY,
-      )
-      : undefined,
-  }));
+  const loftFloorY = 8;
+  const rooms = (artifact.rooms ?? []).map((room) => {
+    const floor = room.levelIndex ?? room.floor ?? 0;
+    return {
+      id: room.id,
+      label: room.label,
+      type: room.type,
+      floor,
+      widthFt: room.bounds?.w,
+      depthFt: room.bounds?.d,
+      grid: room.bounds
+        ? { gx: room.bounds.x, gz: room.bounds.z, gw: room.bounds.w, gd: room.bounds.d, unitFt: 1 }
+        : undefined,
+      ceiling: room.bounds && planes.length
+        ? ceilingProfileForRect(
+          { x0: room.bounds.x, z0: room.bounds.z, x1: room.bounds.x + room.bounds.w, z1: room.bounds.z + room.bounds.d },
+          planes,
+          fallbackY,
+          floor >= 1 ? loftFloorY : 0,
+        )
+        : undefined,
+    };
+  });
   const openings = [
     ...(artifact.doors ?? []).map((opening) => ({ opening, defaultKind: 'door' })),
     ...(artifact.windows ?? []).map((opening) => ({ opening, defaultKind: 'window' })),
@@ -228,10 +238,10 @@ for (const testCase of CASES) {
   check('R305 evaluated for every ceiling-ruled room', r305NotEvaluated.length === 0, r305NotEvaluated.map((f) => f.subjectId).join(', '));
 }
 
-// --- Loft generation (fire 2 structural assertions) --------------------------
-// Structural only: that a loft level is emitted when the roof supports it,
-// stays absent otherwise, and never disturbs single-level plans. R305/R310 for
-// the loft itself are gated in check:code / check:elevations (later fires).
+// --- Loft generation ---------------------------------------------------------
+// A loft level is emitted when the roof supports it, stays absent otherwise,
+// never disturbs single-level plans, and passes R305 on its REAL headroom
+// (clearance measured from the loft floor, not the ground).
 console.log('loft: a-frame with loft yields a level-1 loft');
 const aLoft = compileIntent(mockIntentFromBrief(parseBrief('2 bed a-frame with loft, 40x60 lot, 5 ft side setbacks')), 'battery-loft-a', 'a-frame loft');
 check('compiles cleanly', aLoft.ok, aLoft.errors.join('; '));
@@ -248,6 +258,18 @@ check('a floor-1 loft wall is emitted', Boolean(loftWall), JSON.stringify(loftWa
 const loftWindow = (aLoft.artifact?.windows ?? []).find((win) => win.id === 'win-l1-loft');
 check('loft window emitted at level 1', loftWindow?.floor === 1 && loftWindow?.levelIndex === 1, JSON.stringify(loftWindow ?? null));
 check('loft window hosts on the loft wall', Boolean(loftWall) && loftWindow?.wallId === loftWall.id);
+// R305 on the loft's true headroom (measured from the loft floor).
+const aLoftReport = reportForArtifact(aLoft.artifact);
+check('loft room R305 evaluated', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id) !== 'missing' && statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id) !== 'not-evaluated', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id));
+check('loft room passes R305 from the loft floor', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id) === 'pass', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id));
+
+console.log('loft: a steep gable earns a loft too');
+const gLoft = compileIntent(mockIntentFromBrief(parseBrief('2 bed gable with loft, 40x60 lot, 5 ft side setbacks')), 'battery-loft-g', 'gable loft');
+check('compiles cleanly', gLoft.ok, gLoft.errors.join('; '));
+check('steep gable yields a floor-1 loft', (gLoft.artifact?.floorPanels ?? []).some((panel) => panel.floor === 1));
+const gLoftRoom = (gLoft.artifact?.rooms ?? []).find((room) => room.levelIndex === 1);
+const gLoftReport = reportForArtifact(gLoft.artifact);
+check('steep-gable loft passes R305 from the loft floor', statusOf(gLoftReport, 'IRC-R305.1', gLoftRoom?.id) === 'pass', statusOf(gLoftReport, 'IRC-R305.1', gLoftRoom?.id));
 
 console.log('loft: single-level plan unchanged when no loft requested');
 const noLoft = compileIntent(mockIntentFromBrief(parseBrief('2 bed a-frame, 40x60 lot, 5 ft side setbacks')), 'battery-noloft', 'a-frame');
@@ -255,11 +277,23 @@ check('stays single level', noLoft.artifact?.footprint?.levels !== 2);
 check('no floor-1 panel', !(noLoft.artifact?.floorPanels ?? []).some((panel) => panel.floor === 1));
 check('no level-1 rooms', !(noLoft.artifact?.rooms ?? []).some((room) => room.levelIndex === 1));
 
-console.log('loft: roof too low degrades honestly (gable, no loft built)');
-const gableLoft = compileIntent(mockIntentFromBrief(parseBrief('2 bed gable with loft, 40x60 lot, 5 ft side setbacks')), 'battery-gableloft', 'gable loft');
-check('compiles cleanly', gableLoft.ok, gableLoft.errors.join('; '));
-check('no loft frame under a shallow gable', !(gableLoft.artifact?.floorPanels ?? []).some((panel) => panel.floor === 1));
-check('stays single level', gableLoft.artifact?.footprint?.levels !== 2);
+console.log('loft: a roof with no headroom degrades honestly (no loft built)');
+// Direct intent with a near-flat roof: buildLoft must refuse rather than fake
+// a loft under a roof that cannot clear one.
+const flatRoofLoft = compileIntent({
+  name: 'flat-loft', footprint: { widthFt: 28, depthFt: 28 }, hasLoft: true,
+  roof: { style: 'gable', ridgeAxis: 'z', ridgeHeightFt: 9, eaveHeightFt: 8 },
+  rooms: [
+    { id: 'room-living', label: 'Living', type: 'living', x: 0, z: 0, w: 28, d: 16 },
+    { id: 'room-bed1', label: 'Bedroom 1', type: 'bedroom', x: 0, z: 16, w: 28, d: 12 },
+  ],
+  doors: [{ id: 'door-entry', fromRoomId: 'exterior', toRoomId: 'room-living', openingType: 'exteriorDoor', span: { x1: 12, z1: 0, x2: 15, z2: 0 } }],
+  windows: [{ id: 'win-bed1', roomId: 'room-bed1', span: { x1: 0, z1: 20, x2: 0, z2: 24 } }],
+  openings: [],
+}, 'battery-flatloft', 'flat loft');
+check('compiles cleanly', flatRoofLoft.ok, flatRoofLoft.errors.join('; '));
+check('no loft under a no-headroom roof', !(flatRoofLoft.artifact?.floorPanels ?? []).some((panel) => panel.floor === 1));
+check('stays single level', flatRoofLoft.artifact?.footprint?.levels !== 2);
 
 console.log('');
 if (failures) {

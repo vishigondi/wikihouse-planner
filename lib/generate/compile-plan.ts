@@ -746,7 +746,9 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
   return {
     name: `mock-${bedrooms}br-${style}`,
     footprint: { widthFt, depthFt },
-    roof: { style, ridgeAxis: 'z', ridgeHeightFt: style === 'a-frame' ? 18 : 14, eaveHeightFt: style === 'a-frame' ? 1 : 8 },
+    // A gable earns a loft only when it is steep enough to clear loft headroom;
+    // a loft request raises the gable ridge so the central band qualifies.
+    roof: { style, ridgeAxis: 'z', ridgeHeightFt: style === 'a-frame' ? 18 : (brief.hasLoft ? 20 : 14), eaveHeightFt: style === 'a-frame' ? 1 : 8 },
     lot: brief.lot ?? null,
     hasLoft: brief.hasLoft,
     rooms,
