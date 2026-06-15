@@ -228,6 +228,35 @@ for (const testCase of CASES) {
   check('R305 evaluated for every ceiling-ruled room', r305NotEvaluated.length === 0, r305NotEvaluated.map((f) => f.subjectId).join(', '));
 }
 
+// --- Loft generation (fire 2 structural assertions) --------------------------
+// Structural only: that a loft level is emitted when the roof supports it,
+// stays absent otherwise, and never disturbs single-level plans. R305/R310 for
+// the loft itself are gated in check:code / check:elevations (later fires).
+console.log('loft: a-frame with loft yields a level-1 loft');
+const aLoft = compileIntent(mockIntentFromBrief(parseBrief('2 bed a-frame with loft, 40x60 lot, 5 ft side setbacks')), 'battery-loft-a', 'a-frame loft');
+check('compiles cleanly', aLoft.ok, aLoft.errors.join('; '));
+check('footprint reports 2 levels', aLoft.artifact?.footprint?.levels === 2);
+check('a floor-1 loft panel is emitted', (aLoft.artifact?.floorPanels ?? []).some((panel) => panel.floor === 1));
+const loftRoom = (aLoft.artifact?.rooms ?? []).find((room) => room.levelIndex === 1);
+check('loft room sits at level 1', loftRoom?.type === 'loft', JSON.stringify(loftRoom ?? null));
+check('loft band stays inside the footprint', Boolean(loftRoom) && loftRoom.bounds.x >= 0 && loftRoom.bounds.x + loftRoom.bounds.w <= aLoft.artifact.footprint.widthFt + 1e-6);
+check('loft access ladder is emitted', (aLoft.artifact?.fixtures ?? []).some((fx) => fx.type === 'loft_access_ladder'));
+// The loft window is a geometry-fire concern (it needs the loft's gable-end
+// wall to align to); fire 2 must NOT emit a window that can't yet host.
+check('no orphan loft window in the frame-only fire', !(aLoft.artifact?.windows ?? []).some((win) => win.id === 'win-loft'));
+
+console.log('loft: single-level plan unchanged when no loft requested');
+const noLoft = compileIntent(mockIntentFromBrief(parseBrief('2 bed a-frame, 40x60 lot, 5 ft side setbacks')), 'battery-noloft', 'a-frame');
+check('stays single level', noLoft.artifact?.footprint?.levels !== 2);
+check('no floor-1 panel', !(noLoft.artifact?.floorPanels ?? []).some((panel) => panel.floor === 1));
+check('no level-1 rooms', !(noLoft.artifact?.rooms ?? []).some((room) => room.levelIndex === 1));
+
+console.log('loft: roof too low degrades honestly (gable, no loft built)');
+const gableLoft = compileIntent(mockIntentFromBrief(parseBrief('2 bed gable with loft, 40x60 lot, 5 ft side setbacks')), 'battery-gableloft', 'gable loft');
+check('compiles cleanly', gableLoft.ok, gableLoft.errors.join('; '));
+check('no loft frame under a shallow gable', !(gableLoft.artifact?.floorPanels ?? []).some((panel) => panel.floor === 1));
+check('stays single level', gableLoft.artifact?.footprint?.levels !== 2);
+
 console.log('');
 if (failures) {
   console.error(`${failures} generation check(s) failed`);

@@ -173,6 +173,9 @@ export async function POST(request: Request) {
     }
   }
 
+  // Loft intent is honored on both paths; the compiler builds one only if the
+  // roof gives headroom (otherwise it degrades to single-level honestly).
+  intent.hasLoft = parsed.hasLoft;
   const compiled = compileIntent(intent, planId, brief);
   if (!compiled.ok || !compiled.artifact) {
     const failureDir = path.join(root, 'artifacts', 'generation-failures');

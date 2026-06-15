@@ -50,6 +50,8 @@ export interface GenerationIntent {
   footprint: { widthFt: number; depthFt: number };
   roof: { style: 'a-frame' | 'gable'; ridgeAxis: 'x' | 'z'; ridgeHeightFt: number; eaveHeightFt: number };
   lot?: { widthFt: number; depthFt: number; setbacksFt?: { front?: number; rear?: number; left?: number; right?: number }; maxCoverageRatio?: number } | null;
+  /** Brief asked for a loft. A loft level is emitted only if the roof gives headroom. */
+  hasLoft?: boolean;
   rooms: IntentRoom[];
   doors: IntentDoor[];
   windows: IntentWindow[];
@@ -70,6 +72,53 @@ function rectsOverlap(a: IntentRoom, b: IntentRoom): boolean {
 
 function poly(x: number, z: number, w: number, d: number) {
   return [{ x, z }, { x: x + w, z }, { x: x + w, z: z + d }, { x, z: z + d }];
+}
+
+const LOFT_BASE_FT = 8;          // loft floor height above the ground floor
+const MIN_LOFT_HEADROOM_FT = 5;  // clearance needed before a band counts as a loft
+const MIN_LOFT_SPAN_FT = 6;      // a central band narrower than this isn't usable
+
+interface LoftBuild {
+  bounds: { x: number; z: number; w: number; d: number };
+  baseFt: number;
+}
+
+/**
+ * A loft is compiler-derived, not authored: it occupies the central band where
+ * the roof clears LOFT_BASE_FT + MIN_LOFT_HEADROOM_FT, computed from the same
+ * ridge/eave geometry the roof planes use (one source of truth). Returns null
+ * when the roof is too low to give honest headroom — the plan stays single
+ * level rather than fake a loft under a roof that can't hold one.
+ */
+function buildLoft(
+  roof: { ridgeAxis: 'x' | 'z'; ridgeHeightFt: number; eaveHeightFt: number },
+  widthFt: number,
+  depthFt: number,
+): LoftBuild | null {
+  const ridge = roof.ridgeHeightFt;
+  const eave = roof.eaveHeightFt;
+  const target = LOFT_BASE_FT + MIN_LOFT_HEADROOM_FT;
+  if (ridge < target + EPS || ridge <= eave + EPS) return null;
+  const overhang = 1;
+  const ridgeAlongZ = roof.ridgeAxis === 'z';
+  const span = ridgeAlongZ ? widthFt : depthFt; // axis the slope varies along
+  const mid = span / 2;
+  // Ceiling at inboard distance c from the low edge:
+  //   h(c) = eave + (ridge - eave) * (c + overhang) / (mid + overhang)
+  // Solve h = target for the offset where usable headroom begins; round the
+  // band inward (low up, high down) so the whole loft clears the target.
+  const offset = ((target - eave) / (ridge - eave)) * (mid + overhang) - overhang;
+  const low = Math.max(0, Math.ceil(offset * 2) / 2);
+  const high = Math.min(span, span - low);
+  if (high - low < MIN_LOFT_SPAN_FT) return null; // central band too narrow
+  // Inset from the gable ends along the ridge for an edge/railing margin.
+  const perp = ridgeAlongZ ? depthFt : widthFt;
+  const perpLow = Math.min(2, perp / 4);
+  const perpHigh = perp - perpLow;
+  const bounds = ridgeAlongZ
+    ? { x: low, z: perpLow, w: high - low, d: perpHigh - perpLow }
+    : { x: perpLow, z: low, w: perpHigh - perpLow, d: high - low };
+  return { bounds, baseFt: LOFT_BASE_FT };
 }
 
 interface WallSegment {
@@ -448,6 +497,41 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
     elevations,
   };
 
+  // Loft level: appended after validation (it is derived from the roof, not an
+  // authored room, so it never participates in the level-0 overlap/footprint
+  // checks). Single-level plans are untouched — this block only runs when a
+  // loft was requested AND the roof gives headroom.
+  if (intent.hasLoft) {
+    const loft = buildLoft(roof, widthFt, depthFt);
+    if (loft) {
+      const { bounds } = loft;
+      (artifact.footprint as Record<string, unknown>).levels = 2;
+      (artifact.floorPanels as unknown[]).push({
+        id: 'floor-1', floor: 1, label: 'LOFT LEVEL', levelIndex: 1,
+        footprint: { units: 'ft', x: bounds.x, z: bounds.z, w: bounds.w, d: bounds.d, width: bounds.w, depth: bounds.d, widthFt: bounds.w, depthFt: bounds.d },
+        span: { x1: bounds.x, z1: bounds.z, x2: bounds.x + bounds.w, z2: bounds.z + bounds.d },
+        baseFt: loft.baseFt,
+      });
+      (artifact.rooms as unknown[]).push({
+        id: 'room-loft', levelFrameId: 'floor-1', levelIndex: 1, floor: 1, roomKind: 'loft',
+        type: 'loft', label: 'Loft', calloutNumber: rooms.length + 1,
+        bounds: { x: bounds.x, z: bounds.z, w: bounds.w, d: bounds.d },
+        polygon: poly(bounds.x, bounds.z, bounds.w, bounds.d),
+      });
+      // NOTE: the loft daylight/egress window is deferred to the geometry fire,
+      // where the loft's gable-end wall is emitted and clipped — a window with
+      // no loft-level source wall to align to would (correctly) read as a
+      // doors/openings blocker.
+      // Ladder up from the hall (present in every program) at the loft band edge.
+      (artifact.fixtures as unknown[]).push({
+        id: 'fx-loft-ladder', roomId: 'room-hall', type: 'loft_access_ladder', floor: 0,
+        bounds: { x: Math.min(bounds.x, widthFt - 3), z: 12.5, w: 3, d: 3 },
+        clearance: { frontFt: 3, doorSwingClear: true, note: 'ladder up to loft' },
+        sourceAnchorId: 'fx-loft-ladder',
+      });
+    }
+  }
+
   return { ok: true, errors: [], artifact };
 }
 
@@ -467,7 +551,7 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
  * If even the smallest candidate cannot fit, the smallest is emitted and
  * compileIntent reports the honest envelope failure.
  */
-export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; roofStyle?: string; maxSqft?: number; lot?: GenerationIntent['lot'] }): GenerationIntent {
+export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; roofStyle?: string; maxSqft?: number; hasLoft?: boolean; lot?: GenerationIntent['lot'] }): GenerationIntent {
   const bedrooms = Math.max(1, Math.min(3, brief.bedrooms ?? 2));
   const style: 'a-frame' | 'gable' = brief.roofStyle === 'gable' ? 'gable' : 'a-frame';
   // Second bath is supported on the primary footprints only (2-bed at 28 ft,
@@ -643,6 +727,7 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
     footprint: { widthFt, depthFt },
     roof: { style, ridgeAxis: 'z', ridgeHeightFt: style === 'a-frame' ? 18 : 14, eaveHeightFt: style === 'a-frame' ? 1 : 8 },
     lot: brief.lot ?? null,
+    hasLoft: brief.hasLoft,
     rooms,
     doors,
     windows,
