@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Pre-push gate: the fast in-process ladder + build must be green before any
+# push. This is the Fable-era rule "full suite green before you ship" made
+# unskippable. Live gates (qa:brochure + sweep) need a running server and run
+# in CI, not here.
+#
+# Bypass in a genuine emergency with: git push --no-verify
+#
+# Installed automatically via the package.json "prepare" script
+# (git config core.hooksPath .githooks).
+
+set -euo pipefail
+
+echo "[pre-push] running fast gate ladder (npm run gates)…"
+if ! npm run gates; then
+  echo ""
+  echo "[pre-push] BLOCKED: gates failed. Fix them, or bypass with --no-verify if you truly must."
+  exit 1
+fi
+echo "[pre-push] gates green — pushing."

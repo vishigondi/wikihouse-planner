@@ -1,0 +1,47 @@
+name: gates
+
+# The full Fable-era gate ladder on every push and PR. The fast in-process
+# batteries + build run first (cheap, fail fast); the live gates boot a prod
+# server with headless Chromium and run qa:brochure + the interactive sweep.
+# A loosened gate shows up as a diff in review; a red gate blocks the merge.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fast gate ladder (batteries + build)
+        run: npm run gates
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Live gates (qa:brochure + interactive sweep)
+        run: npm run gates:live
+
+      - name: Upload QA artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-artifacts
+          path: |
+            artifacts/brochure-qa
+            artifacts/final-sweep
+          if-no-files-found: ignore
+          retention-days: 7

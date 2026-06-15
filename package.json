@@ -5,6 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
+    "prepare": "git config core.hooksPath .githooks || true",
+    "verify": "node scripts/final-interactive-sweep.mjs",
+    "gates": "npm run check:clip && npm run check:elevations && npm run check:code && npm run check:brief && npm run check:generation && npm run check:drawing && npm run build",
+    "gates:live": "node scripts/run-live-gates.mjs",
+    "gates:all": "npm run gates && npm run gates:live",
     "check:brief": "node scripts/check-brief.mjs",
     "check:code": "node scripts/check-code-advisory.mjs",
     "check:generation": "node scripts/check-generation.mjs",

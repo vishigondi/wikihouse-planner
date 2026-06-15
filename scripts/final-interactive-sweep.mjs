@@ -2,11 +2,14 @@
 // Rotation drags, all views + level/roof toggles, Compare/Overlay/Semantic,
 // constraint report assertions; lot-editor flip + brief parse once.
 // Usage: node scripts/final-interactive-sweep.mjs
+// Target host defaults to the dev server on :3002; SWEEP_URL overrides it so
+// the live-gate runner can point it at one prod server (the prod build serves
+// the identical interactive app).
 
 import { mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright';
 
-const BASE = 'http://127.0.0.1:3002';
+const BASE = process.env.SWEEP_URL ?? 'http://127.0.0.1:3002';
 const PLANS = ['brief-aframe-2br', 'a-frame-22', 'a-frame-bunk', 'outpost-medium', 'gen-001'];
 const SHOT_DIR = 'artifacts/final-sweep';
 
