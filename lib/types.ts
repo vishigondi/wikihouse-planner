@@ -236,6 +236,9 @@ export interface PairedPlanArtifactInfo {
   sourceKind?: string | null;
   sourceImageUrl: string;
   deterministicRenderUrl?: string;
+  /** Illustrative ChatGPT-browser "look render" — marketing art, not to scale. */
+  lookRenderUrl?: string;
+  lookRenderLook?: string;
   pairedJsonUrl: string;
   drawingStyleProfileUrl?: string;
   validationUrl?: string;

@@ -5094,6 +5094,26 @@ export default function Home() {
               </div>
             )}
           </div>
+
+          {displayHome?.pairedArtifactInfo?.lookRenderUrl && (
+            <section className="border-t border-stone-200 bg-[#fdfbf7] p-4" data-look-render-panel>
+              <div className="mb-2 flex items-center gap-2">
+                <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Look render</h3>
+                <span className="rounded-sm border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-amber-800" data-look-render-illustrative>
+                  Illustrative - not to scale
+                </span>
+                {displayHome.pairedArtifactInfo.lookRenderLook && (
+                  <span className="text-[10px] text-stone-400">{displayHome.pairedArtifactInfo.lookRenderLook}</span>
+                )}
+              </div>
+              <div className="mx-auto max-w-3xl overflow-hidden rounded-lg border border-stone-200 bg-white shadow-[0_14px_30px_-22px_rgba(41,37,36,0.25)]">
+                <img src={displayHome.pairedArtifactInfo.lookRenderUrl} alt={`${displayHome.model} look render (illustrative)`} className="block h-auto w-full" />
+              </div>
+              <div className="mx-auto mt-1.5 max-w-3xl text-[9px] leading-snug text-stone-400">
+                Marketing concept art generated in ChatGPT from this plan&apos;s geometry. The dimensioned sheet, 3D, and elevations above remain the source of truth.
+              </div>
+            </section>
+          )}
         </main>
       </div>
     </div>

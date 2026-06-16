@@ -268,6 +268,8 @@ type ProposalAvailability = {
   pairedJsonUrl?: string;
   pairedDrawingStyleProfileUrl?: string;
   deterministicRenderUrl?: string;
+  lookRenderUrl?: string;
+  lookRenderLook?: string;
   pairedValidationUrl?: string;
   pairedVisualReviewUrl?: string;
   pairedVisualDriftUrl?: string;
@@ -1664,6 +1666,8 @@ function artifactInfo(planId: string, option: ProposalAvailability): PairedPlanA
     sourceKind: option.sourceKind ?? null,
     sourceImageUrl: option.imageUrl ? `/data/den-image-loop/${planId}/${option.imageUrl}` : '',
     deterministicRenderUrl: option.deterministicRenderUrl ? `/data/den-image-loop/${planId}/${option.deterministicRenderUrl}` : undefined,
+    lookRenderUrl: option.lookRenderUrl ? `/data/den-image-loop/${planId}/${option.lookRenderUrl}` : undefined,
+    lookRenderLook: option.lookRenderLook,
     pairedJsonUrl: `/data/den-image-loop/${planId}/${option.pairedJsonUrl}`,
     drawingStyleProfileUrl: drawingStyleProfileUrl ? `/data/den-image-loop/${planId}/${drawingStyleProfileUrl}` : undefined,
     validationUrl: option.pairedValidationUrl ? `/data/den-image-loop/${planId}/${option.pairedValidationUrl}` : undefined,
