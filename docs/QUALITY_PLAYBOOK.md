@@ -310,7 +310,19 @@ Recording these so they stay visible (and so nobody "discovers" them as bugs):
   `check:elevations` (loft window at loft sill height), `check:code` (loft
   sloped-ceiling fixtures). Commits `bd0e3d0`, `516c066`, `671d095`, `b923bc6`.
 - **Chrome blocks a 2nd programmatic download per session** — a constraint,
-  not a bug; user-initiated clicks are unaffected.
+  not a bug; user-initiated clicks are unaffected. (This is why the
+  look-render lane's in-session render import is a one-click user step
+  rather than fully automated — see below.)
+- **Illustrative lanes stay subordinate and labeled.** The look-render lane
+  (`lib/look-render.ts`, `npm run lookrender:import`) is a stylized ChatGPT-
+  browser exterior render, NOT a measured drawing: it is always flagged
+  illustrative, rendered below the dimensioned sheet/3D/elevations, never
+  replaces them, and gets NO drift comparison (an exterior render is not the
+  2D plan — faking one would be the "never fake a lane" anti-pattern in
+  reverse). The import touches only `lookRender*` manifest fields; the
+  deterministic render/JSON/sourceKind stay byte-identical. It's a local,
+  human-in-the-loop workflow; a deployed product swaps the browser handoff
+  for a `gpt-image-1` call behind the same prompt builder + import + panel.
 - **First synthetic click after navigation can be swallowed** by the browser
   automation input layer (not the app — a DOM `.click()` works first try).
 

@@ -1,6 +1,53 @@
 # Project Status
 
-Last updated: 2026-06-15 (compiled lofts — shipped; a-frame + steep-gable lofts from a brief)
+Last updated: 2026-06-15 (look-render lane — shipped; ChatGPT-browser illustrative renders)
+
+## 2026-06-15 Look-Render Lane (ChatGPT browser) — Shipped
+
+A stylized exterior "look render" (drafted.ai-style), generated in the
+ChatGPT browser from a plan's real geometry and imported as a labeled
+ILLUSTRATIVE asset — strictly separate from and subordinate to the
+deterministic sheet/3D/elevations/code. No API key. Four fires
+(a6a83f5, 56fb966, 5c37692, a6b6dd2; + article fix 111f765):
+
+1. **Presets + prompt builder** (`lib/look-render.ts`) — seven looks
+   (dark/bright/earthy/bold/classic/natural/rustic, mirroring drafted)
+   and `buildLookRenderPrompt` that encodes the plan's real geometry
+   (roof, footprint, ridge/eave, gable openings, loft). Style in words
+   only; every prompt ends "not to scale / not photoreal" + an
+   originality guard; never references a competitor brand/photo.
+2. **Handoff UI** — a "Look Render" header action opens a modal with the
+   7-look selector, the copy-paste ChatGPT prompt, and the browser steps.
+   No API call.
+3. **Server-side import** — `npm run lookrender:import -- --plan <id>
+   --image <path|dataURL> --look <name>` copies the render next to the
+   plan and ADDS only `lookRender*` manifest fields (always flagged
+   illustrative); deterministic render/JSON/sourceKind untouched.
+   `--dry-run` validates without IO.
+4. **Labeled panel** — "Look render / Illustrative - not to scale" renders
+   BELOW the dimensioned sheet/3D/elevations; shows only when imported,
+   never replaces the drawing.
+
+Gate `check:lookrender` (in the ladder) asserts: 7 looks; prompts encode
+geometry, carry the look, are labeled illustrative, have the originality
+guard, are competitor-clean, differ per plan; import helpers + `--dry-run`
+flag illustrative and never touch deterministic fields; unknown look
+rejected. The interactive sweep asserts the handoff modal surfaces 7 looks
++ a geometry-true illustrative prompt. Verified in Chrome: handoff modal,
+import + labeled panel (deterministic assets present + unaltered), console
+clean; full ladder green two consecutive runs.
+
+**Boundary (by design):** this is a local, human-in-the-loop lane — the
+render is made by a person in ChatGPT, then imported. The earthy
+a-frame-with-loft render WAS produced in ChatGPT from the app's exact
+prompt and verified on screen; the one step automation cannot do is the
+file download (the documented 2nd-programmatic-download-per-session block;
+user-initiated download is unaffected), so importing a specific render is
+a one-click user step. A *deployed* product would swap the browser handoff
+for a `gpt-image-1` API call behind the same prompt builder + import +
+labeled panel. The look render never claims to be dimensional; the sheet,
+3D, and elevations remain the source of truth (no drift comparison — an
+exterior render is not the 2D plan).
 
 ## 2026-06-15 Compiled Lofts — Shipped
 
