@@ -10,7 +10,7 @@ import { mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright';
 
 const BASE = process.env.SWEEP_URL ?? 'http://127.0.0.1:3002';
-const PLANS = ['brief-aframe-2br', 'a-frame-22', 'a-frame-bunk', 'outpost-medium', 'gen-001'];
+const PLANS = ['brief-aframe-2br', 'a-frame-22', 'a-frame-bunk', 'outpost-medium', 'gen-001', 'loft-showcase'];
 const SHOT_DIR = 'artifacts/final-sweep';
 
 let failures = 0;
@@ -40,7 +40,7 @@ for (const plan of PLANS) {
     planes: Number(el.dataset.bimEnvelopePlanes ?? 'NaN'),
     offenders: JSON.parse(el.dataset.bimEnvelopeOffenders ?? '[]'),
   })).catch(() => ({ maxExcess: NaN, planes: NaN, offenders: [] }));
-  const COMPILED_PLANS = new Set(['brief-aframe-2br', 'gen-001']);
+  const COMPILED_PLANS = new Set(['brief-aframe-2br', 'gen-001', 'loft-showcase']);
   if (envelope.planes > 0) {
     const untagged = envelope.offenders.filter((item) => item.category === 'untagged');
     note(untagged.length === 0, `no untagged geometry above the roof (${untagged.length})`);
