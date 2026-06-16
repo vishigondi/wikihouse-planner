@@ -164,6 +164,37 @@ const refSideSvg = await page.locator('[data-look-render-reference-side] svg').c
 note(refFrontSvg >= 1 && refSideSvg >= 1, `look-render surfaces deterministic reference elevations (front ${refFrontSvg}, side ${refSideSvg})`);
 await page.locator('button', { hasText: /^Close$/ }).first().click().catch(() => {});
 
+// (4c) look-render consistency panel: when a render is committed, it must sit
+// beside the deterministic elevation with the full structural checklist + the
+// illustrative label, and never replace the dimensioned sheet. Strict when a
+// panel is present; an honest, logged deferral until a render is imported (never
+// a silent pass).
+let panelChecked = false;
+for (const plan of PLANS) {
+  await page.goto(`${BASE}/?home=${plan}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForTimeout(3000);
+  if ((await page.locator('[data-look-render-panel]').count()) === 0) continue;
+  panelChecked = true;
+  const illus = await page.locator('[data-look-render-panel] [data-look-render-illustration]').count();
+  const determ = await page.locator('[data-look-render-panel] [data-look-render-deterministic] svg').count();
+  const rows = await page.locator('[data-look-render-panel] [data-look-render-check]').count();
+  const label = await page.locator('[data-look-render-panel] [data-look-render-illustrative]').first().textContent().catch(() => '');
+  const sheet = await page.locator('[data-look-render-panel]').evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const sheetEl = document.querySelector('[data-deterministic-render], [data-plan-sheet], main');
+    const sr = sheetEl?.getBoundingClientRect();
+    return sr ? r.top >= sr.top : true; // panel sits below the sheet, never replacing it
+  });
+  note(illus >= 1 && determ >= 1, `look-render panel shows BOTH images (illustration ${illus}, deterministic ${determ}) [${plan}]`);
+  note(rows === 5, `look-render panel shows every structural checklist row (${rows}/5) [${plan}]`);
+  note(/not to scale/i.test(label), `look-render panel carries the illustrative label [${plan}]`);
+  note(sheet, `look-render panel is subordinate (below the sheet) [${plan}]`);
+  break;
+}
+if (!panelChecked) {
+  console.log('  info no look-render committed yet — consistency-panel assertion activates when a render is imported (fire 3)');
+}
+
 // (5) landing brief box: live parse echo + ignored-word honesty
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(6000);

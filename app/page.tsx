@@ -5110,7 +5110,7 @@ export default function Home() {
           {displayHome?.pairedArtifactInfo?.lookRenderUrl && (
             <section className="border-t border-stone-200 bg-[#fdfbf7] p-4" data-look-render-panel>
               <div className="mb-2 flex items-center gap-2">
-                <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Look render</h3>
+                <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Look render — consistency check</h3>
                 <span className="rounded-sm border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-amber-800" data-look-render-illustrative>
                   Illustrative - not to scale
                 </span>
@@ -5118,11 +5118,41 @@ export default function Home() {
                   <span className="text-[10px] text-stone-400">{displayHome.pairedArtifactInfo.lookRenderLook}</span>
                 )}
               </div>
-              <div className="mx-auto max-w-3xl overflow-hidden rounded-lg border border-stone-200 bg-white shadow-[0_14px_30px_-22px_rgba(41,37,36,0.25)]">
-                <img src={displayHome.pairedArtifactInfo.lookRenderUrl} alt={`${displayHome.model} look render (illustrative)`} className="block h-auto w-full" />
+              <div className="grid gap-3 lg:grid-cols-2">
+                <figure className="m-0 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-[0_14px_30px_-22px_rgba(41,37,36,0.25)]">
+                  <img src={displayHome.pairedArtifactInfo.lookRenderUrl} alt={`${displayHome.model} look render (illustrative)`} className="block h-auto w-full" data-look-render-illustration />
+                  <figcaption className="border-t border-stone-100 px-2 py-1 text-[9px] uppercase tracking-wide text-stone-400">Illustration — ChatGPT (not to scale)</figcaption>
+                </figure>
+                <div className="space-y-2">
+                  <figure className="m-0 overflow-hidden rounded-lg border border-stone-200 bg-white">
+                    <div className="[&_svg]:block [&_svg]:h-auto [&_svg]:w-full" data-look-render-deterministic dangerouslySetInnerHTML={{ __html: elevationSvgMarkup(displayHome, 'front') }} />
+                    <figcaption className="border-t border-stone-100 px-2 py-1 text-[9px] uppercase tracking-wide text-stone-400">Deterministic front elevation — source of truth</figcaption>
+                  </figure>
+                  {displayHome.pairedArtifactInfo.lookRenderExpectedStructure && (() => {
+                    const es = displayHome.pairedArtifactInfo.lookRenderExpectedStructure;
+                    const rows: Array<{ id: string; label: string; value: string }> = [
+                      { id: 'roof', label: 'Roof style', value: es.roofStyle },
+                      { id: 'footprint', label: 'Footprint', value: `${es.widthFt}×${es.depthFt} ft · aspect ${es.aspectRatio}` },
+                      { id: 'doors', label: 'Gable doors', value: String(es.gableDoors) },
+                      { id: 'windows', label: 'Gable windows', value: String(es.gableWindows) },
+                      { id: 'loft', label: 'Loft', value: es.hasLoft ? 'yes' : 'no' },
+                    ];
+                    return (
+                      <ul className="divide-y divide-stone-100 rounded-sm border border-stone-200 bg-white text-[10px]" data-look-render-checklist>
+                        <li className="px-2 py-1 text-[9px] font-semibold uppercase tracking-wide text-stone-500">The illustration must match these structural facts</li>
+                        {rows.map((r) => (
+                          <li key={r.id} className="flex items-center justify-between px-2 py-1 text-stone-600" data-look-render-check data-check={r.id}>
+                            <span>{r.label}</span>
+                            <span className="font-mono text-stone-800">{r.value}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    );
+                  })()}
+                </div>
               </div>
-              <div className="mx-auto mt-1.5 max-w-3xl text-[9px] leading-snug text-stone-400">
-                Marketing concept art generated in ChatGPT from this plan&apos;s geometry. The dimensioned sheet, 3D, and elevations above remain the source of truth.
+              <div className="mt-1.5 text-[9px] leading-snug text-stone-400">
+                Structural-agreement check: the illustration must depict these facts (roof style, footprint, openings, loft) from the plan&apos;s compiled geometry. This is not a scaled drawing or a pixel comparison — the dimensioned sheet, 3D, and elevations above remain the source of truth.
               </div>
             </section>
           )}
