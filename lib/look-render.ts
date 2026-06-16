@@ -51,8 +51,9 @@ export function buildLookRenderPrompt(spec: LookRenderSpec, look: LookId): strin
   if (spec.loftWindow) openings.push('a small loft window high in the gable peak');
   const gableFace = openings.length ? `front gable facade with ${openings.join(', ')}` : 'clean front gable facade';
   const loft = spec.hasLoft ? ' with an interior loft level' : '';
+  const article = /^[aeiou]/i.test(spec.roofStyle) ? 'an' : 'a';
   return [
-    `Exterior architectural illustration of a ${spec.roofStyle} cabin${loft}.`,
+    `Exterior architectural illustration of ${article} ${spec.roofStyle} cabin${loft}.`,
     `Form: about ${spec.widthFt} ft wide by ${spec.depthFt} ft deep, ~${Math.round(spec.ridgeFt)} ft ridge peak, ~${Math.round(spec.eaveFt)} ft eave; ${gableFace}.`,
     `Look: ${style}.`,
     'Render it as a soft, hand-rendered architectural illustration (premium house-plan marketing art), set in a wooded clearing with gentle landscaping; not photoreal.',
