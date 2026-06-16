@@ -14,7 +14,8 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { parseBrief } = await import(join(root, 'lib/brief.ts'));
 const { mockIntentFromBrief, compileIntent } = await import(join(root, 'lib/generate/compile-plan.ts'));
-const { LOOKS, buildLookRenderPrompt, lookRenderSpecFromArtifact, isLookId } = await import(join(root, 'lib/look-render.ts'));
+const { LOOKS, buildLookRenderPrompt, lookRenderSpecFromArtifact, isLookId, lookRenderAssetPath, lookRenderManifestFields } = await import(join(root, 'lib/look-render.ts'));
+const { execFileSync } = await import('node:child_process');
 
 let failures = 0;
 function check(label, ok, detail = '') {
@@ -66,6 +67,29 @@ const gPrompt = buildLookRenderPrompt(gSpec, 'earthy');
 check('different plans produce different prompts', aPrompt !== gPrompt);
 check('gable prompt names the gable roof + its dims', gPrompt.includes('gable') && gPrompt.includes(`${gSpec.widthFt} ft wide`), gPrompt.slice(0, 120));
 check('gable prompt omits the loft phrase', !/interior loft level/.test(gPrompt));
+
+console.log('import: helpers + dry-run flag an illustrative asset, never the deterministic fields');
+check('isLookId rejects an unknown look', !isLookId('bogus'));
+check('asset path lives under look-render/', lookRenderAssetPath('gen-001', 'earthy') === 'look-render/gen-001-earthy.png');
+const fields = lookRenderManifestFields('earthy', 'look-render/gen-001-earthy.png');
+check('manifest fields flag illustrative', fields.lookRenderIllustrative === true && fields.lookRenderLook === 'earthy' && /look-render\//.test(fields.lookRenderUrl));
+// The import script's dry-run validates args + prints the patch without IO.
+let dry = null;
+try {
+  const out = execFileSync('node', [join(root, 'scripts/lookrender-import.mjs'), '--plan', 'gen-001', '--look', 'earthy', '--dry-run'], { encoding: 'utf8' });
+  dry = JSON.parse(out);
+} catch (error) {
+  dry = { error: String(error.message ?? error) };
+}
+check('dry-run produces an illustrative patch', Boolean(dry?.patch?.lookRenderIllustrative) && dry.patch.lookRenderLook === 'earthy', JSON.stringify(dry));
+check('dry-run never touches the deterministic render', dry?.touchesDeterministic === false && !('deterministicRenderUrl' in (dry?.patch ?? {})) && !('pairedJsonUrl' in (dry?.patch ?? {})) && !('sourceKind' in (dry?.patch ?? {})));
+let rejectedUnknown = false;
+try {
+  execFileSync('node', [join(root, 'scripts/lookrender-import.mjs'), '--plan', 'gen-001', '--look', 'neon', '--dry-run'], { encoding: 'utf8', stdio: 'pipe' });
+} catch {
+  rejectedUnknown = true;
+}
+check('import rejects an unknown look', rejectedUnknown);
 
 console.log('');
 if (failures) {

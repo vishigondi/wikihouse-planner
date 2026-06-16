@@ -62,6 +62,24 @@ export function buildLookRenderPrompt(spec: LookRenderSpec, look: LookId): strin
   ].join(' ');
 }
 
+/** Where a look render is stored, relative to the plan's image-loop dir. */
+export function lookRenderAssetPath(planId: string, look: LookId): string {
+  return `look-render/${planId}-${look}.png`;
+}
+
+/**
+ * The manifest fields the import ADDS for a look render — always flagged
+ * illustrative. The importer spreads these onto the plan option and touches
+ * nothing else, so the deterministic render/JSON stay the source of truth.
+ */
+export function lookRenderManifestFields(look: LookId, relUrl: string): {
+  lookRenderUrl: string;
+  lookRenderLook: LookId;
+  lookRenderIllustrative: true;
+} {
+  return { lookRenderUrl: relUrl, lookRenderLook: look, lookRenderIllustrative: true };
+}
+
 /** Derive a spec from a compiled paired artifact (used by the gate and import). */
 export function lookRenderSpecFromArtifact(artifact: {
   planId?: string;
