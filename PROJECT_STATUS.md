@@ -1,6 +1,47 @@
 # Project Status
 
-Last updated: 2026-06-16 (look-render CONSISTENCY lane — shipped; illustration ↔ deterministic geometry)
+Last updated: 2026-06-16 (social Feed view + photoreal renders — shipped)
+
+## 2026-06-16 Social Feed View (photoreal) — Shipped
+
+Plans now present like the Barndominium Homes social feed: a vertical scroll of
+post cards, each a photoreal exterior render above the deterministic dimensioned
+floor-plan sheet. Built on the consistency lane — the render is a look-render
+(geometry-conditioned, expectedStructure-checked), labeled a "concept render";
+the dimensioned plan stays the source of truth. In-app VIEW ONLY (no export).
+Four fires (planner 7fea9e2, 84c8aa2; data ee2f266 + the photoreal swap), each
+verified in real Chrome, full ladder green on two consecutive runs.
+
+1. **Photoreal look style** — `LookRenderMode = 'illustration' | 'photoreal'`
+   (named to avoid the 3D-view `RenderMode` in lib/types.ts). The photoreal
+   branch of `buildLookRenderPrompt` yields a "photorealistic architectural
+   visualization" but stays honest: labeled "concept render — not a photo of a
+   real home, not to scale," with the originality guard. The handoff modal has a
+   Render-mode toggle (defaults Photoreal). `check:lookrender` asserts the
+   photoreal prompt (every look) encodes geometry, reads photoreal, is labeled a
+   not-a-real-photo concept render, carries the guard, is competitor-clean, and
+   never alters the geometry clause.
+2. **Feed view** — a `PlanFeed` component + `showFeed` page branch + a "Feed"
+   header action. Each card: page header (FS avatar + Floorplan Studio +
+   timestamp) → caption (model + tagline + specs) → photoreal render with a
+   "Concept render · not to scale" badge → the deterministic floor-plan sheet
+   ("dimensioned source of truth") → cosmetic engagement bar + Open plan. The
+   render is subordinate; the plan is primary and never replaced. data-* hooks on
+   feed/card/header/caption/render/label/plan/engagement. The sweep opens the
+   feed and asserts a card shows both images, the caption, the concept label, the
+   engagement bar, and that the render sits ABOVE the dimensioned plan.
+3. **Photoreal showcase** — gen-001, loft-showcase, a-frame-22 each got a
+   photoreal render produced in ChatGPT and visually verified in Chrome to agree
+   with its deterministic gable elevation on every structural row, then imported
+   (swapped over the earlier illustration at the same path; manifest stays
+   byte-identical). The Feed reads photoreal.
+
+Guardrails held: the photoreal render is a labeled concept render with the
+originality guard, subordinate to the plan; consistency stays STRUCTURAL
+agreement (never a pixel/dimensional drift metric); only look-render image bytes
+changed — manifest + deterministic paired JSON / render SVG byte-identical;
+view-only. Renders were bridged out of ChatGPT in-page (fetch → 1024px JPEG →
+data-URL download) — the per-session download block stayed reset.
 
 ## 2026-06-16 Look-Render Consistency Lane — Shipped
 

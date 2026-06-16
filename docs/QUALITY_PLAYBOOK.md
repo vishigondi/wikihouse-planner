@@ -341,6 +341,18 @@ Recording these so they stay visible (and so nobody "discovers" them as bugs):
   via `appliesTo`/floor, not a `levels` count — derive `hasLoft` from any of
   those, and pick the gable elevation by ridge axis (front for ridge-z, side
   for ridge-x), or the structural facts come out wrong (the a-frame-22 bug).
+- **Presentation lanes compose existing assets; they don't relax the source of
+  truth.** The social Feed view (`PlanFeed`, the "Feed" header action) stacks a
+  photoreal look render above the deterministic dimensioned floor-plan sheet in a
+  feed-style card — but the render keeps its "concept render" label + originality
+  guard and is visually subordinate; the dimensioned plan stays primary and is
+  never replaced. Photoreal is just a `LookRenderMode` flag on the same prompt
+  builder (still geometry-conditioned, still expectedStructure-checked); a
+  photoreal concept that could pass for a real building gets the *stronger*
+  framing "not a photo of a real home." View-only; the import overwrites the look
+  render at the same path so the manifest + deterministic artifacts stay
+  byte-identical. Shipped 2026-06-16; sweep asserts each card shows the render +
+  plan + caption + concept label + engagement bar, render ABOVE the plan.
 - **First synthetic click after navigation can be swallowed** by the browser
   automation input layer (not the app — a DOM `.click()` works first try).
 
