@@ -4288,8 +4288,96 @@ function ProductGallery({
   );
 }
 
+/**
+ * Social-feed presentation: each plan as a barndominium-style post card —
+ * photoreal look render on top, the deterministic dimensioned floor-plan sheet
+ * below, wrapped in feed chrome (header, caption, engagement bar). The render is
+ * a labeled "concept render" and visually subordinate; the floor plan is the
+ * dimensioned source of truth and is never replaced. View only.
+ */
+function PlanFeed({ homes, onOpenPlan, onExit }: { homes: DenHome[]; onOpenPlan: (id: string) => void; onExit: () => void }) {
+  // Only plans that have an imported look render read as a complete feed post.
+  const cards = homes.filter((home) => Boolean(home.pairedArtifactInfo?.lookRenderUrl) && Boolean(home.pairedArtifactInfo?.deterministicRenderUrl));
+  // Cosmetic, stable timestamps (no Date.now → no SSR/client hydration drift).
+  const stamps = ['2h', '5h', '9h', '1d', '2d', '3d'];
+  const taglines: Record<string, string> = {};
+  return (
+    <main className="mx-auto max-w-[520px] px-3 py-6" data-plan-feed>
+      {cards.length === 0 && (
+        <div className="rounded-lg border border-stone-200 bg-white p-6 text-center text-sm text-stone-500">
+          No look renders yet. Generate a render (Look Render → Photoreal) and import it to populate the feed.
+        </div>
+      )}
+      {cards.map((home, index) => {
+        const info = home.pairedArtifactInfo!;
+        const es = info.lookRenderExpectedStructure;
+        const specBits = [
+          `${home.sqft.toLocaleString()} sqft`,
+          home.bedBath,
+          es ? `${es.roofStyle}${es.hasLoft ? ' · loft' : ''}` : home.roofStyle,
+        ].filter(Boolean);
+        const tagline = taglines[home.id] ?? `${home.footprint.width}×${home.footprint.depth} ft · code-checked floor plan`;
+        return (
+          <article key={home.id} className="mb-5 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-[0_18px_40px_-30px_rgba(41,37,36,0.4)]" data-feed-card data-feed-plan-id={home.id}>
+            {/* page header */}
+            <div className="flex items-center gap-2.5 px-3 py-2.5" data-feed-header>
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-800 text-[11px] font-semibold text-white" aria-hidden>FS</div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[12px] font-semibold text-stone-800">Floorplan Studio</div>
+                <div className="text-[10px] text-stone-400">{stamps[index % stamps.length]} · code-checked · 🌐</div>
+              </div>
+              <div className="text-stone-300" aria-hidden>···</div>
+            </div>
+            {/* caption: model + tagline */}
+            <div className="px-3 pb-2.5 text-[12px] leading-snug text-stone-700" data-feed-caption>
+              <span className="font-semibold text-stone-900">{home.model}</span>
+              <span className="text-stone-500"> — {tagline}</span>
+              <div className="mt-0.5 text-[11px] text-stone-500">{specBits.join(' · ')}</div>
+            </div>
+            {/* photoreal render (subordinate, labeled) */}
+            <div className="relative bg-stone-100">
+              <img
+                src={info.lookRenderUrl}
+                alt={`${home.model} concept render`}
+                className="block aspect-[4/3] w-full object-cover"
+                data-feed-render
+              />
+              <span className="absolute bottom-2 right-2 rounded-sm bg-black/55 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-white" data-feed-concept-label>
+                Concept render · not to scale
+              </span>
+            </div>
+            {/* deterministic floor-plan sheet (source of truth) */}
+            <div className="border-t border-stone-200 bg-white p-2" data-feed-plan>
+              <div className="mb-1 px-1 text-[9px] font-semibold uppercase tracking-wide text-stone-400">Floor plan · dimensioned source of truth</div>
+              <img src={info.deterministicRenderUrl} alt={`${home.model} dimensioned floor plan`} className="block h-auto w-full" data-feed-plan-sheet />
+            </div>
+            {/* cosmetic engagement bar */}
+            <div className="flex items-center justify-between border-t border-stone-200 px-3 py-2 text-[11px] text-stone-500" data-feed-engagement>
+              <span data-feed-action="like">Like</span>
+              <span data-feed-action="comment">Comment</span>
+              <span data-feed-action="share">Share</span>
+              <button
+                type="button"
+                onClick={() => onOpenPlan(home.id)}
+                className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800"
+                data-feed-open
+              >
+                Open plan
+              </button>
+            </div>
+          </article>
+        );
+      })}
+      <div className="pt-2 text-center">
+        <button type="button" onClick={onExit} className="text-[11px] text-stone-400 underline hover:text-stone-700">Back to studio</button>
+      </div>
+    </main>
+  );
+}
+
 export default function Home() {
   const [selectedHomeId, setSelectedHomeId] = useState('');
+  const [showFeed, setShowFeed] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [reviewToolsVisible, setReviewToolsVisible] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
@@ -4761,6 +4849,42 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handler);
   }, [nextHome, prevHome]);
 
+  if (showFeed) {
+    return (
+      <div className="min-h-screen bg-[#f0f2f5]">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-stone-200 bg-white/95 px-5 py-3 backdrop-blur">
+          <div>
+            <h1 className="font-sans text-[15px] font-semibold tracking-tight text-stone-900">Floorplan Studio · Feed</h1>
+            <span className="text-[10px] text-stone-400">plans as social posts — photoreal concept render above, dimensioned plan below</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => { setShowFeed(false); setShowGallery(true); window.history.replaceState(null, '', '/'); }}
+              className="rounded-sm border border-stone-300 bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800"
+            >
+              Browse Plans
+            </button>
+            {displayHome && (
+              <button
+                type="button"
+                onClick={() => { setShowFeed(false); selectHome(displayHome.id); }}
+                className="rounded-sm border border-stone-800 bg-stone-800 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-white hover:bg-stone-700"
+              >
+                Resume {displayHome.id}
+              </button>
+            )}
+          </div>
+        </header>
+        <PlanFeed
+          homes={homes}
+          onOpenPlan={(id) => { setShowFeed(false); selectHome(id); }}
+          onExit={() => { setShowFeed(false); setShowGallery(true); window.history.replaceState(null, '', '/'); }}
+        />
+      </div>
+    );
+  }
+
   if (showGallery) {
     return (
       <div className="min-h-screen bg-[#faf8f5]">
@@ -4772,6 +4896,14 @@ export default function Home() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => { setShowGallery(false); setShowFeed(true); }}
+              className="rounded-sm border border-stone-300 bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800"
+              data-open-feed
+            >
+              Feed
+            </button>
             <button
               type="button"
               onClick={() => openWorkflowDialog('new-plan')}
@@ -4836,6 +4968,14 @@ export default function Home() {
         </div>
         {displayHome && (
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => { setShowFeed(true); window.history.replaceState(null, '', '/'); }}
+              className="rounded-sm border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-600 hover:border-stone-800"
+              data-open-feed
+            >
+              Feed
+            </button>
             <button
               type="button"
               onClick={() => {

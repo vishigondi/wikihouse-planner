@@ -204,6 +204,37 @@ if (!panelChecked) {
   console.log('  info no look-render committed yet — consistency-panel assertion activates when a render is imported (fire 3)');
 }
 
+// (4d) social Feed view: each post card stacks the photoreal render (subordinate,
+// labeled concept render) ABOVE the dimensioned floor-plan sheet (source of
+// truth), wrapped in feed chrome (caption + engagement bar). View only.
+await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(2500);
+await page.locator('[data-open-feed]').first().click();
+await page.waitForTimeout(1200);
+const feedPresent = await page.locator('[data-plan-feed]').count();
+const cardCount = await page.locator('[data-feed-card]').count();
+note(feedPresent >= 1 && cardCount >= 1, `feed view renders post cards (${cardCount})`);
+if (cardCount >= 1) {
+  const card = page.locator('[data-feed-card]').first();
+  const hasRender = await card.locator('[data-feed-render]').count();
+  const hasPlan = await card.locator('[data-feed-plan-sheet]').count();
+  const hasCaption = await card.locator('[data-feed-caption]').count();
+  const hasLabel = await card.locator('[data-feed-concept-label]').count();
+  const hasEngagement = await card.locator('[data-feed-engagement]').count();
+  // The render must sit ABOVE the dimensioned plan (render subordinate, plan primary).
+  const order = await card.evaluate((el) => {
+    const r = el.querySelector('[data-feed-render]')?.getBoundingClientRect().top ?? 0;
+    const p = el.querySelector('[data-feed-plan-sheet]')?.getBoundingClientRect().top ?? 0;
+    return r < p;
+  });
+  const labelText = await card.locator('[data-feed-concept-label]').first().textContent().catch(() => '');
+  note(hasRender >= 1 && hasPlan >= 1, `feed card shows BOTH the render and the floor-plan sheet (render ${hasRender}, plan ${hasPlan})`);
+  note(hasCaption >= 1, 'feed card shows a caption');
+  note(hasLabel >= 1 && /concept render/i.test(labelText), `feed card labels the render a concept render (${labelText.trim()})`);
+  note(hasEngagement >= 1, 'feed card shows the engagement bar');
+  note(order, 'feed card renders the concept render ABOVE the dimensioned plan');
+}
+
 // (5) landing brief box: live parse echo + ignored-word honesty
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(6000);
