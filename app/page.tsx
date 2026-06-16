@@ -2714,10 +2714,22 @@ function WorkflowModal({
                 </div>
                 <ol className="list-decimal space-y-1.5 pl-4 text-[10px] leading-snug text-stone-600">
                   <li>Copy the prompt.</li>
-                  <li>Paste it into ChatGPT (image generation). Optionally drag in this plan&apos;s 3D PNG (Export &gt; Export Current 3D PNG) as a form reference.</li>
+                  <li>Paste it into ChatGPT (image generation), then <strong>drag in a reference below</strong> so the render matches this plan&apos;s real proportions, roof pitch, openings, and loft.</li>
                   <li>Download the generated image.</li>
                   <li>Import it: <span className="font-mono">npm run lookrender:import -- --plan {home?.id ?? '<id>'} --image &lt;path&gt; --look {lookId}</span></li>
                 </ol>
+                {home && (
+                  <div data-look-render-reference>
+                    <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-stone-500">Deterministic reference — drag into ChatGPT</div>
+                    <div className="rounded-sm border border-stone-200 bg-white p-2 text-[9px] leading-snug text-stone-500">
+                      Dimensioned front &amp; side elevations from this plan&apos;s compiled geometry. Drag one into ChatGPT (or Export &gt; 3D PNG) so the illustration tracks the real roof style, footprint, openings, and loft — not a generic cabin.
+                    </div>
+                    <div className="mt-1 grid grid-cols-2 gap-1">
+                      <div className="rounded-sm border border-stone-200 bg-white p-1 [&_svg]:h-auto [&_svg]:w-full" data-look-render-reference-front dangerouslySetInnerHTML={{ __html: elevationSvgMarkup(home, 'front') }} />
+                      <div className="rounded-sm border border-stone-200 bg-white p-1 [&_svg]:h-auto [&_svg]:w-full" data-look-render-reference-side dangerouslySetInnerHTML={{ __html: elevationSvgMarkup(home, 'side') }} />
+                    </div>
+                  </div>
+                )}
               </section>
               <section>
                 <div className="mb-2 flex items-center justify-between">

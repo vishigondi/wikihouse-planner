@@ -14,8 +14,9 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { parseBrief } = await import(join(root, 'lib/brief.ts'));
 const { mockIntentFromBrief, compileIntent } = await import(join(root, 'lib/generate/compile-plan.ts'));
-const { LOOKS, buildLookRenderPrompt, lookRenderSpecFromArtifact, isLookId, lookRenderAssetPath, lookRenderManifestFields } = await import(join(root, 'lib/look-render.ts'));
+const { LOOKS, buildLookRenderPrompt, lookRenderSpecFromArtifact, isLookId, lookRenderAssetPath, lookRenderManifestFields, expectedStructureFromSpec } = await import(join(root, 'lib/look-render.ts'));
 const { execFileSync } = await import('node:child_process');
+const { readFile } = await import('node:fs/promises');
 
 let failures = 0;
 function check(label, ok, detail = '') {
@@ -68,11 +69,27 @@ check('different plans produce different prompts', aPrompt !== gPrompt);
 check('gable prompt names the gable roof + its dims', gPrompt.includes('gable') && gPrompt.includes(`${gSpec.widthFt} ft wide`), gPrompt.slice(0, 120));
 check('gable prompt omits the loft phrase', !/interior loft level/.test(gPrompt));
 
+console.log('expectedStructure: a pure projection of the compiled spec (no mismatch can be authored)');
+const aExpected = expectedStructureFromSpec(aSpec);
+check('expectedStructure mirrors the spec geometry',
+  aExpected.roofStyle === aSpec.roofStyle
+  && aExpected.widthFt === aSpec.widthFt
+  && aExpected.depthFt === aSpec.depthFt
+  && aExpected.gableDoors === aSpec.gableDoors
+  && aExpected.gableWindows === aSpec.gableWindows
+  && aExpected.hasLoft === aSpec.hasLoft,
+  JSON.stringify(aExpected));
+check('expectedStructure aspectRatio = round(width/depth, 2)',
+  aExpected.aspectRatio === Math.round((aSpec.widthFt / aSpec.depthFt) * 100) / 100, String(aExpected.aspectRatio));
+const gExpected = expectedStructureFromSpec(gSpec);
+check('expectedStructure tracks the plan: a-frame+loft differs from gable',
+  JSON.stringify(aExpected) !== JSON.stringify(gExpected) && aExpected.hasLoft && !gExpected.hasLoft);
+
 console.log('import: helpers + dry-run flag an illustrative asset, never the deterministic fields');
 check('isLookId rejects an unknown look', !isLookId('bogus'));
 check('asset path lives under look-render/', lookRenderAssetPath('gen-001', 'earthy') === 'look-render/gen-001-earthy.png');
-const fields = lookRenderManifestFields('earthy', 'look-render/gen-001-earthy.png');
-check('manifest fields flag illustrative', fields.lookRenderIllustrative === true && fields.lookRenderLook === 'earthy' && /look-render\//.test(fields.lookRenderUrl));
+const fields = lookRenderManifestFields('earthy', 'look-render/gen-001-earthy.png', aExpected);
+check('manifest fields flag illustrative + carry expectedStructure', fields.lookRenderIllustrative === true && fields.lookRenderLook === 'earthy' && /look-render\//.test(fields.lookRenderUrl) && fields.lookRenderExpectedStructure.roofStyle === aSpec.roofStyle);
 // The import script's dry-run validates args + prints the patch without IO.
 let dry = null;
 try {
@@ -83,6 +100,31 @@ try {
 }
 check('dry-run produces an illustrative patch', Boolean(dry?.patch?.lookRenderIllustrative) && dry.patch.lookRenderLook === 'earthy', JSON.stringify(dry));
 check('dry-run never touches the deterministic render', dry?.touchesDeterministic === false && !('deterministicRenderUrl' in (dry?.patch ?? {})) && !('pairedJsonUrl' in (dry?.patch ?? {})) && !('sourceKind' in (dry?.patch ?? {})));
+
+// The recorded expectedStructure must EQUAL the plan's actual compiled geometry,
+// derived INDEPENDENTLY here from gen-001's stored paired JSON (the same source
+// the deterministic 3D/elevations are drawn from). A mismatch cannot be recorded.
+let truth = null;
+try {
+  const manifest = JSON.parse(await readFile(join(root, 'public/data/den-image-loop/proposal-manifest.json'), 'utf8'));
+  const genOpts = manifest.plans?.['gen-001'] ?? [];
+  const genOpt = genOpts.find((o) => o.latestPairedArtifact) ?? genOpts[genOpts.length - 1];
+  const genPaired = JSON.parse(await readFile(join(root, 'public/data/den-image-loop/gen-001', genOpt.pairedJsonUrl), 'utf8'));
+  truth = expectedStructureFromSpec(lookRenderSpecFromArtifact(genPaired));
+} catch (error) {
+  truth = { error: String(error.message ?? error) };
+}
+check('dry-run records expectedStructure = the plan\'s real compiled geometry',
+  JSON.stringify(dry?.expectedStructure) === JSON.stringify(truth),
+  JSON.stringify({ recorded: dry?.expectedStructure, truth }));
+check('expectedStructure rides ALONGSIDE the illustrative flag in the patch',
+  Boolean(dry?.patch?.lookRenderIllustrative) && JSON.stringify(dry?.patch?.lookRenderExpectedStructure) === JSON.stringify(truth));
+check('recorded expectedStructure has all structural fields',
+  dry?.expectedStructure && typeof dry.expectedStructure.roofStyle === 'string'
+  && Number.isFinite(dry.expectedStructure.widthFt) && Number.isFinite(dry.expectedStructure.depthFt)
+  && Number.isFinite(dry.expectedStructure.aspectRatio) && Number.isFinite(dry.expectedStructure.gableDoors)
+  && Number.isFinite(dry.expectedStructure.gableWindows) && typeof dry.expectedStructure.hasLoft === 'boolean',
+  JSON.stringify(dry?.expectedStructure));
 let rejectedUnknown = false;
 try {
   execFileSync('node', [join(root, 'scripts/lookrender-import.mjs'), '--plan', 'gen-001', '--look', 'neon', '--dry-run'], { encoding: 'utf8', stdio: 'pipe' });

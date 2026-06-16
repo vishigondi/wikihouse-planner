@@ -38,6 +38,41 @@ export function isLookId(value: string): value is LookId {
 }
 
 /**
+ * The structural facts an illustration must AGREE with to be "consistent" — the
+ * checkable subset of the compiled geometry the deterministic 3D/elevations are
+ * drawn from. This is the consistency contract (roof style, footprint aspect,
+ * gable openings, loft presence), NOT a pixel/dimensional drift metric: an
+ * exterior render is never compared pixel-for-pixel against the 2D plan.
+ */
+export interface ExpectedStructure {
+  roofStyle: string;
+  widthFt: number;
+  depthFt: number;
+  aspectRatio: number;
+  gableDoors: number;
+  gableWindows: number;
+  hasLoft: boolean;
+}
+
+/**
+ * Project a spec onto its structural facts. Pure: every field comes straight
+ * from the spec (which is itself derived from the plan's compiled geometry), so
+ * a recorded expectedStructure can never claim a structure the plan doesn't have.
+ */
+export function expectedStructureFromSpec(spec: LookRenderSpec): ExpectedStructure {
+  const aspectRatio = spec.depthFt ? Math.round((spec.widthFt / spec.depthFt) * 100) / 100 : 0;
+  return {
+    roofStyle: spec.roofStyle,
+    widthFt: spec.widthFt,
+    depthFt: spec.depthFt,
+    aspectRatio,
+    gableDoors: spec.gableDoors,
+    gableWindows: spec.gableWindows,
+    hasLoft: spec.hasLoft,
+  };
+}
+
+/**
  * The render must track THIS design, not a generic cabin: the prompt names the
  * roof style, footprint, ridge/eave, openings, and loft so the illustration
  * reflects the actual plan. Ends with the illustrative framing + originality
@@ -69,15 +104,17 @@ export function lookRenderAssetPath(planId: string, look: LookId): string {
 
 /**
  * The manifest fields the import ADDS for a look render — always flagged
- * illustrative. The importer spreads these onto the plan option and touches
+ * illustrative, and always carrying the expectedStructure the illustration is
+ * meant to depict. The importer spreads these onto the plan option and touches
  * nothing else, so the deterministic render/JSON stay the source of truth.
  */
-export function lookRenderManifestFields(look: LookId, relUrl: string): {
+export function lookRenderManifestFields(look: LookId, relUrl: string, expected: ExpectedStructure): {
   lookRenderUrl: string;
   lookRenderLook: LookId;
   lookRenderIllustrative: true;
+  lookRenderExpectedStructure: ExpectedStructure;
 } {
-  return { lookRenderUrl: relUrl, lookRenderLook: look, lookRenderIllustrative: true };
+  return { lookRenderUrl: relUrl, lookRenderLook: look, lookRenderIllustrative: true, lookRenderExpectedStructure: expected };
 }
 
 /** Derive a spec from a compiled paired artifact (used by the gate and import). */

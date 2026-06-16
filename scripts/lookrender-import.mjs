@@ -15,7 +15,7 @@ import { dirname, join, isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const { isLookId, lookRenderAssetPath, lookRenderManifestFields } = await import(join(root, 'lib/look-render.ts'));
+const { isLookId, lookRenderAssetPath, lookRenderManifestFields, lookRenderSpecFromArtifact, expectedStructureFromSpec } = await import(join(root, 'lib/look-render.ts'));
 
 const LOOP_ROOT = join(root, 'public', 'data', 'den-image-loop');
 const MANIFEST_PATH = join(LOOP_ROOT, 'proposal-manifest.json');
@@ -44,12 +44,30 @@ const options = manifest.plans?.[planId];
 if (!Array.isArray(options) || !options.length) fail(`plan ${planId} not found in the manifest`);
 const option = options.find((o) => o.latestPairedArtifact) ?? options[options.length - 1];
 
+// expectedStructure is DERIVED from the same paired JSON the deterministic
+// 3D/elevations are drawn from — never a free-form flag — so the recorded
+// structure can never disagree with the plan's actual compiled geometry.
+if (!option.pairedJsonUrl) fail(`plan ${planId} option ${option.id} has no pairedJsonUrl — cannot derive expectedStructure`);
+const pairedPath = join(LOOP_ROOT, planId, option.pairedJsonUrl);
+let paired;
+try {
+  paired = JSON.parse(await readFile(pairedPath, 'utf8'));
+} catch (error) {
+  fail(`could not read paired JSON at ${option.pairedJsonUrl}: ${error.message ?? error}`);
+}
+const spec = lookRenderSpecFromArtifact(paired);
+if (!spec.roofStyle || !(spec.widthFt > 0) || !(spec.depthFt > 0)) {
+  fail(`paired JSON for ${planId} did not yield valid geometry (roof ${spec.roofStyle}, ${spec.widthFt}x${spec.depthFt})`);
+}
+const expectedStructure = expectedStructureFromSpec(spec);
+
 const relUrl = lookRenderAssetPath(planId, look);
-const fields = lookRenderManifestFields(look, relUrl);
+const fields = lookRenderManifestFields(look, relUrl, expectedStructure);
 
 if (dryRun) {
-  // Validate + show the patch without reading the image or writing anything.
-  console.log(JSON.stringify({ planId, option: option.id, patch: fields, touchesDeterministic: false }, null, 2));
+  // Validate + show the patch (incl. derived expectedStructure) without reading
+  // the image or writing anything.
+  console.log(JSON.stringify({ planId, option: option.id, patch: fields, expectedStructure, touchesDeterministic: false }, null, 2));
   process.exit(0);
 }
 

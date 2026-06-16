@@ -157,6 +157,11 @@ const lookCount = await page.locator('[data-look-selector] button').count();
 const lookPrompt = await page.locator('[data-look-render-prompt]').first().inputValue().catch(() => '');
 note(lookCount === 7, `look-render offers 7 looks (${lookCount})`);
 note(/not to scale/i.test(lookPrompt) && /ft wide/.test(lookPrompt) && /a-frame/.test(lookPrompt), 'look-render prompt is illustrative + encodes real geometry');
+// Geometry-conditioned handoff: the deterministic reference (front + side
+// elevations) is surfaced so the render tracks real geometry, not a generic cabin.
+const refFrontSvg = await page.locator('[data-look-render-reference-front] svg').count();
+const refSideSvg = await page.locator('[data-look-render-reference-side] svg').count();
+note(refFrontSvg >= 1 && refSideSvg >= 1, `look-render surfaces deterministic reference elevations (front ${refFrontSvg}, side ${refSideSvg})`);
 await page.locator('button', { hasText: /^Close$/ }).first().click().catch(() => {});
 
 // (5) landing brief box: live parse echo + ignored-word honesty

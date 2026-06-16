@@ -270,6 +270,15 @@ type ProposalAvailability = {
   deterministicRenderUrl?: string;
   lookRenderUrl?: string;
   lookRenderLook?: string;
+  lookRenderExpectedStructure?: {
+    roofStyle: string;
+    widthFt: number;
+    depthFt: number;
+    aspectRatio: number;
+    gableDoors: number;
+    gableWindows: number;
+    hasLoft: boolean;
+  };
   pairedValidationUrl?: string;
   pairedVisualReviewUrl?: string;
   pairedVisualDriftUrl?: string;
@@ -1668,6 +1677,7 @@ function artifactInfo(planId: string, option: ProposalAvailability): PairedPlanA
     deterministicRenderUrl: option.deterministicRenderUrl ? `/data/den-image-loop/${planId}/${option.deterministicRenderUrl}` : undefined,
     lookRenderUrl: option.lookRenderUrl ? `/data/den-image-loop/${planId}/${option.lookRenderUrl}` : undefined,
     lookRenderLook: option.lookRenderLook,
+    lookRenderExpectedStructure: option.lookRenderExpectedStructure,
     pairedJsonUrl: `/data/den-image-loop/${planId}/${option.pairedJsonUrl}`,
     drawingStyleProfileUrl: drawingStyleProfileUrl ? `/data/den-image-loop/${planId}/${drawingStyleProfileUrl}` : undefined,
     validationUrl: option.pairedValidationUrl ? `/data/den-image-loop/${planId}/${option.pairedValidationUrl}` : undefined,

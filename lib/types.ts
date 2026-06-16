@@ -239,6 +239,20 @@ export interface PairedPlanArtifactInfo {
   /** Illustrative ChatGPT-browser "look render" — marketing art, not to scale. */
   lookRenderUrl?: string;
   lookRenderLook?: string;
+  /**
+   * Structural facts the illustration is meant to depict, derived from the same
+   * compiled geometry as the deterministic 3D/elevations. Used to show the
+   * consistency checklist — NOT a pixel/dimensional drift comparison.
+   */
+  lookRenderExpectedStructure?: {
+    roofStyle: string;
+    widthFt: number;
+    depthFt: number;
+    aspectRatio: number;
+    gableDoors: number;
+    gableWindows: number;
+    hasLoft: boolean;
+  };
   pairedJsonUrl: string;
   drawingStyleProfileUrl?: string;
   validationUrl?: string;
