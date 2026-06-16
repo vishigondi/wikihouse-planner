@@ -13,6 +13,18 @@ import { buildElevationModel } from './elevations.ts';
 
 export type LookId = 'dark' | 'bright' | 'earthy' | 'bold' | 'classic' | 'natural' | 'rustic';
 
+/**
+ * How the look render is drawn. 'illustration' is the original hand-rendered
+ * marketing art; 'photoreal' is a photorealistic architectural visualization
+ * (the social-feed look). Either way the result is a CONCEPT render — never a
+ * measured drawing and, for photoreal, explicitly not a photo of a real home.
+ */
+export type LookRenderMode = 'illustration' | 'photoreal';
+
+export function isLookRenderMode(value: string): value is LookRenderMode {
+  return value === 'illustration' || value === 'photoreal';
+}
+
 export const LOOKS: Record<LookId, { label: string; style: string }> = {
   dark: { label: 'Dark', style: 'moody charcoal and blackened-timber palette, matte dark roof, dusk light, deep shadows' },
   bright: { label: 'Bright', style: 'airy white-and-pale-timber palette, crisp daylight, clear blue sky, fresh and light' },
@@ -77,11 +89,13 @@ export function expectedStructureFromSpec(spec: LookRenderSpec): ExpectedStructu
 
 /**
  * The render must track THIS design, not a generic cabin: the prompt names the
- * roof style, footprint, ridge/eave, openings, and loft so the illustration
- * reflects the actual plan. Ends with the illustrative framing + originality
- * guard that keep this lane honest and clear of competitor imagery.
+ * roof style, footprint, ridge/eave, openings, and loft so the render reflects
+ * the actual plan. Ends with the concept-render framing + originality guard that
+ * keep this lane honest and clear of competitor imagery — for photoreal renders
+ * the framing explicitly states it is NOT a photo of a real home (a photoreal
+ * concept could otherwise be mistaken for one).
  */
-export function buildLookRenderPrompt(spec: LookRenderSpec, look: LookId): string {
+export function buildLookRenderPrompt(spec: LookRenderSpec, look: LookId, mode: LookRenderMode = 'illustration'): string {
   const style = LOOKS[look].style;
   // Describe exactly the gable openings the checklist records (gableWindows
   // already includes any loft-level glazing on the gable face), so the prompt
@@ -92,12 +106,20 @@ export function buildLookRenderPrompt(spec: LookRenderSpec, look: LookId): strin
   const gableFace = openings.length ? `front gable facade with ${openings.join(', ')}` : 'clean front gable facade';
   const loft = spec.hasLoft ? ' with an interior loft level' : '';
   const article = /^[aeiou]/i.test(spec.roofStyle) ? 'an' : 'a';
+  const photoreal = mode === 'photoreal';
+  const noun = photoreal ? 'visualization' : 'illustration';
+  const renderLine = photoreal
+    ? 'Render it as a photorealistic architectural visualization — realistic materials, natural daylight, accurate shadows, professional exterior rendering — set on a gently landscaped cleared lot.'
+    : 'Render it as a soft, hand-rendered architectural illustration (premium house-plan marketing art), set in a wooded clearing with gentle landscaping; not photoreal.';
+  const conceptLine = photoreal
+    ? 'This is a concept render — not a photo of a real home, not to scale, not a construction drawing.'
+    : 'This is an illustrative concept render — not to scale, not a construction drawing.';
   return [
-    `Exterior architectural illustration of ${article} ${spec.roofStyle} cabin${loft}.`,
+    `Exterior architectural ${noun} of ${article} ${spec.roofStyle} cabin${loft}.`,
     `Form: about ${spec.widthFt} ft wide by ${spec.depthFt} ft deep, ~${Math.round(spec.ridgeFt)} ft ridge peak, ~${Math.round(spec.eaveFt)} ft eave; ${gableFace}.`,
     `Look: ${style}.`,
-    'Render it as a soft, hand-rendered architectural illustration (premium house-plan marketing art), set in a wooded clearing with gentle landscaping; not photoreal.',
-    'This is an illustrative concept render — not to scale, not a construction drawing.',
+    renderLine,
+    conceptLine,
     'Original design: do not replicate any specific real building, brand, or photograph.',
   ].join(' ');
 }

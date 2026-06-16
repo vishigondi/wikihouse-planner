@@ -17,7 +17,7 @@ import { localBimAssetSummary, localVisualAssetAttributions } from '@/lib/bim/co
 import { buildableBimFromHome, buildableBimSummary } from '@/lib/bim/buildable-bim';
 import { standardsRegistrySummary, validateStandards, codeAdvisoryReportForHome, lotFromArtifact } from '@/lib/standards/floorplan-standards';
 import { buildElevationModel, elevationSvgString, type ElevationArtifactInput } from '@/lib/elevations';
-import { LOOKS, buildLookRenderPrompt, lookRenderSpecFromArtifact, type LookId } from '@/lib/look-render';
+import { LOOKS, buildLookRenderPrompt, lookRenderSpecFromArtifact, type LookId, type LookRenderMode } from '@/lib/look-render';
 import { CODE_ADVISORY_RULES, type CodeAdvisoryFinding } from '@/lib/standards/code-advisory';
 import { parseBrief, briefToPromptFields } from '@/lib/brief';
 import { countDrawingPrimitives, diffSourceToSemanticDrawingPrimitives, extractSourceDrawingPrimitives } from '@/lib/drawing-primitives';
@@ -2533,7 +2533,8 @@ function WorkflowModal({
   const [repairPatchText, setRepairPatchText] = useState('');
   const [repairPatchStatus, setRepairPatchStatus] = useState('');
   const [lookId, setLookId] = useState<LookId>('earthy');
-  const lookRenderPrompt = home ? buildLookRenderPrompt(lookRenderSpecForHome(home), lookId) : '';
+  const [renderMode, setRenderMode] = useState<LookRenderMode>('photoreal');
+  const lookRenderPrompt = home ? buildLookRenderPrompt(lookRenderSpecForHome(home), lookId, renderMode) : '';
   useEffect(() => {
     if (dialog !== 'repair' || !initialRepairLayer) return;
     const matchingReportIndex = driftReports.findIndex((report) => report.layer === initialRepairLayer);
@@ -2711,7 +2712,23 @@ function WorkflowModal({
             <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
               <section className="space-y-3">
                 <div className="rounded-sm border border-amber-200 bg-amber-50 p-2 text-[10px] leading-snug text-amber-800">
-                  Illustrative concept render — not to scale. The dimensioned sheet, 3D, and elevations remain the source of truth; this is marketing art only.
+                  Concept render — not to scale{renderMode === 'photoreal' ? ', and not a photo of a real home' : ''}. The dimensioned sheet, 3D, and elevations remain the source of truth; this is marketing art only.
+                </div>
+                <div>
+                  <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-stone-500">Render mode</div>
+                  <div className="grid grid-cols-2 gap-1" data-render-mode-selector>
+                    {(['photoreal', 'illustration'] as LookRenderMode[]).map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setRenderMode(m)}
+                        data-render-mode={m}
+                        className={`rounded-sm border px-2 py-1 text-[10px] capitalize ${renderMode === m ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-white text-stone-600 hover:border-stone-400'}`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-stone-500">Look</div>

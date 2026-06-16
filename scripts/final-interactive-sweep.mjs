@@ -156,7 +156,16 @@ await page.waitForTimeout(800);
 const lookCount = await page.locator('[data-look-selector] button').count();
 const lookPrompt = await page.locator('[data-look-render-prompt]').first().inputValue().catch(() => '');
 note(lookCount === 7, `look-render offers 7 looks (${lookCount})`);
-note(/not to scale/i.test(lookPrompt) && /ft wide/.test(lookPrompt) && /a-frame/.test(lookPrompt), 'look-render prompt is illustrative + encodes real geometry');
+note(/not to scale/i.test(lookPrompt) && /ft wide/.test(lookPrompt) && /a-frame/.test(lookPrompt), 'look-render prompt encodes real geometry + stays not-to-scale');
+// Render mode: photoreal (default) vs illustration; photoreal stays a labeled
+// concept render that is NOT a photo of a real home, still geometry-true.
+const modeCount = await page.locator('[data-render-mode-selector] button').count();
+note(modeCount === 2, `look-render offers a render-mode toggle (${modeCount})`);
+await page.locator('[data-render-mode="photoreal"]').first().click().catch(() => {});
+await page.waitForTimeout(200);
+const photoPrompt = await page.locator('[data-look-render-prompt]').first().inputValue().catch(() => '');
+note(/photoreal|photorealistic/i.test(photoPrompt) && /not a photo of a real home/i.test(photoPrompt) && /not to scale/i.test(photoPrompt) && /ft wide/.test(photoPrompt),
+  'photoreal prompt: photoreal + labeled concept (not a real photo) + geometry-true');
 // Geometry-conditioned handoff: the deterministic reference (front + side
 // elevations) is surfaced so the render tracks real geometry, not a generic cabin.
 const refFrontSvg = await page.locator('[data-look-render-reference-front] svg').count();

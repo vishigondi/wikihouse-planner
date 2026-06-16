@@ -60,6 +60,33 @@ for (const look of LOOK_IDS) {
   check(`${look}: no competitor reference`, !/\b(den|denoutdoors|drafted)\b/i.test(prompt), prompt);
 }
 
+console.log('photoreal render mode: photo-real but still a labeled, geometry-true concept render');
+const { isLookRenderMode } = await import(join(root, 'lib/look-render.ts'));
+check('isLookRenderMode accepts photoreal/illustration, rejects junk', isLookRenderMode('photoreal') && isLookRenderMode('illustration') && !isLookRenderMode('hyperreal'));
+for (const look of LOOK_IDS) {
+  const photo = buildLookRenderPrompt(aSpec, look, 'photoreal');
+  // Still encodes THIS plan's geometry.
+  const encodesGeometry = photo.includes(`${aSpec.widthFt} ft wide`)
+    && photo.includes(`${aSpec.depthFt} ft deep`)
+    && photo.includes(aSpec.roofStyle)
+    && photo.includes(`${Math.round(aSpec.ridgeFt)} ft ridge`)
+    && /loft/i.test(photo);
+  check(`${look} (photoreal): encodes the plan's real geometry`, encodesGeometry, photo.slice(0, 120));
+  check(`${look} (photoreal): carries the look style`, LOOKS[look].style.split(',').some((frag) => photo.includes(frag.trim().split(' ')[0])));
+  // Photoreal, but labeled a concept render that is NOT a photo of a real home.
+  check(`${look} (photoreal): reads as photoreal`, /photoreal|photorealistic/i.test(photo) && !/not photoreal/i.test(photo));
+  check(`${look} (photoreal): labeled concept / not a real photo / not to scale`, /concept render/i.test(photo) && /not a photo of a real home/i.test(photo) && /not to scale/i.test(photo));
+  check(`${look} (photoreal): originality guard present`, /do not replicate any specific real building, brand, or photograph/i.test(photo));
+  check(`${look} (photoreal): no competitor reference`, !/\b(den|denoutdoors|drafted)\b/i.test(photo), photo);
+}
+// Mode changes only the rendering/labeling, never the geometry the checklist verifies.
+const photoEarthy = buildLookRenderPrompt(aSpec, 'earthy', 'photoreal');
+const illoEarthy = buildLookRenderPrompt(aSpec, 'earthy', 'illustration');
+check('photoreal differs from illustration but keeps the same geometry clause', photoEarthy !== illoEarthy
+  && photoEarthy.includes(`${aSpec.widthFt} ft wide by ${aSpec.depthFt} ft deep`)
+  && illoEarthy.includes(`${aSpec.widthFt} ft wide by ${aSpec.depthFt} ft deep`));
+check('default mode is still illustration (unchanged behavior)', buildLookRenderPrompt(aSpec, 'earthy') === illoEarthy);
+
 console.log('plan: gable (no loft) — prompt differs from the a-frame loft');
 const gable = compiled('3 bed 2 bath gable, 60x90 lot, 10 ft setbacks');
 const gSpec = lookRenderSpecFromArtifact(gable);
