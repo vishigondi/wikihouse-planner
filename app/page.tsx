@@ -1683,21 +1683,37 @@ function lookRenderSpecForHome(home: DenHome) {
       widthFt: Number(rawFootprint.widthFt ?? home.footprint.width),
       depthFt: Number(rawFootprint.depthFt ?? home.footprint.depth),
       levels: Number(rawFootprint.levels ?? (home.hasLoft ? 2 : 1)),
+      appliesTo: (rawFootprint.appliesTo as unknown[]) ?? undefined,
     },
     roof: {
       style: (rawRoof.style as string) ?? home.roofStyle,
       ridgeHeightFt: Number(rawRoof.ridgeHeightFt ?? home.roofSemantics?.ridgeHeightFt ?? home.height),
       eaveHeightFt: Number(rawRoof.eaveHeightFt ?? home.roofSemantics?.eaveHeightFt ?? Math.max(1, home.height * 0.45)),
       ridgeAxis: (rawRoof.ridgeAxis as string) ?? home.roofSemantics?.ridgeAxis ?? 'z',
+      overhangFt: Number(rawRoof.overhangFt ?? home.roofSemantics?.overhangFt ?? 1),
+      planes: (rawRoof.planes as unknown) ?? home.roofSemantics?.planes,
     },
     windows: (raw?.windows ?? []) as Array<{ floor?: number; levelIndex?: number; span?: { z1?: number; z2?: number; x1?: number; x2?: number } }>,
-    doors: (raw?.doors ?? []) as Array<{ openingType?: string; span?: { z1?: number; z2?: number; x1?: number; x2?: number } }>,
+    doors: (raw?.doors ?? []) as Array<{ openingType?: string; floor?: number; levelIndex?: number; span?: { z1?: number; z2?: number; x1?: number; x2?: number } }>,
   });
 }
 
 /** Standalone elevation SVG, derived from the artifact (no invented openings). */
 function elevationSvgMarkup(home: DenHome, side: 'front' | 'side'): string {
   return elevationSvgString(elevationModelForHome(home, side));
+}
+
+/**
+ * The gable-facing elevation (the triangular end the look render depicts):
+ * front for ridge-along-z, side for ridge-along-x. The consistency panel shows
+ * this so the deterministic reference matches the illustration's gable view and
+ * its gable opening counts on any ridge orientation.
+ */
+function gableElevationSide(home: DenHome): 'front' | 'side' {
+  const raw = rawObject(home.pairedArtifactJson) as Record<string, unknown> | null;
+  const rawRoof = (raw?.roof ?? {}) as Record<string, unknown>;
+  const ridgeAxis = (rawRoof.ridgeAxis as string) ?? home.roofSemantics?.ridgeAxis ?? 'z';
+  return ridgeAxis === 'x' ? 'side' : 'front';
 }
 
 /** Cherokee County constraint report as a standalone printable HTML page. */
@@ -5125,8 +5141,8 @@ export default function Home() {
                 </figure>
                 <div className="space-y-2">
                   <figure className="m-0 overflow-hidden rounded-lg border border-stone-200 bg-white">
-                    <div className="[&_svg]:block [&_svg]:h-auto [&_svg]:w-full" data-look-render-deterministic dangerouslySetInnerHTML={{ __html: elevationSvgMarkup(displayHome, 'front') }} />
-                    <figcaption className="border-t border-stone-100 px-2 py-1 text-[9px] uppercase tracking-wide text-stone-400">Deterministic front elevation — source of truth</figcaption>
+                    <div className="[&_svg]:block [&_svg]:h-auto [&_svg]:w-full" data-look-render-deterministic dangerouslySetInnerHTML={{ __html: elevationSvgMarkup(displayHome, gableElevationSide(displayHome)) }} />
+                    <figcaption className="border-t border-stone-100 px-2 py-1 text-[9px] uppercase tracking-wide text-stone-400">Deterministic gable elevation — source of truth</figcaption>
                   </figure>
                   {displayHome.pairedArtifactInfo.lookRenderExpectedStructure && (() => {
                     const es = displayHome.pairedArtifactInfo.lookRenderExpectedStructure;

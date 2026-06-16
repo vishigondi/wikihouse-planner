@@ -15,6 +15,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { parseBrief } = await import(join(root, 'lib/brief.ts'));
 const { mockIntentFromBrief, compileIntent } = await import(join(root, 'lib/generate/compile-plan.ts'));
 const { LOOKS, buildLookRenderPrompt, lookRenderSpecFromArtifact, isLookId, lookRenderAssetPath, lookRenderManifestFields, expectedStructureFromSpec } = await import(join(root, 'lib/look-render.ts'));
+const { buildElevationModel } = await import(join(root, 'lib/elevations.ts'));
 const { execFileSync } = await import('node:child_process');
 const { readFile } = await import('node:fs/promises');
 
@@ -126,6 +127,40 @@ check('recorded expectedStructure has all structural fields',
   && Number.isFinite(dry.expectedStructure.aspectRatio) && Number.isFinite(dry.expectedStructure.gableDoors)
   && Number.isFinite(dry.expectedStructure.gableWindows) && typeof dry.expectedStructure.hasLoft === 'boolean',
   JSON.stringify(dry?.expectedStructure));
+// Traced ridge-along-x plan (a-frame-22): the gable face is the SIDE elevation
+// and the plan has a loft. The derivation must read both correctly — the old
+// code reported it as single-storey with zero gable openings (ridge-axis +
+// loft bugs). Gable counts must equal the deterministic gable elevation.
+console.log('traced ridge-along-x + loft (a-frame-22): axis-aware, loft-aware, matches the gable elevation');
+let af = null;
+try {
+  const manifest = JSON.parse(await readFile(join(root, 'public/data/den-image-loop/proposal-manifest.json'), 'utf8'));
+  const opts = manifest.plans?.['a-frame-22'] ?? [];
+  const opt = opts.find((o) => o.latestPairedArtifact) ?? opts[opts.length - 1];
+  const paired = JSON.parse(await readFile(join(root, 'public/data/den-image-loop/a-frame-22', opt.pairedJsonUrl), 'utf8'));
+  const spec = lookRenderSpecFromArtifact(paired);
+  const es = expectedStructureFromSpec(spec);
+  // Independent gable elevation (ridge x -> the gable is the side view).
+  const gableSide = (paired.roof?.ridgeAxis === 'x') ? 'side' : 'front';
+  const gable = buildElevationModel({
+    planId: 'a-frame-22',
+    footprint: { widthFt: paired.footprint.widthFt, depthFt: paired.footprint.depthFt },
+    roof: { style: paired.roof.style, ridgeAxis: paired.roof.ridgeAxis, ridgeHeightFt: paired.roof.ridgeHeightFt, eaveHeightFt: paired.roof.eaveHeightFt, overhangFt: paired.roof.overhangFt, planes: paired.roof.planes },
+    windows: paired.windows, doors: paired.doors,
+  }, gableSide);
+  const eDoors = gable.openings.filter((o) => o.kind === 'door').length;
+  const eWindows = gable.openings.filter((o) => o.kind === 'window').length;
+  const out = execFileSync('node', [join(root, 'scripts/lookrender-import.mjs'), '--plan', 'a-frame-22', '--look', 'earthy', '--dry-run'], { encoding: 'utf8' });
+  af = { es, gableSide, eDoors, eWindows, recorded: JSON.parse(out).expectedStructure };
+} catch (error) {
+  af = { error: String(error.message ?? error) };
+}
+check('a-frame-22 is read as ridge-along-x (gable = side elevation)', af?.gableSide === 'side', JSON.stringify(af));
+check('a-frame-22 hasLoft = true (loft read from appliesTo/level, not just levels)', af?.es?.hasLoft === true, JSON.stringify(af?.es));
+check('a-frame-22 gable counts come from the gable elevation', af?.es?.gableDoors === af?.eDoors && af?.es?.gableWindows === af?.eWindows, JSON.stringify({ es: af?.es, eDoors: af?.eDoors, eWindows: af?.eWindows }));
+check('a-frame-22 has real gable openings (not the old zero)', (af?.es?.gableDoors ?? 0) + (af?.es?.gableWindows ?? 0) > 0, JSON.stringify(af?.es));
+check('a-frame-22 import dry-run records that exact structure', JSON.stringify(af?.recorded) === JSON.stringify(af?.es), JSON.stringify({ recorded: af?.recorded, es: af?.es }));
+
 let rejectedUnknown = false;
 try {
   execFileSync('node', [join(root, 'scripts/lookrender-import.mjs'), '--plan', 'gen-001', '--look', 'neon', '--dry-run'], { encoding: 'utf8', stdio: 'pipe' });

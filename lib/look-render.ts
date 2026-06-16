@@ -6,7 +6,10 @@
 // always carries the "not to scale" framing and an originality guard (style is
 // described in words; we never reference a competitor's photo or brand).
 //
-// Dependency-free so Node can import it directly for the offline gate.
+// Imports only the (also import-free) elevation builder so Node can still load
+// it directly for the offline gate — no React/Three/Next dependencies.
+
+import { buildElevationModel } from './elevations.ts';
 
 export type LookId = 'dark' | 'bright' | 'earthy' | 'bold' | 'classic' | 'natural' | 'rustic';
 
@@ -80,10 +83,12 @@ export function expectedStructureFromSpec(spec: LookRenderSpec): ExpectedStructu
  */
 export function buildLookRenderPrompt(spec: LookRenderSpec, look: LookId): string {
   const style = LOOKS[look].style;
+  // Describe exactly the gable openings the checklist records (gableWindows
+  // already includes any loft-level glazing on the gable face), so the prompt
+  // and the consistency checklist cannot disagree.
   const openings: string[] = [];
   if (spec.gableDoors) openings.push(`${spec.gableDoors} entry door${spec.gableDoors === 1 ? '' : 's'}`);
   if (spec.gableWindows) openings.push(`${spec.gableWindows} window${spec.gableWindows === 1 ? '' : 's'}`);
-  if (spec.loftWindow) openings.push('a small loft window high in the gable peak');
   const gableFace = openings.length ? `front gable facade with ${openings.join(', ')}` : 'clean front gable facade';
   const loft = spec.hasLoft ? ' with an interior loft level' : '';
   const article = /^[aeiou]/i.test(spec.roofStyle) ? 'an' : 'a';
@@ -122,27 +127,58 @@ export function lookRenderManifestFields(look: LookId, relUrl: string, expected:
   return { lookRenderUrl: relUrl, lookRenderLook: look, lookRenderIllustrative: true, lookRenderExpectedStructure: expected };
 }
 
-/** Derive a spec from a compiled paired artifact (used by the gate and import). */
+/**
+ * Derive a spec from a compiled or traced paired artifact (used by the gate,
+ * the import, and the app's handoff prompt).
+ *
+ * The gable door/window counts come from the SAME deterministic elevation the
+ * consistency panel shows — the gable-facing view (front for ridge-along-z, side
+ * for ridge-along-x) — so the structural facts match the drawing by construction
+ * (one source of truth) and honor its headroom filtering. A hand-rolled
+ * positional guess would over-count openings the steep roof actually clips, and
+ * would miss the gable entirely on ridge-along-x plans (the a-frame-22 bug).
+ */
 export function lookRenderSpecFromArtifact(artifact: {
   planId?: string;
-  footprint?: { widthFt?: number; depthFt?: number; levels?: number };
-  roof?: { style?: string; ridgeHeightFt?: number; eaveHeightFt?: number; ridgeAxis?: string };
+  footprint?: { widthFt?: number; depthFt?: number; levels?: number; appliesTo?: unknown[] };
+  roof?: { style?: string; ridgeHeightFt?: number; eaveHeightFt?: number; ridgeAxis?: string; overhangFt?: number; planes?: unknown };
   windows?: Array<{ floor?: number; levelIndex?: number; span?: { z1?: number; z2?: number; x1?: number; x2?: number } }>;
-  doors?: Array<{ openingType?: string; span?: { z1?: number; z2?: number; x1?: number; x2?: number } }>;
+  doors?: Array<{ openingType?: string; floor?: number; levelIndex?: number; span?: { z1?: number; z2?: number; x1?: number; x2?: number } }>;
 }): LookRenderSpec {
   const widthFt = artifact.footprint?.widthFt ?? 0;
   const depthFt = artifact.footprint?.depthFt ?? 0;
   const ridgeAlongZ = (artifact.roof?.ridgeAxis ?? 'z') === 'z';
-  // The gable face is the z=0 end for ridge-along-z, x=0 for ridge-along-x.
-  const onGable = (span?: { z1?: number; z2?: number; x1?: number; x2?: number }) => {
-    if (!span) return false;
-    return ridgeAlongZ
-      ? Math.max(Math.abs(span.z1 ?? 9), Math.abs(span.z2 ?? 9)) < 1
-      : Math.max(Math.abs(span.x1 ?? 9), Math.abs(span.x2 ?? 9)) < 1;
-  };
-  const gableWindowsGround = (artifact.windows ?? []).filter((w) => (w.floor ?? w.levelIndex ?? 0) === 0 && onGable(w.span)).length;
-  const gableDoors = (artifact.doors ?? []).filter((d) => d.openingType === 'exteriorDoor' && onGable(d.span)).length;
-  const loftWindow = (artifact.windows ?? []).some((w) => (w.floor ?? w.levelIndex ?? 0) >= 1);
+
+  // A loft is present when the footprint spans a loft level, the level count is
+  // >1, OR any opening lives on level >= 1 (traced footprints record the loft
+  // via appliesTo/floor rather than a `levels` count — relying on `levels` alone
+  // wrongly read a-frame-22 as single-storey).
+  const appliesLoft = Array.isArray(artifact.footprint?.appliesTo)
+    && artifact.footprint.appliesTo.some((entry) => /loft/i.test(String(entry)));
+  const upperOpening = [...(artifact.windows ?? []), ...(artifact.doors ?? [])]
+    .some((opening) => (opening.floor ?? opening.levelIndex ?? 0) >= 1);
+  const hasLoft = (artifact.footprint?.levels ?? 1) > 1 || appliesLoft || upperOpening;
+
+  // Count gable-face openings off the deterministic gable elevation.
+  const gableSide = ridgeAlongZ ? 'front' : 'side';
+  const elevationInput = {
+    planId: artifact.planId ?? 'plan',
+    footprint: { widthFt, depthFt },
+    roof: {
+      style: artifact.roof?.style ?? 'a-frame',
+      ridgeAxis: ridgeAlongZ ? 'z' : 'x',
+      ridgeHeightFt: artifact.roof?.ridgeHeightFt ?? 0,
+      eaveHeightFt: artifact.roof?.eaveHeightFt ?? 0,
+      overhangFt: artifact.roof?.overhangFt ?? 1,
+      planes: artifact.roof?.planes,
+    },
+    windows: artifact.windows,
+    doors: artifact.doors,
+  } as Parameters<typeof buildElevationModel>[0];
+  const gable = buildElevationModel(elevationInput, gableSide);
+  const gableDoors = gable.openings.filter((o) => o.kind === 'door').length;
+  const gableWindows = gable.openings.filter((o) => o.kind === 'window').length;
+
   return {
     planId: artifact.planId ?? 'plan',
     roofStyle: artifact.roof?.style ?? 'a-frame',
@@ -150,9 +186,9 @@ export function lookRenderSpecFromArtifact(artifact: {
     depthFt,
     ridgeFt: artifact.roof?.ridgeHeightFt ?? 0,
     eaveFt: artifact.roof?.eaveHeightFt ?? 0,
-    hasLoft: (artifact.footprint?.levels ?? 1) > 1,
+    hasLoft,
     gableDoors,
-    gableWindows: gableWindowsGround,
-    loftWindow,
+    gableWindows,
+    loftWindow: upperOpening,
   };
 }
