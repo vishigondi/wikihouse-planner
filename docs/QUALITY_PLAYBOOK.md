@@ -323,6 +323,24 @@ Recording these so they stay visible (and so nobody "discovers" them as bugs):
   deterministic render/JSON/sourceKind stay byte-identical. It's a local,
   human-in-the-loop workflow; a deployed product swaps the browser handoff
   for a `gpt-image-1` call behind the same prompt builder + import + panel.
+- **Consistency for an illustration = STRUCTURAL agreement, never pixel drift.**
+  The 2D sheet and 3D are consistent *by construction* (P7, shared roof-plane
+  equations) — never re-derive or fake a 2D↔3D check. The illustration is the
+  only variable that can drift, so it is held to checkable structural facts —
+  roof style, footprint aspect, gable door/window counts, loft presence — via
+  an `expectedStructure` block the import records from the SAME compiled
+  geometry the 3D/elevations draw from (`buildElevationModel(gable side)`, so
+  prompt + checklist + drawing agree by construction). The consistency panel
+  shows the illustration beside the deterministic gable elevation with that
+  checklist; verification is a human reading both in real Chrome and rejecting
+  drifters (e.g., an a-frame rendered as a gable cottage). It is NEVER a
+  pixel/dimensional drift number — that comparison would be a fabricated metric
+  (P4's "never fake a lane"). Shipped 2026-06-16; gated by `check:lookrender`
+  (expectedStructure-equals-geometry, incl. ridge-axis + loft) and the sweep
+  (panel + reference assertions). Note: traced/loft footprints record levels
+  via `appliesTo`/floor, not a `levels` count — derive `hasLoft` from any of
+  those, and pick the gable elevation by ridge axis (front for ridge-z, side
+  for ridge-x), or the structural facts come out wrong (the a-frame-22 bug).
 - **First synthetic click after navigation can be swallowed** by the browser
   automation input layer (not the app — a DOM `.click()` works first try).
 

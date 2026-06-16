@@ -1,6 +1,55 @@
 # Project Status
 
-Last updated: 2026-06-15 (look-render lane — shipped; ChatGPT-browser illustrative renders)
+Last updated: 2026-06-16 (look-render CONSISTENCY lane — shipped; illustration ↔ deterministic geometry)
+
+## 2026-06-16 Look-Render Consistency Lane — Shipped
+
+The look render is now provably CONSISTENT with the deterministic model:
+the 2D sheet and 3D are consistent by construction (shared roof-plane
+equations), so the illustration is the only variable that can drift.
+"Consistency" = the illustration AGREES with the compiled geometry on
+checkable STRUCTURAL facts (roof style, footprint aspect, gable
+door/window counts, loft presence) — **never** a pixel/dimensional drift
+metric (an exterior render is not the 2D plan; we never fake a drift
+number). Six fires (planner 58835c2, 76ca84d, 373fa56, b260781, 28c3e94;
+data 2321809, 3939d61, + loft-showcase), each verified in real Chrome with
+the full ladder green, closed on two consecutive clean runs.
+
+1. **Geometry-conditioned handoff + expectedStructure** — the handoff modal
+   now surfaces the plan's deterministic front + side elevations as a
+   draggable reference (`data-look-render-reference`). `lookrender:import`
+   records an `expectedStructure` block {roofStyle, widthFt, depthFt,
+   aspectRatio, gableDoors, gableWindows, hasLoft} derived from the SAME
+   paired JSON the 3D/elevations render from. `check:lookrender` asserts the
+   recorded structure EQUALS the plan's real compiled geometry (a mismatch
+   can never be recorded).
+2. **Side-by-side consistency panel** — the imported illustration renders
+   next to the deterministic GABLE elevation with a 5-row structural
+   checklist sourced from `expectedStructure`, labeled "Illustrative - not
+   to scale," BELOW the dimensioned sheet (subordinate). data-* hooks on the
+   panel, both images, and each checklist row; the sweep asserts them.
+3. **Axis- + loft-aware derivation** (bug surfaced by a-frame-22) — gable
+   door/window counts come from `buildElevationModel(gable side)` — the same
+   deterministic elevation the panel shows (front for ridge-z, side for
+   ridge-x), with its facade tolerance + headroom clipping. `hasLoft` reads
+   levels>1 OR any level≥1 opening OR an appliesTo loft entry. Prompt +
+   checklist + drawing agree by construction (one source of truth).
+4. **Verified showcase set (3/3)** — gen-001 (compiled, no loft),
+   loft-showcase (NEW persistent compiled-loft plan, gen-001's loft sibling,
+   seeded by `scripts/seed-loft-showcase.mjs`), and a-frame-22 (traced,
+   ridge-x, loft). Each render was produced in ChatGPT, **visually verified
+   in Chrome** to agree with the deterministic gable elevation on every
+   checklist row, and imported. The per-session download block had reset, so
+   renders were bridged out in-page (fetch → 1024px JPEG → data-URL
+   download) — no manual step this round.
+
+Gates assert MORE: `check:lookrender` gained the expectedStructure-equals-
+geometry assertions (incl. a-frame-22 axis/loft); the sweep gained the
+consistency-panel + reference-elevation assertions; loft-showcase joined the
+sweep PLANS + COMPILED_PLANS. Guardrails held: lookRender + expectedStructure
+are ADDITIVE manifest metadata only; gen-001 JSON and the traced deterministic
+artifacts are byte-identical. `tsconfig` gained `allowImportingTsExtensions`
+so the import-free node batteries can cross-import (look-render → elevations).
 
 ## 2026-06-15 Look-Render Lane (ChatGPT browser) — Shipped
 
