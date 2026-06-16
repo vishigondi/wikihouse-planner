@@ -87,7 +87,8 @@ check('expectedStructure tracks the plan: a-frame+loft differs from gable',
 
 console.log('import: helpers + dry-run flag an illustrative asset, never the deterministic fields');
 check('isLookId rejects an unknown look', !isLookId('bogus'));
-check('asset path lives under look-render/', lookRenderAssetPath('gen-001', 'earthy') === 'look-render/gen-001-earthy.png');
+check('asset path lives under look-render/ (png default)', lookRenderAssetPath('gen-001', 'earthy') === 'look-render/gen-001-earthy.png');
+check('asset path follows the image extension', lookRenderAssetPath('gen-001', 'earthy', 'jpg') === 'look-render/gen-001-earthy.jpg' && lookRenderAssetPath('gen-001', 'earthy', '.JPG') === 'look-render/gen-001-earthy.jpg');
 const fields = lookRenderManifestFields('earthy', 'look-render/gen-001-earthy.png', aExpected);
 check('manifest fields flag illustrative + carry expectedStructure', fields.lookRenderIllustrative === true && fields.lookRenderLook === 'earthy' && /look-render\//.test(fields.lookRenderUrl) && fields.lookRenderExpectedStructure.roofStyle === aSpec.roofStyle);
 // The import script's dry-run validates args + prints the patch without IO.

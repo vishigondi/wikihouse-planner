@@ -61,7 +61,20 @@ if (!spec.roofStyle || !(spec.widthFt > 0) || !(spec.depthFt > 0)) {
 }
 const expectedStructure = expectedStructureFromSpec(spec);
 
-const relUrl = lookRenderAssetPath(planId, look);
+// The stored extension follows the actual image bytes (JPEG marketing renders
+// are ~7x smaller than PNG). Dry-run has no image, so it reports the png default.
+function imageExt(img) {
+  if (!img) return 'png';
+  if (img.startsWith('data:')) {
+    const mime = img.slice(5, img.indexOf(';') >= 0 ? img.indexOf(';') : img.indexOf(','));
+    return mime === 'image/jpeg' ? 'jpg' : mime === 'image/webp' ? 'webp' : 'png';
+  }
+  const m = img.toLowerCase().match(/\.(jpe?g|png|webp)$/);
+  return m ? (m[1] === 'jpeg' ? 'jpg' : m[1]) : 'png';
+}
+
+const ext = imageExt(image);
+const relUrl = lookRenderAssetPath(planId, look, ext);
 const fields = lookRenderManifestFields(look, relUrl, expectedStructure);
 
 if (dryRun) {

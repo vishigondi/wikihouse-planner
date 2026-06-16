@@ -97,9 +97,14 @@ export function buildLookRenderPrompt(spec: LookRenderSpec, look: LookId): strin
   ].join(' ');
 }
 
-/** Where a look render is stored, relative to the plan's image-loop dir. */
-export function lookRenderAssetPath(planId: string, look: LookId): string {
-  return `look-render/${planId}-${look}.png`;
+/**
+ * Where a look render is stored, relative to the plan's image-loop dir. The
+ * extension follows the actual image bytes (JPEG for photographic marketing
+ * renders — far smaller than PNG; defaults to png for the validation dry-run).
+ */
+export function lookRenderAssetPath(planId: string, look: LookId, ext: string = 'png'): string {
+  const clean = ext.replace(/^\./, '').toLowerCase();
+  return `look-render/${planId}-${look}.${clean}`;
 }
 
 /**
