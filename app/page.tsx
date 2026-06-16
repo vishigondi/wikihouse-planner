@@ -17,6 +17,7 @@ import { localBimAssetSummary, localVisualAssetAttributions } from '@/lib/bim/co
 import { buildableBimFromHome, buildableBimSummary } from '@/lib/bim/buildable-bim';
 import { standardsRegistrySummary, validateStandards, codeAdvisoryReportForHome, lotFromArtifact } from '@/lib/standards/floorplan-standards';
 import { buildElevationModel, elevationSvgString, type ElevationArtifactInput } from '@/lib/elevations';
+import { LOOKS, buildLookRenderPrompt, lookRenderSpecFromArtifact, type LookId } from '@/lib/look-render';
 import { CODE_ADVISORY_RULES, type CodeAdvisoryFinding } from '@/lib/standards/code-advisory';
 import { parseBrief, briefToPromptFields } from '@/lib/brief';
 import { countDrawingPrimitives, diffSourceToSemanticDrawingPrimitives, extractSourceDrawingPrimitives } from '@/lib/drawing-primitives';
@@ -38,7 +39,7 @@ const GRID_FT = 4;
 type CompareMode = 'compare' | 'overlay' | 'semantic';
 type ViewPreset = 'plan-top' | 'presentation-3d' | 'white-cutaway' | 'front-elevation' | 'side-elevation' | 'debug-review';
 type ArtifactLifecycle = 'draft' | 'blocked' | 'review' | 'promoted' | 'exported';
-type WorkflowDialog = 'new-plan' | 'import' | 'export' | 'repair' | null;
+type WorkflowDialog = 'new-plan' | 'import' | 'export' | 'repair' | 'look-render' | null;
 const EDIT_STORAGE_PREFIX = 'paired-floorplan-edit:';
 const PROMPT_STORAGE_KEY = 'paired-floorplan-prompt:v1';
 const LIFECYCLE_STORAGE_PREFIX = 'paired-floorplan-lifecycle:';
@@ -1669,6 +1670,31 @@ function elevationModelForHome(home: DenHome, side: 'front' | 'side') {
   return buildElevationModel(artifact, side);
 }
 
+// Look-render spec from a home: the raw paired artifact (same source the
+// elevations use) with home fallbacks, so the handoff prompt encodes this
+// plan's real geometry.
+function lookRenderSpecForHome(home: DenHome) {
+  const raw = rawObject(home.pairedArtifactJson) as Record<string, unknown> | null;
+  const rawRoof = (raw?.roof ?? {}) as Record<string, unknown>;
+  const rawFootprint = (raw?.footprint ?? {}) as Record<string, unknown>;
+  return lookRenderSpecFromArtifact({
+    planId: home.id,
+    footprint: {
+      widthFt: Number(rawFootprint.widthFt ?? home.footprint.width),
+      depthFt: Number(rawFootprint.depthFt ?? home.footprint.depth),
+      levels: Number(rawFootprint.levels ?? (home.hasLoft ? 2 : 1)),
+    },
+    roof: {
+      style: (rawRoof.style as string) ?? home.roofStyle,
+      ridgeHeightFt: Number(rawRoof.ridgeHeightFt ?? home.roofSemantics?.ridgeHeightFt ?? home.height),
+      eaveHeightFt: Number(rawRoof.eaveHeightFt ?? home.roofSemantics?.eaveHeightFt ?? Math.max(1, home.height * 0.45)),
+      ridgeAxis: (rawRoof.ridgeAxis as string) ?? home.roofSemantics?.ridgeAxis ?? 'z',
+    },
+    windows: (raw?.windows ?? []) as Array<{ floor?: number; levelIndex?: number; span?: { z1?: number; z2?: number; x1?: number; x2?: number } }>,
+    doors: (raw?.doors ?? []) as Array<{ openingType?: string; span?: { z1?: number; z2?: number; x1?: number; x2?: number } }>,
+  });
+}
+
 /** Standalone elevation SVG, derived from the artifact (no invented openings). */
 function elevationSvgMarkup(home: DenHome, side: 'front' | 'side'): string {
   return elevationSvgString(elevationModelForHome(home, side));
@@ -2354,6 +2380,7 @@ function WorkflowActionBar({
             { id: 'new-plan' as const, label: 'New Plan' },
             { id: 'import' as const, label: 'Import JSON' },
             { id: 'export' as const, label: 'Export' },
+            { id: 'look-render' as const, label: 'Look Render' },
             { id: 'repair' as const, label: 'Repair With GPT' },
           ].map((item) => (
             <button
@@ -2489,6 +2516,8 @@ function WorkflowModal({
   const targetedPrompt = useMemo(() => (home && activeReport ? buildTargetedRepairPrompt(home, activeReport) : ''), [activeReport, home]);
   const [repairPatchText, setRepairPatchText] = useState('');
   const [repairPatchStatus, setRepairPatchStatus] = useState('');
+  const [lookId, setLookId] = useState<LookId>('earthy');
+  const lookRenderPrompt = home ? buildLookRenderPrompt(lookRenderSpecForHome(home), lookId) : '';
   useEffect(() => {
     if (dialog !== 'repair' || !initialRepairLayer) return;
     const matchingReportIndex = driftReports.findIndex((report) => report.layer === initialRepairLayer);
@@ -2573,7 +2602,7 @@ function WorkflowModal({
         <div className="flex items-center justify-between border-b border-stone-200 px-4 py-3">
           <div>
             <h2 className="font-sans text-base font-semibold tracking-tight text-stone-900">
-              {dialog === 'new-plan' ? 'New Plan Handoff' : dialog === 'import' ? 'Import Paired Artifact' : dialog === 'export' ? 'Export Plan' : 'Repair With GPT'}
+              {dialog === 'new-plan' ? 'New Plan Handoff' : dialog === 'import' ? 'Import Paired Artifact' : dialog === 'export' ? 'Export Plan' : dialog === 'look-render' ? 'Generate Look Render' : 'Repair With GPT'}
             </h2>
             <div className="mt-0.5 text-[10px] text-stone-400">{home?.model ?? 'No active plan'} - {lifecycle}</div>
           </div>
@@ -2658,6 +2687,44 @@ function WorkflowModal({
                   <div className="mt-2 text-[10px] leading-snug text-stone-500">{importStatus || 'No import attempted yet.'}</div>
                 </div>
                 <button type="button" onClick={onImportPlan} className="w-full rounded-sm border border-stone-800 bg-stone-800 px-3 py-2 text-xs text-white hover:bg-stone-700">Import Draft</button>
+              </section>
+            </div>
+          )}
+
+          {dialog === 'look-render' && (
+            <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
+              <section className="space-y-3">
+                <div className="rounded-sm border border-amber-200 bg-amber-50 p-2 text-[10px] leading-snug text-amber-800">
+                  Illustrative concept render — not to scale. The dimensioned sheet, 3D, and elevations remain the source of truth; this is marketing art only.
+                </div>
+                <div>
+                  <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-stone-500">Look</div>
+                  <div className="grid grid-cols-2 gap-1" data-look-selector>
+                    {(Object.keys(LOOKS) as LookId[]).map((id) => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setLookId(id)}
+                        className={`rounded-sm border px-2 py-1 text-[10px] ${lookId === id ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 bg-white text-stone-600 hover:border-stone-400'}`}
+                      >
+                        {LOOKS[id].label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <ol className="list-decimal space-y-1.5 pl-4 text-[10px] leading-snug text-stone-600">
+                  <li>Copy the prompt.</li>
+                  <li>Paste it into ChatGPT (image generation). Optionally drag in this plan&apos;s 3D PNG (Export &gt; Export Current 3D PNG) as a form reference.</li>
+                  <li>Download the generated image.</li>
+                  <li>Import it: <span className="font-mono">npm run lookrender:import -- --plan {home?.id ?? '<id>'} --image &lt;path&gt; --look {lookId}</span></li>
+                </ol>
+              </section>
+              <section>
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">ChatGPT render prompt ({LOOKS[lookId].label})</h3>
+                  <button type="button" onClick={() => navigator.clipboard?.writeText(lookRenderPrompt)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50">Copy</button>
+                </div>
+                <textarea readOnly value={lookRenderPrompt} data-look-render-prompt className="h-[420px] w-full resize-none rounded-sm border border-stone-200 bg-white p-3 font-mono text-[10px] leading-relaxed text-stone-700" />
               </section>
             </div>
           )}

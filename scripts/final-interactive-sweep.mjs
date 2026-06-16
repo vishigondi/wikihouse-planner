@@ -148,6 +148,17 @@ await page.waitForTimeout(600);
 const inputs = await page.locator('input').evaluateAll((nodes) => nodes.map((n) => n.value));
 note(Boolean(inputs.find((v) => /bed \//.test(v))) && inputs.includes('a-frame'), 'brief parse fills fields');
 
+// (4b) look-render handoff: the modal surfaces a geometry-true, illustrative prompt
+await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(2500);
+await page.locator('button', { hasText: /^Look Render$/ }).first().click();
+await page.waitForTimeout(800);
+const lookCount = await page.locator('[data-look-selector] button').count();
+const lookPrompt = await page.locator('[data-look-render-prompt]').first().inputValue().catch(() => '');
+note(lookCount === 7, `look-render offers 7 looks (${lookCount})`);
+note(/not to scale/i.test(lookPrompt) && /ft wide/.test(lookPrompt) && /a-frame/.test(lookPrompt), 'look-render prompt is illustrative + encodes real geometry');
+await page.locator('button', { hasText: /^Close$/ }).first().click().catch(() => {});
+
 // (5) landing brief box: live parse echo + ignored-word honesty
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(6000);
