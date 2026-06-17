@@ -1,6 +1,35 @@
 # Project Status
 
-Last updated: 2026-06-16 (home page IS the social feed — every plan a photoreal card)
+Last updated: 2026-06-17 (responsive pass — every page clean at mobile/tablet/laptop/desktop)
+
+## 2026-06-17 Responsive Design Pass — Shipped
+
+Every page reviewed and made clean + usable across the standard breakpoints —
+**mobile 390, tablet 768, laptop 1024, desktop 1440** — verified in true
+viewports, with a no-overflow gate so it stays that way. Three fires (planner
+5986179, 419874a, 4a4747a), full ladder green on two consecutive runs.
+
+1. **Home feed** — already a centered max-w-680 column (0 overflow at all four
+   widths). Fixed the home header crowding on mobile: tagline hidden below sm,
+   header buttons `whitespace-nowrap` so "Floorplan Studio · New Plan · Resume
+   <id>" sits on one line at 390.
+2. **Plan detail** — the Review Tools aside was a fixed `w-80` rail that crushed
+   the main view when opened on mobile; now `flex-col lg:flex-row` with the aside
+   full-width on mobile/tablet (stacks above the plan) and the original sticky
+   `lg:w-80` rail on desktop. Header plan-spec hidden below sm. No overflow with
+   the rail closed OR open.
+3. **Modals** — all 5 (New Plan, Import, Export, Look Render, Repair) were
+   already responsive (overlay p-6 + w-full max-w-5xl panel + body
+   max-h-[78vh] overflow-y-auto scroll-inside; two-column content stacks below
+   lg). Verified, no fixes needed.
+
+**No-overflow gate (assert MORE):** the interactive sweep now loops the four
+breakpoints (true Playwright viewports) and asserts, on the home page and the
+plan detail page, NO horizontal overflow (`scrollWidth - innerWidth <= 1`) plus
+key landmarks (feed cards; 3D canvas + plan sheet; detail with Review Tools
+open); and at 390/768 that each of the 5 modals fits in-bounds. ~30+ responsive
+assertions, all green. Layout CSS only; deterministic sheet/3D/elevations/code +
+the look-render consistency lane + every data-* hook untouched.
 
 ## 2026-06-16 Home Page = Social Feed — Shipped
 

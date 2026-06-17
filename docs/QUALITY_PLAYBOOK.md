@@ -357,6 +357,17 @@ Recording these so they stay visible (and so nobody "discovers" them as bugs):
   + concept label + source-of-truth + repair/open + engagement, render ABOVE the
   plan) across `check:den-seeds`, `qa:brochure`, and the sweep — not loosened.
   Shipped 2026-06-16.
+- **Responsive is gated, not eyeballed.** Standard breakpoints are mobile 390,
+  tablet 768, laptop 1024, desktop 1440. The interactive sweep loops them in true
+  Playwright viewports and asserts NO horizontal overflow
+  (`documentElement.scrollWidth - innerWidth <= 1`) + key landmarks on the home
+  feed and the plan detail page (incl. the detail page with Review Tools open),
+  and that each workflow modal fits in-bounds at 390/768. Note: claude-in-chrome
+  `resize_window` can't shrink below ~500px (window minimum), so true mobile
+  review is done via Playwright viewports + reading the screenshots back, with
+  the sweep as the authoritative gate. Fixes are layout CSS only — fixed-width
+  rails (e.g. the Review Tools `w-80`) must become `w-full lg:w-80` + stack, not
+  crush the main view. Shipped 2026-06-17.
 - **First synthetic click after navigation can be swallowed** by the browser
   automation input layer (not the app — a DOM `.click()` works first try).
 
