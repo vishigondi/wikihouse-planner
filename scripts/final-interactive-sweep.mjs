@@ -204,35 +204,40 @@ if (!panelChecked) {
   console.log('  info no look-render committed yet — consistency-panel assertion activates when a render is imported (fire 3)');
 }
 
-// (4d) social Feed view: each post card stacks the photoreal render (subordinate,
-// labeled concept render) ABOVE the dimensioned floor-plan sheet (source of
-// truth), wrapped in feed chrome (caption + engagement bar). View only.
-await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-await page.waitForTimeout(2500);
-await page.locator('[data-open-feed]').first().click();
-await page.waitForTimeout(1200);
+// (4d) the HOME page IS the social feed: each post card stacks the photoreal
+// render (subordinate, labeled concept render) ABOVE the dimensioned floor-plan
+// sheet (source of truth), wrapped in feed chrome (caption + engagement bar).
+// View only; no separate Feed page.
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
 const feedPresent = await page.locator('[data-plan-feed]').count();
-const cardCount = await page.locator('[data-feed-card]').count();
-note(feedPresent >= 1 && cardCount >= 1, `feed view renders post cards (${cardCount})`);
+const everyCard = page.locator('[data-feed-card]');
+const cardCount = await everyCard.count();
+note(feedPresent >= 1 && cardCount >= 1, `home page renders the plan feed (${cardCount} cards)`);
 if (cardCount >= 1) {
-  const card = page.locator('[data-feed-card]').first();
-  const hasRender = await card.locator('[data-feed-render]').count();
-  const hasPlan = await card.locator('[data-feed-plan-sheet]').count();
-  const hasCaption = await card.locator('[data-feed-caption]').count();
-  const hasLabel = await card.locator('[data-feed-concept-label]').count();
-  const hasEngagement = await card.locator('[data-feed-engagement]').count();
-  // The render must sit ABOVE the dimensioned plan (render subordinate, plan primary).
-  const order = await card.evaluate((el) => {
-    const r = el.querySelector('[data-feed-render]')?.getBoundingClientRect().top ?? 0;
-    const p = el.querySelector('[data-feed-plan-sheet]')?.getBoundingClientRect().top ?? 0;
-    return r < p;
-  });
-  const labelText = await card.locator('[data-feed-concept-label]').first().textContent().catch(() => '');
-  note(hasRender >= 1 && hasPlan >= 1, `feed card shows BOTH the render and the floor-plan sheet (render ${hasRender}, plan ${hasPlan})`);
-  note(hasCaption >= 1, 'feed card shows a caption');
-  note(hasLabel >= 1 && /concept render/i.test(labelText), `feed card labels the render a concept render (${labelText.trim()})`);
-  note(hasEngagement >= 1, 'feed card shows the engagement bar');
-  note(order, 'feed card renders the concept render ABOVE the dimensioned plan');
+  // Every card carries the dimensioned plan sheet + caption + concept label + engagement bar.
+  let plansOk = 0, capOk = 0, labelOk = 0, engOk = 0;
+  for (let i = 0; i < cardCount; i += 1) {
+    const c = everyCard.nth(i);
+    if (await c.locator('[data-feed-plan-sheet]').count()) plansOk += 1;
+    if (await c.locator('[data-feed-caption]').count()) capOk += 1;
+    if (await c.locator('[data-feed-concept-label]').count()) labelOk += 1;
+    if (await c.locator('[data-feed-engagement]').count()) engOk += 1;
+  }
+  note(plansOk === cardCount && capOk === cardCount && labelOk === cardCount && engOk === cardCount,
+    `every feed card has plan sheet + caption + concept label + engagement (${plansOk}/${capOk}/${labelOk}/${engOk} of ${cardCount})`);
+  // A card with a render must place the render ABOVE the dimensioned plan.
+  const renderCards = page.locator('[data-feed-card]:has([data-feed-render])');
+  const renderCardCount = await renderCards.count();
+  note(renderCardCount >= 1, `at least one feed card shows a photoreal render (${renderCardCount}/${cardCount})`);
+  if (renderCardCount >= 1) {
+    const order = await renderCards.first().evaluate((el) => {
+      const r = el.querySelector('[data-feed-render]')?.getBoundingClientRect().top ?? 0;
+      const p = el.querySelector('[data-feed-plan-sheet]')?.getBoundingClientRect().top ?? 1e9;
+      return r < p;
+    });
+    note(order, 'feed card renders the concept render ABOVE the dimensioned plan');
+  }
 }
 
 // (5) landing brief box: live parse echo + ignored-word honesty

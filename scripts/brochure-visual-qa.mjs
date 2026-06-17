@@ -2296,8 +2296,10 @@ async function run() {
       const gallerySignals = await page.evaluate(() => {
         const text = document.body.innerText;
         const normalizedText = text.toLowerCase();
-        const planCards = Array.from(document.querySelectorAll('article')).filter((article) => article.innerText.toLowerCase().includes('open plan')).length;
+        // The home page is now a social feed: each plan is a [data-feed-card].
+        const planCards = document.querySelectorAll('[data-feed-card]').length;
         const controls = Array.from(document.querySelectorAll('input,select,button')).map((item) => item.textContent || item.getAttribute('placeholder') || '').join('\n').toLowerCase();
+        const cardButtons = Array.from(document.querySelectorAll('[data-feed-card] button')).map((b) => (b.textContent || '').trim().toLowerCase());
         return {
           planCards,
           hasSearch: controls.includes('search plans'),
@@ -2308,28 +2310,28 @@ async function run() {
           hasRoofFilter: normalizedText.includes('all roof types'),
           hasStatusFilter: normalizedText.includes('all statuses'),
           hasNewPlan: normalizedText.includes('new plan'),
-          hasRepairPromptAction: normalizedText.includes('repair prompt'),
-          hasElevationPreview: normalizedText.includes('elevation'),
-          hasDesignChip: normalizedText.includes('design blocked') || normalizedText.includes('design pass') || normalizedText.includes('design warning'),
-          hasPresentationChip: normalizedText.includes('presentation blocked') || normalizedText.includes('presentation pass') || normalizedText.includes('presentation warning'),
-          hasBrochureChip: normalizedText.includes('brochure blocked') || normalizedText.includes('brochure pass') || normalizedText.includes('brochure warning'),
-          hasNextRepair: normalizedText.includes('next repair:'),
+          // New feed-card invariants: every card labels its concept render, shows
+          // the dimensioned plan as source of truth, and keeps a repair + open path.
+          hasConceptLabel: document.querySelectorAll('[data-feed-card] [data-feed-concept-label]').length > 0,
+          hasSourceOfTruth: normalizedText.includes('dimensioned source of truth'),
+          hasRepairAction: cardButtons.includes('repair'),
+          hasOpenPlan: cardButtons.includes('open plan'),
+          hasEngagement: document.querySelectorAll('[data-feed-card] [data-feed-engagement]').length > 0,
           hasHarnessLeak: /paired gpt status|component catalog|select a component/i.test(text),
         };
       });
       galleryResult.views.gallery = { screenshot: galleryScreenshot, metrics: gallerySignals };
-      if (gallerySignals.planCards < 1) galleryResult.blockers.push('gallery: no product plan cards rendered');
+      if (gallerySignals.planCards < 1) galleryResult.blockers.push('gallery: no plan feed cards rendered');
       if (!gallerySignals.hasSearch) galleryResult.blockers.push('gallery: search control missing');
       if (!gallerySignals.hasBedFilter || !gallerySignals.hasBathFilter || !gallerySignals.hasSqftFilter || !gallerySignals.hasLevelFilter || !gallerySignals.hasRoofFilter || !gallerySignals.hasStatusFilter) {
         galleryResult.blockers.push('gallery: product filters missing');
       }
       if (!gallerySignals.hasNewPlan) galleryResult.blockers.push('gallery: New Plan handoff action missing');
-      if (!gallerySignals.hasRepairPromptAction) galleryResult.blockers.push('gallery: blocked cards do not expose Repair Prompt action');
-      if (!gallerySignals.hasNextRepair) galleryResult.blockers.push('gallery: blocked cards do not describe next repair target');
-      if (!gallerySignals.hasElevationPreview) galleryResult.blockers.push('gallery: elevation preview missing from plan cards');
-      if (!gallerySignals.hasDesignChip || !gallerySignals.hasPresentationChip || !gallerySignals.hasBrochureChip) {
-        galleryResult.blockers.push('gallery: quality lane chips missing from plan cards');
-      }
+      if (!gallerySignals.hasConceptLabel) galleryResult.blockers.push('gallery: feed cards do not label the concept render');
+      if (!gallerySignals.hasSourceOfTruth) galleryResult.blockers.push('gallery: feed cards do not show the dimensioned plan as source of truth');
+      if (!gallerySignals.hasRepairAction) galleryResult.blockers.push('gallery: feed cards do not expose a Repair action');
+      if (!gallerySignals.hasOpenPlan) galleryResult.blockers.push('gallery: feed cards do not expose an Open Plan action');
+      if (!gallerySignals.hasEngagement) galleryResult.blockers.push('gallery: feed cards do not show the engagement bar');
       if (gallerySignals.hasHarnessLeak) galleryResult.blockers.push('gallery: harness/debug panel leaked into product landing page');
       const newPlanHandoffButtons = page.getByText('New Plan Handoff', { exact: true });
       const newPlanHandoffCount = await newPlanHandoffButtons.count();
@@ -2353,10 +2355,10 @@ async function run() {
         }
         await page.getByText('Close', { exact: true }).first().click();
       }
-      const repairPromptButtons = page.getByText('Repair Prompt', { exact: true });
+      const repairPromptButtons = page.locator('[data-feed-card] button', { hasText: /^Repair$/ });
       const repairPromptCount = await repairPromptButtons.count();
       if (repairPromptCount < 1) {
-        galleryResult.blockers.push('gallery: no clickable Repair Prompt actions found');
+        galleryResult.blockers.push('gallery: no clickable Repair actions found on feed cards');
       } else {
         await repairPromptButtons.first().click();
         await page.waitForFunction(() => document.body.innerText.includes('Repair With GPT'), undefined, { timeout: 10_000 });

@@ -3811,64 +3811,6 @@ function SemanticElevationView({ home, side }: { home: DenHome; side: 'front' | 
   );
 }
 
-function MiniElevationPreview({ home }: { home: DenHome }) {
-  // Real elevation from the artifact — cards should differ the way the
-  // buildings differ. Prefer the gable face: at thumbnail size the roof
-  // profile carries the identity; a low eave face reads as a flat bar.
-  // Generic box+roofline drawing is the fallback for plans whose artifact
-  // cannot produce an elevation model.
-  let real: { svg: string; openings: number } | null = null;
-  try {
-    const front = elevationModelForHome(home, 'front');
-    const side = elevationModelForHome(home, 'side');
-    const model = front.gableFacing ? front : side.gableFacing ? side : front;
-    real = { svg: elevationSvgString(model), openings: model.openings.length };
-  } catch {
-    real = null;
-  }
-  if (real) {
-    return (
-      <div
-        className="flex h-full w-full items-center justify-center bg-[#f7f3ec] p-1.5 [&>svg]:h-full [&>svg]:w-full"
-        data-elevation-openings={real.openings}
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: real.svg }}
-      />
-    );
-  }
-  const span = home.footprint.width;
-  const roof = home.roofSemantics;
-  const ridge = roof?.ridgeHeightFt ?? home.height;
-  const eave = roof?.eaveHeightFt ?? Math.max(7, home.height * 0.45);
-  const overhang = roof?.overhangFt ?? 1;
-  const width = 240;
-  const height = 150;
-  const pad = 18;
-  const scaleX = (width - pad * 2) / (span + overhang * 2);
-  const scaleY = (height - pad * 2) / Math.max(ridge + 1, 12);
-  const x0 = pad + overhang * scaleX;
-  const x1 = x0 + span * scaleX;
-  const yBase = height - pad;
-  const yEave = yBase - eave * scaleY;
-  const yRidge = yBase - ridge * scaleY;
-  const xRidge = (x0 + x1) / 2;
-  const roofPoints = home.roofStyle === 'shed'
-    ? `${x0 - overhang * scaleX},${yEave} ${x1 + overhang * scaleX},${yRidge}`
-    : `${x0 - overhang * scaleX},${yEave} ${xRidge},${yRidge} ${x1 + overhang * scaleX},${yEave}`;
-
-  return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="h-full w-full bg-[#f7f3ec]">
-      <rect x={x0} y={yEave} width={x1 - x0} height={yBase - yEave} fill="#f1ece2" stroke="#6d665b" strokeWidth="2" />
-      <polyline points={roofPoints} fill="none" stroke="#3f3a33" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
-      <line x1={x0} y1={yBase} x2={x1} y2={yBase} stroke="#8f867a" strokeWidth="2" />
-      <rect x={x0 + (x1 - x0) * 0.18} y={yEave + 18} width={Math.max(16, (x1 - x0) * 0.16)} height="18" fill="#e6eef0" stroke="#9aa9aa" strokeWidth="1" />
-      <rect x={x0 + (x1 - x0) * 0.62} y={yEave + 18} width={Math.max(16, (x1 - x0) * 0.16)} height="18" fill="#e6eef0" stroke="#9aa9aa" strokeWidth="1" />
-      <text x={width / 2} y={height - 5} textAnchor="middle" fontFamily="monospace" fontSize="9" fill="#8a8178">
-        {home.roofSemantics?.status === 'validated' ? 'validated elevation' : 'provisional elevation'}
-      </text>
-    </svg>
-  );
-}
 
 /**
  * Landing-page brief box: the product promise (type a brief, get a checked
@@ -4137,143 +4079,21 @@ function ProductGallery({
         </select>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {filteredHomes.map((home) => {
+      <section className="mx-auto max-w-[600px] space-y-5" data-plan-feed>
+        {filteredHomes.map((home, index) => {
           const audit = productAudit(home, null);
           const lifecycle = audit.designBlockers.length ? 'blocked' : (lifecycleStates[home.id] ?? audit.status);
-          const thumbnail = home.pairedArtifactInfo?.deterministicRenderUrl ?? home.pairedArtifactInfo?.sourceImageUrl;
-          // Three honest tiers: fully green; design healthy but sales assets
-          // pending (JSON-only plans); genuinely blocked design.
-          const qualityLabel = audit.brochureQuality.status === 'pass' && audit.designQuality.status === 'pass' && audit.presentationQuality.status === 'pass'
-            ? 'Brochure Ready'
-            : audit.designBlockers.length === 0
-              ? 'Design Ready'
-              : 'Needs Repair';
-          const firstBlockedGroup = audit.groups.find((group) => group.status === 'blocked');
-          const nextRepairLabel = firstBlockedGroup
-            ? `${firstBlockedGroup.label}: ${firstBlockedGroup.blockers[0] ?? firstBlockedGroup.action}`
-            : 'Ready for export review';
-          const qualityChips = [
-            ['Design', audit.designQuality.status],
-            ['Presentation', audit.presentationQuality.status],
-            ['Brochure', audit.brochureQuality.status],
-          ] as const;
           return (
-            <article key={home.id} className="group overflow-hidden rounded-lg border border-stone-200 bg-white shadow-[0_1px_2px_rgba(41,37,36,0.04)] transition duration-200 hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-[0_20px_38px_-20px_rgba(41,37,36,0.30)]">
-              <button type="button" onClick={() => onOpenPlan(home.id)} className="block w-full bg-[#f7f4ee] p-4 text-left">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold tracking-tight text-stone-800">{home.model}</h3>
-                    <p className="mt-0.5 text-[10px] tabular-nums text-stone-400">
-                      {home.sqft} sf - {home.footprint.width}&apos;x{home.footprint.depth}&apos;{home.bedBath ? ` - ${home.bedBath}` : ''}
-                    </p>
-                  </div>
-                  <span className={`shrink-0 rounded-sm border px-2 py-1 text-[9px] uppercase tracking-wide ${
-                    lifecycle === 'blocked'
-                      ? 'border-red-200 bg-red-50 text-red-700'
-                      : lifecycle === 'exported'
-                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                        : 'border-amber-200 bg-amber-50 text-amber-700'
-                  }`}>
-                    {lifecycle}
-                  </span>
-                </div>
-                <div className="grid h-60 gap-2 bg-white p-2 md:grid-cols-[1.45fr_0.9fr]">
-                  <div className="flex min-w-0 items-center justify-center overflow-hidden border border-stone-100 bg-white">
-                    {thumbnail ? (
-                      <img src={thumbnail} alt={`${home.model} plan thumbnail`} className="max-h-full w-full object-contain transition duration-300 group-hover:scale-[1.015]" />
-                    ) : (
-                      // JSON-only plans have no proposal image but always have
-                      // the live deterministic render - show the plan, not a
-                      // "missing" placeholder.
-                      <div data-live-thumbnail className="h-full w-full overflow-hidden p-1 [&_svg]:h-full [&_svg]:w-full">
-                        <FloorPlanView
-                          rooms={home.rooms}
-                          footprint={home.footprint}
-                          connections={home.connections}
-                          sourceWalls={home.sourceWalls}
-                          sourceOpenings={home.sourceOpenings}
-                          spaceFaces={home.spaceFaces}
-                          dimensionLines={home.dimensionLines}
-                          dimensionFrame={home.dimensionFrame}
-                          floorFrames={home.floorFrames}
-                          traceMode={home.pairedArtifact}
-                          drawingStyleProfile={home.drawingStyleProfile}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className="grid min-w-0 grid-rows-[1fr_auto] overflow-hidden border border-stone-100 bg-[#f7f3ec]">
-                    <MiniElevationPreview home={home} />
-                    <div className="border-t border-stone-200 bg-white/70 px-2 py-1 text-[9px] uppercase tracking-wide text-stone-500">
-                      Elevation
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 grid grid-cols-3 gap-1">
-                  {qualityChips.map(([label, status]) => (
-                    <span
-                      key={label}
-                      className={`rounded-sm border px-2 py-1 text-center text-[9px] uppercase tracking-wide ${
-                        status === 'pass'
-                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                          : status === 'warning'
-                            ? 'border-amber-200 bg-amber-50 text-amber-700'
-                            : 'border-red-200 bg-red-50 text-red-700'
-                      }`}
-                    >
-                      {label} {status}
-                    </span>
-                  ))}
-                </div>
-              </button>
-              <div className="grid grid-cols-3 border-t border-stone-200 text-[10px]">
-                <div className="border-r border-stone-200 p-2">
-                  <div className="text-stone-400">Roof</div>
-                  <div className="font-medium text-stone-700">{home.roofStyle}</div>
-                </div>
-                <div className="border-r border-stone-200 p-2">
-                  <div className="text-stone-400">Rooms</div>
-                  <div className="font-medium text-stone-700">{home.rooms.length}</div>
-                </div>
-                <div className="p-2">
-                  <div className="text-stone-400">Quality</div>
-                  <div className={qualityLabel === 'Brochure Ready' ? 'font-medium text-emerald-700' : qualityLabel === 'Design Ready' ? 'font-medium text-amber-700' : 'font-medium text-red-700'}>{qualityLabel}</div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between gap-2 border-t border-stone-200 p-3">
-                <div className="min-w-0 text-[10px] text-stone-400">
-                  <div>{audit.blockers.length ? `${audit.blockers.length} blocker${audit.blockers.length === 1 ? '' : 's'}` : 'No product blockers'}</div>
-                  <div className="truncate text-[9px] text-stone-500">Next repair: {nextRepairLabel}</div>
-                </div>
-                <div className="flex gap-2">
-                  {isDeletablePlan(home, lifecycle) && (
-                    <button
-                      type="button"
-                      data-delete-plan={home.id}
-                      onClick={() => onDeletePlan(home.id)}
-                      className="rounded-sm border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => onRepairPlan(home.id)}
-                    className={`rounded-sm border px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide ${
-                      audit.blockers.length > 0
-                        ? 'border-red-200 bg-red-50 text-red-700 hover:border-red-700'
-                        : 'border-stone-300 bg-white text-stone-700 hover:border-stone-800'
-                    }`}
-                  >
-                    Repair Prompt
-                  </button>
-                  <button type="button" onClick={() => onOpenPlan(home.id)} className="rounded-sm border border-stone-300 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800 hover:bg-stone-800 hover:text-white">
-                    Open Plan
-                  </button>
-                </div>
-              </div>
-            </article>
+            <FeedCard
+              key={home.id}
+              home={home}
+              index={index}
+              lifecycle={lifecycle}
+              deletable={isDeletablePlan(home, lifecycle)}
+              onOpen={onOpenPlan}
+              onRepair={onRepairPlan}
+              onDelete={onDeletePlan}
+            />
           );
         })}
       </section>
@@ -4288,96 +4108,113 @@ function ProductGallery({
   );
 }
 
+// Cosmetic, stable timestamps (no Date.now → no SSR/client hydration drift).
+const FEED_STAMPS = ['2h', '5h', '9h', '1d', '2d', '3d'];
+
 /**
- * Social-feed presentation: each plan as a barndominium-style post card —
- * photoreal look render on top, the deterministic dimensioned floor-plan sheet
- * below, wrapped in feed chrome (header, caption, engagement bar). The render is
- * a labeled "concept render" and visually subordinate; the floor plan is the
- * dimensioned source of truth and is never replaced. View only.
+ * One plan as a Barndominium-style social post card — the home page is a feed of
+ * these. A photoreal look render on top (a labeled "concept render," visually
+ * subordinate), the deterministic dimensioned floor-plan sheet below (the source
+ * of truth, never replaced), wrapped in feed chrome (header, caption, engagement
+ * bar + actions). A plan with no look render yet shows a "concept render pending"
+ * placeholder — never a broken image. View only.
  */
-function PlanFeed({ homes, onOpenPlan, onExit }: { homes: DenHome[]; onOpenPlan: (id: string) => void; onExit: () => void }) {
-  // Only plans that have an imported look render read as a complete feed post.
-  const cards = homes.filter((home) => Boolean(home.pairedArtifactInfo?.lookRenderUrl) && Boolean(home.pairedArtifactInfo?.deterministicRenderUrl));
-  // Cosmetic, stable timestamps (no Date.now → no SSR/client hydration drift).
-  const stamps = ['2h', '5h', '9h', '1d', '2d', '3d'];
-  const taglines: Record<string, string> = {};
+function FeedCard({ home, index, lifecycle, deletable, onOpen, onRepair, onDelete }: {
+  home: DenHome;
+  index: number;
+  lifecycle: string;
+  deletable: boolean;
+  onOpen: (id: string) => void;
+  onRepair: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const info = home.pairedArtifactInfo;
+  const render = info?.lookRenderUrl;
+  const planSheet = info?.deterministicRenderUrl;
+  const es = info?.lookRenderExpectedStructure;
+  const specBits = [
+    `${home.sqft.toLocaleString()} sqft`,
+    home.bedBath,
+    es ? `${es.roofStyle}${es.hasLoft ? ' · loft' : ''}` : home.roofStyle,
+  ].filter(Boolean);
+  const tagline = `${home.footprint.width}×${home.footprint.depth} ft · code-checked floor plan`;
   return (
-    <main className="mx-auto max-w-[520px] px-3 py-6" data-plan-feed>
-      {cards.length === 0 && (
-        <div className="rounded-lg border border-stone-200 bg-white p-6 text-center text-sm text-stone-500">
-          No look renders yet. Generate a render (Look Render → Photoreal) and import it to populate the feed.
+    <article className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-[0_18px_40px_-30px_rgba(41,37,36,0.4)]" data-feed-card data-feed-plan-id={home.id}>
+      {/* page header */}
+      <div className="flex items-center gap-2.5 px-3 py-2.5" data-feed-header>
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-800 text-[11px] font-semibold text-white" aria-hidden>FS</div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[12px] font-semibold text-stone-800">Floorplan Studio</div>
+          <div className="text-[10px] text-stone-400">{FEED_STAMPS[index % FEED_STAMPS.length]} · code-checked · 🌐</div>
         </div>
-      )}
-      {cards.map((home, index) => {
-        const info = home.pairedArtifactInfo!;
-        const es = info.lookRenderExpectedStructure;
-        const specBits = [
-          `${home.sqft.toLocaleString()} sqft`,
-          home.bedBath,
-          es ? `${es.roofStyle}${es.hasLoft ? ' · loft' : ''}` : home.roofStyle,
-        ].filter(Boolean);
-        const tagline = taglines[home.id] ?? `${home.footprint.width}×${home.footprint.depth} ft · code-checked floor plan`;
-        return (
-          <article key={home.id} className="mb-5 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-[0_18px_40px_-30px_rgba(41,37,36,0.4)]" data-feed-card data-feed-plan-id={home.id}>
-            {/* page header */}
-            <div className="flex items-center gap-2.5 px-3 py-2.5" data-feed-header>
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-800 text-[11px] font-semibold text-white" aria-hidden>FS</div>
-              <div className="min-w-0 flex-1">
-                <div className="text-[12px] font-semibold text-stone-800">Floorplan Studio</div>
-                <div className="text-[10px] text-stone-400">{stamps[index % stamps.length]} · code-checked · 🌐</div>
-              </div>
-              <div className="text-stone-300" aria-hidden>···</div>
-            </div>
-            {/* caption: model + tagline */}
-            <div className="px-3 pb-2.5 text-[12px] leading-snug text-stone-700" data-feed-caption>
-              <span className="font-semibold text-stone-900">{home.model}</span>
-              <span className="text-stone-500"> — {tagline}</span>
-              <div className="mt-0.5 text-[11px] text-stone-500">{specBits.join(' · ')}</div>
-            </div>
-            {/* photoreal render (subordinate, labeled) */}
-            <div className="relative bg-stone-100">
-              <img
-                src={info.lookRenderUrl}
-                alt={`${home.model} concept render`}
-                className="block aspect-[4/3] w-full object-cover"
-                data-feed-render
-              />
-              <span className="absolute bottom-2 right-2 rounded-sm bg-black/55 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-white" data-feed-concept-label>
-                Concept render · not to scale
-              </span>
-            </div>
-            {/* deterministic floor-plan sheet (source of truth) */}
-            <div className="border-t border-stone-200 bg-white p-2" data-feed-plan>
-              <div className="mb-1 px-1 text-[9px] font-semibold uppercase tracking-wide text-stone-400">Floor plan · dimensioned source of truth</div>
-              <img src={info.deterministicRenderUrl} alt={`${home.model} dimensioned floor plan`} className="block h-auto w-full" data-feed-plan-sheet />
-            </div>
-            {/* cosmetic engagement bar */}
-            <div className="flex items-center justify-between border-t border-stone-200 px-3 py-2 text-[11px] text-stone-500" data-feed-engagement>
-              <span data-feed-action="like">Like</span>
-              <span data-feed-action="comment">Comment</span>
-              <span data-feed-action="share">Share</span>
-              <button
-                type="button"
-                onClick={() => onOpenPlan(home.id)}
-                className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800"
-                data-feed-open
-              >
-                Open plan
-              </button>
-            </div>
-          </article>
-        );
-      })}
-      <div className="pt-2 text-center">
-        <button type="button" onClick={onExit} className="text-[11px] text-stone-400 underline hover:text-stone-700">Back to studio</button>
+        <span className={`shrink-0 rounded-sm border px-2 py-0.5 text-[9px] uppercase tracking-wide ${
+          lifecycle === 'blocked' ? 'border-red-200 bg-red-50 text-red-700'
+            : lifecycle === 'exported' ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+              : 'border-amber-200 bg-amber-50 text-amber-700'}`}>{lifecycle}</span>
       </div>
-    </main>
+      {/* caption: model + tagline + specs */}
+      <div className="px-3 pb-2.5 text-[12px] leading-snug text-stone-700" data-feed-caption>
+        <span className="font-semibold text-stone-900">{home.model}</span>
+        <span className="text-stone-500"> — {tagline}</span>
+        <div className="mt-0.5 text-[11px] text-stone-500">{specBits.join(' · ')}</div>
+      </div>
+      {/* photoreal render (subordinate, labeled) — or a pending placeholder */}
+      <button type="button" onClick={() => onOpen(home.id)} className="relative block w-full text-left">
+        {render ? (
+          <img src={render} alt={`${home.model} concept render`} loading="lazy" decoding="async" className="block aspect-[4/3] w-full bg-stone-100 object-cover" data-feed-render />
+        ) : (
+          <div className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-b from-stone-100 to-stone-200" data-feed-render-placeholder>
+            <span className="px-6 text-center text-[11px] leading-snug text-stone-400">Concept render pending — generate one in Look Render → Photoreal</span>
+          </div>
+        )}
+        <span className="absolute bottom-2 right-2 rounded-sm bg-black/55 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-white" data-feed-concept-label>
+          Concept render · not to scale
+        </span>
+      </button>
+      {/* deterministic floor-plan sheet (the dimensioned source of truth) */}
+      <div className="border-t border-stone-200 bg-white p-2" data-feed-plan>
+        <div className="mb-1 px-1 text-[9px] font-semibold uppercase tracking-wide text-stone-400">Floor plan · dimensioned source of truth</div>
+        {planSheet ? (
+          <img src={planSheet} alt={`${home.model} dimensioned floor plan`} loading="lazy" decoding="async" className="block h-auto w-full" data-feed-plan-sheet />
+        ) : (
+          <div data-feed-plan-sheet className="p-1 [&_svg]:h-auto [&_svg]:w-full">
+            <FloorPlanView
+              rooms={home.rooms}
+              footprint={home.footprint}
+              connections={home.connections}
+              sourceWalls={home.sourceWalls}
+              sourceOpenings={home.sourceOpenings}
+              spaceFaces={home.spaceFaces}
+              dimensionLines={home.dimensionLines}
+              dimensionFrame={home.dimensionFrame}
+              floorFrames={home.floorFrames}
+              traceMode={home.pairedArtifact}
+              drawingStyleProfile={home.drawingStyleProfile}
+            />
+          </div>
+        )}
+      </div>
+      {/* engagement bar + actions */}
+      <div className="flex items-center justify-between gap-2 border-t border-stone-200 px-3 py-2 text-[11px] text-stone-500" data-feed-engagement>
+        <div className="flex gap-3">
+          <span data-feed-action="like">Like</span>
+          <span data-feed-action="comment">Comment</span>
+          <span data-feed-action="share">Share</span>
+        </div>
+        <div className="flex gap-1.5">
+          {deletable && (
+            <button type="button" data-delete-plan={home.id} onClick={() => onDelete(home.id)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700">Delete</button>
+          )}
+          <button type="button" onClick={() => onRepair(home.id)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800">Repair</button>
+          <button type="button" onClick={() => onOpen(home.id)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800 hover:bg-stone-800 hover:text-white" data-feed-open>Open plan</button>
+        </div>
+      </div>
+    </article>
   );
 }
 
 export default function Home() {
   const [selectedHomeId, setSelectedHomeId] = useState('');
-  const [showFeed, setShowFeed] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [reviewToolsVisible, setReviewToolsVisible] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
@@ -4849,42 +4686,6 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handler);
   }, [nextHome, prevHome]);
 
-  if (showFeed) {
-    return (
-      <div className="min-h-screen bg-[#f0f2f5]">
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-stone-200 bg-white/95 px-5 py-3 backdrop-blur">
-          <div>
-            <h1 className="font-sans text-[15px] font-semibold tracking-tight text-stone-900">Floorplan Studio · Feed</h1>
-            <span className="text-[10px] text-stone-400">plans as social posts — photoreal concept render above, dimensioned plan below</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => { setShowFeed(false); setShowGallery(true); window.history.replaceState(null, '', '/'); }}
-              className="rounded-sm border border-stone-300 bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800"
-            >
-              Browse Plans
-            </button>
-            {displayHome && (
-              <button
-                type="button"
-                onClick={() => { setShowFeed(false); selectHome(displayHome.id); }}
-                className="rounded-sm border border-stone-800 bg-stone-800 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-white hover:bg-stone-700"
-              >
-                Resume {displayHome.id}
-              </button>
-            )}
-          </div>
-        </header>
-        <PlanFeed
-          homes={homes}
-          onOpenPlan={(id) => { setShowFeed(false); selectHome(id); }}
-          onExit={() => { setShowFeed(false); setShowGallery(true); window.history.replaceState(null, '', '/'); }}
-        />
-      </div>
-    );
-  }
-
   if (showGallery) {
     return (
       <div className="min-h-screen bg-[#faf8f5]">
@@ -4896,14 +4697,6 @@ export default function Home() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => { setShowGallery(false); setShowFeed(true); }}
-              className="rounded-sm border border-stone-300 bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800"
-              data-open-feed
-            >
-              Feed
-            </button>
             <button
               type="button"
               onClick={() => openWorkflowDialog('new-plan')}
@@ -4968,14 +4761,6 @@ export default function Home() {
         </div>
         {displayHome && (
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => { setShowFeed(true); window.history.replaceState(null, '', '/'); }}
-              className="rounded-sm border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-600 hover:border-stone-800"
-              data-open-feed
-            >
-              Feed
-            </button>
             <button
               type="button"
               onClick={() => {
