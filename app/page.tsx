@@ -4005,8 +4005,8 @@ function ProductGallery({
   }, [bathFilter, bedBathParts, bedFilter, homes, levelFilter, lifecycleStates, query, roofFilter, sqftFilter, statusFilter]);
 
   return (
-    <main className="mx-auto max-w-7xl px-5 py-6">
-      <section className="mb-6 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+    <main className="mx-auto max-w-[680px] px-4 py-6">
+      <section className="mb-6 space-y-4">
         <div>
           <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Prompt-to-plan studio</div>
           <h2 className="max-w-3xl font-sans text-4xl font-semibold leading-[1.05] tracking-tight text-stone-900 text-balance md:text-5xl">
@@ -4039,12 +4039,12 @@ function ProductGallery({
         </div>
       </section>
 
-      <section className="mb-5 grid gap-2 border border-stone-200 bg-white p-3 md:grid-cols-2 xl:grid-cols-[1fr_130px_130px_150px_130px_170px_150px]">
+      <section className="mb-5 grid grid-cols-2 gap-2 border border-stone-200 bg-white p-3 sm:grid-cols-3">
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search plans, features, size..."
-          className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700 outline-none focus:border-stone-400"
+          className="col-span-2 border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700 outline-none focus:border-stone-400 sm:col-span-3"
         />
         <select value={bedFilter} onChange={(event) => setBedFilter(event.target.value)} className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
           {bedOptions.map((option) => (
@@ -4079,7 +4079,7 @@ function ProductGallery({
         </select>
       </section>
 
-      <section className="mx-auto max-w-[600px] space-y-5" data-plan-feed>
+      <section className="space-y-5" data-plan-feed>
         {filteredHomes.map((home, index) => {
           const audit = productAudit(home, null);
           const lifecycle = audit.designBlockers.length ? 'blocked' : (lifecycleStates[home.id] ?? audit.status);
@@ -4132,6 +4132,8 @@ function FeedCard({ home, index, lifecycle, deletable, onOpen, onRepair, onDelet
   const render = info?.lookRenderUrl;
   const planSheet = info?.deterministicRenderUrl;
   const es = info?.lookRenderExpectedStructure;
+  // First card paints eagerly (above the fold); the rest lazy-load on scroll.
+  const priority = index === 0;
   const specBits = [
     `${home.sqft.toLocaleString()} sqft`,
     home.bedBath,
@@ -4161,9 +4163,9 @@ function FeedCard({ home, index, lifecycle, deletable, onOpen, onRepair, onDelet
       {/* photoreal render (subordinate, labeled) — or a pending placeholder */}
       <button type="button" onClick={() => onOpen(home.id)} className="relative block w-full text-left">
         {render ? (
-          <img src={render} alt={`${home.model} concept render`} loading="lazy" decoding="async" className="block aspect-[4/3] w-full bg-stone-100 object-cover" data-feed-render />
+          <img src={render} alt={`${home.model} concept render`} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'auto'} decoding="async" className="block aspect-[3/2] w-full bg-stone-100 object-cover" data-feed-render />
         ) : (
-          <div className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-b from-stone-100 to-stone-200" data-feed-render-placeholder>
+          <div className="flex aspect-[3/2] w-full items-center justify-center bg-gradient-to-b from-stone-100 to-stone-200" data-feed-render-placeholder>
             <span className="px-6 text-center text-[11px] leading-snug text-stone-400">Concept render pending — generate one in Look Render → Photoreal</span>
           </div>
         )}
@@ -4175,7 +4177,7 @@ function FeedCard({ home, index, lifecycle, deletable, onOpen, onRepair, onDelet
       <div className="border-t border-stone-200 bg-white p-2" data-feed-plan>
         <div className="mb-1 px-1 text-[9px] font-semibold uppercase tracking-wide text-stone-400">Floor plan · dimensioned source of truth</div>
         {planSheet ? (
-          <img src={planSheet} alt={`${home.model} dimensioned floor plan`} loading="lazy" decoding="async" className="block h-auto w-full" data-feed-plan-sheet />
+          <img src={planSheet} alt={`${home.model} dimensioned floor plan`} loading={priority ? 'eager' : 'lazy'} decoding="async" className="block h-auto w-full" data-feed-plan-sheet />
         ) : (
           <div data-feed-plan-sheet className="p-1 [&_svg]:h-auto [&_svg]:w-full">
             <FloorPlanView
