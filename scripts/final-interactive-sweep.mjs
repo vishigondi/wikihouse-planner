@@ -285,6 +285,28 @@ for (const bp of BREAKPOINTS) {
   note(detailToolsOverflow <= 1, `detail: no overflow with Review Tools open @ ${bp.id} (overflow ${detailToolsOverflow}px)`);
   await page.locator('button', { hasText: /^Review Tools$/ }).first().click().catch(() => {});
 }
+
+// (7) the workflow modals fit narrow viewports: panel within bounds, no page
+// overflow, scroll inside the modal (two-column layouts stack on mobile).
+const MODAL_BTNS = ['New Plan', 'Import JSON', 'Export', 'Look Render', 'Repair With GPT'];
+for (const mw of [390, 768]) {
+  await page.setViewportSize({ width: mw, height: 900 });
+  await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForTimeout(4000);
+  for (const btn of MODAL_BTNS) {
+    await page.locator('button', { hasText: new RegExp(`^${btn}$`) }).first().click().catch(() => {});
+    await page.waitForTimeout(700);
+    const fit = await page.evaluate(() => {
+      const off = document.documentElement.scrollWidth - window.innerWidth;
+      const panel = document.querySelector('.fixed.inset-0.z-50 > div');
+      const r = panel ? panel.getBoundingClientRect() : null;
+      return { off, present: !!panel, inBounds: r ? (r.left >= -1 && r.right <= window.innerWidth + 1) : false };
+    });
+    note(fit.present && fit.off <= 1 && fit.inBounds, `modal "${btn}" fits @ ${mw}px (overflow ${fit.off}px, in-bounds ${fit.inBounds})`);
+    await page.locator('button', { hasText: /^Close$/ }).first().click().catch(() => {});
+    await page.waitForTimeout(300);
+  }
+}
 await page.setViewportSize({ width: 1600, height: 1000 });
 
 await browser.close();
