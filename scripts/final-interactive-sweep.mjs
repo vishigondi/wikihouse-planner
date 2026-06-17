@@ -250,6 +250,27 @@ note(/3 bed/.test(echoText) && /2 bath/.test(echoText) && /gable/.test(echoText)
 const ignoredText = await page.locator('[data-home-brief-ignored]').textContent().catch(() => '');
 note(/farmhouse/.test(ignoredText), 'landing echo surfaces ignored words');
 
+// (6) responsive: no horizontal overflow + key landmarks at standard breakpoints.
+// Home assertions land with the home-feed responsive pass; detail-page and modal
+// assertions are added as those surfaces are made responsive (gates assert MORE
+// as each surface is fixed — never assert overflow before the fix lands).
+const BREAKPOINTS = [
+  { id: 'mobile', width: 390, height: 844 },
+  { id: 'tablet', width: 768, height: 1024 },
+  { id: 'laptop', width: 1024, height: 768 },
+  { id: 'desktop', width: 1440, height: 900 },
+];
+for (const bp of BREAKPOINTS) {
+  await page.setViewportSize({ width: bp.width, height: bp.height });
+  await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForTimeout(2500);
+  const homeOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const homeCards = await page.locator('[data-feed-card]').count();
+  note(homeOverflow <= 1, `home: no horizontal overflow @ ${bp.id} ${bp.width}px (overflow ${homeOverflow}px)`);
+  note(homeCards >= 1, `home: feed cards render @ ${bp.id} (${homeCards})`);
+}
+await page.setViewportSize({ width: 1600, height: 1000 });
+
 await browser.close();
 if (failures) {
   console.error(`\n${failures} sweep check(s) failed`);

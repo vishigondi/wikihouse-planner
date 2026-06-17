@@ -4691,18 +4691,18 @@ export default function Home() {
   if (showGallery) {
     return (
       <div className="min-h-screen bg-[#faf8f5]">
-        <header className="flex items-center justify-between border-b border-stone-200 bg-white/90 px-5 py-3 backdrop-blur">
-          <div>
+        <header className="flex items-center justify-between gap-3 border-b border-stone-200 bg-white/90 px-4 py-3 backdrop-blur sm:px-5">
+          <div className="min-w-0">
             <h1 className="font-sans text-[15px] font-semibold tracking-tight text-stone-900">Floorplan Studio</h1>
-            <span className="text-[10px] text-stone-400">
+            <span className="hidden text-[10px] text-stone-400 sm:block">
               {homes.length} code-checked plan{homes.length === 1 ? '' : 's'} - from brief to client-ready packet
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
               onClick={() => openWorkflowDialog('new-plan')}
-              className="rounded-sm border border-stone-300 bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800"
+              className="whitespace-nowrap rounded-sm border border-stone-300 bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800"
             >
               New Plan
             </button>
@@ -4711,7 +4711,7 @@ export default function Home() {
                 type="button"
                 onClick={() => selectHome(displayHome.id)}
                 title={`Back to ${displayHome.id}`}
-                className="rounded-sm border border-stone-800 bg-stone-800 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-white hover:bg-stone-700"
+                className="max-w-[42vw] truncate whitespace-nowrap rounded-sm border border-stone-800 bg-stone-800 px-3 py-2 text-[10px] font-medium uppercase tracking-wide text-white hover:bg-stone-700"
               >
                 Resume {displayHome.id}
               </button>
