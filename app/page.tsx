@@ -4784,7 +4784,7 @@ export default function Home() {
             >
               Review Tools
             </button>
-            <div className="text-right">
+            <div className="hidden text-right sm:block">
               <div className="text-xs font-medium text-stone-600">{displayHome.model}</div>
               <div className="text-[10px] tabular-nums text-stone-400">
                 {displayHome.sqft} sf - {displayHome.footprint.width}&apos;x{displayHome.footprint.depth}&apos;{displayHome.bedBath ? ` - ${displayHome.bedBath}` : ''}
@@ -4849,9 +4849,9 @@ export default function Home() {
         showAllChips={reviewToolsVisible}
       />
 
-      <div className="flex items-start">
+      <div className="flex flex-col items-stretch lg:flex-row lg:items-start">
         {reviewToolsVisible && (
-          <aside className="sticky top-0 flex h-screen w-80 shrink-0 flex-col overflow-hidden border-r border-stone-200 bg-white">
+          <aside className="flex w-full shrink-0 flex-col overflow-hidden border-b border-stone-200 bg-white lg:sticky lg:top-0 lg:h-screen lg:w-80 lg:border-b-0 lg:border-r">
             <div className="min-h-0 flex-1 overflow-y-auto">
               <PairedStatusPanel home={displayHome} renderedBounds={renderedBounds} />
               <ProductWorkflowPanel

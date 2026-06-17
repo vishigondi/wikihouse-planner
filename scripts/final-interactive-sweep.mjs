@@ -260,14 +260,30 @@ const BREAKPOINTS = [
   { id: 'laptop', width: 1024, height: 768 },
   { id: 'desktop', width: 1440, height: 900 },
 ];
+const overflowPx = () => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 for (const bp of BREAKPOINTS) {
   await page.setViewportSize({ width: bp.width, height: bp.height });
   await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForTimeout(2500);
-  const homeOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const homeOverflow = await overflowPx();
   const homeCards = await page.locator('[data-feed-card]').count();
   note(homeOverflow <= 1, `home: no horizontal overflow @ ${bp.id} ${bp.width}px (overflow ${homeOverflow}px)`);
   note(homeCards >= 1, `home: feed cards render @ ${bp.id} (${homeCards})`);
+
+  // plan detail: no overflow + the 3D canvas and a plan sheet render, both with
+  // the Review Tools rail closed AND open (the open rail must stack, not overflow).
+  await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForTimeout(4000);
+  const detailOverflow = await overflowPx();
+  const canvasCount = await page.locator('canvas').count();
+  const planSheet = await page.locator('[data-deterministic-render], [data-feed-plan-sheet], [data-live-thumbnail], main svg').count();
+  note(detailOverflow <= 1, `detail: no horizontal overflow @ ${bp.id} ${bp.width}px (overflow ${detailOverflow}px)`);
+  note(canvasCount >= 1 && planSheet >= 1, `detail: 3D canvas + plan sheet render @ ${bp.id} (canvas ${canvasCount}, sheet ${planSheet})`);
+  await page.locator('button', { hasText: /^Review Tools$/ }).first().click().catch(() => {});
+  await page.waitForTimeout(800);
+  const detailToolsOverflow = await overflowPx();
+  note(detailToolsOverflow <= 1, `detail: no overflow with Review Tools open @ ${bp.id} (overflow ${detailToolsOverflow}px)`);
+  await page.locator('button', { hasText: /^Review Tools$/ }).first().click().catch(() => {});
 }
 await page.setViewportSize({ width: 1600, height: 1000 });
 
