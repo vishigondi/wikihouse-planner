@@ -342,17 +342,21 @@ Recording these so they stay visible (and so nobody "discovers" them as bugs):
   those, and pick the gable elevation by ridge axis (front for ridge-z, side
   for ridge-x), or the structural facts come out wrong (the a-frame-22 bug).
 - **Presentation lanes compose existing assets; they don't relax the source of
-  truth.** The social Feed view (`PlanFeed`, the "Feed" header action) stacks a
-  photoreal look render above the deterministic dimensioned floor-plan sheet in a
-  feed-style card — but the render keeps its "concept render" label + originality
-  guard and is visually subordinate; the dimensioned plan stays primary and is
-  never replaced. Photoreal is just a `LookRenderMode` flag on the same prompt
-  builder (still geometry-conditioned, still expectedStructure-checked); a
-  photoreal concept that could pass for a real building gets the *stronger*
-  framing "not a photo of a real home." View-only; the import overwrites the look
-  render at the same path so the manifest + deterministic artifacts stay
-  byte-identical. Shipped 2026-06-16; sweep asserts each card shows the render +
-  plan + caption + concept label + engagement bar, render ABOVE the plan.
+  truth.** The home page IS a social feed (`FeedCard`, Browse Plans at "/"):
+  every plan is a card that stacks a photoreal look render above the
+  deterministic dimensioned floor-plan sheet — but the render keeps its "concept
+  render" label + originality guard and is visually subordinate; the dimensioned
+  plan stays primary and is never replaced. Photoreal is just a `LookRenderMode`
+  flag on the same prompt builder (still geometry-conditioned, still
+  expectedStructure-checked); a photoreal concept that could pass for a real
+  building gets the *stronger* framing "not a photo of a real home." View-only;
+  the import overwrites the look render at the same path so the manifest +
+  deterministic artifacts stay byte-identical. A plan with no render shows a
+  "concept render pending" placeholder, never a broken image. When the card
+  design changed, the gates were UPDATED to assert the new invariants (feed card
+  + concept label + source-of-truth + repair/open + engagement, render ABOVE the
+  plan) across `check:den-seeds`, `qa:brochure`, and the sweep — not loosened.
+  Shipped 2026-06-16.
 - **First synthetic click after navigation can be swallowed** by the browser
   automation input layer (not the app — a DOM `.click()` works first try).
 

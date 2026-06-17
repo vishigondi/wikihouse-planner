@@ -1,6 +1,44 @@
 # Project Status
 
-Last updated: 2026-06-16 (social Feed view + photoreal renders — shipped)
+Last updated: 2026-06-16 (home page IS the social feed — every plan a photoreal card)
+
+## 2026-06-16 Home Page = Social Feed — Shipped
+
+The home page (Browse Plans, "/") now presents EVERY plan as a Barndominium-style
+social card, and the separate Feed page is gone. Three fires (planner e5db040,
+e4fbc98; data c3d446b), each verified in real Chrome, full ladder green.
+
+1. **Home = feed cards** — a shared `FeedCard` renders each plan as a post:
+   header (FS avatar + Floorplan Studio + timestamp + status chip) → caption
+   (model + tagline + specs) → photoreal concept render (labeled, subordinate) →
+   the deterministic dimensioned floor-plan sheet ("source of truth") →
+   engagement bar + Open/Repair/Delete. The Browse Plans page is now a scroll of
+   these (hero + brief box + filters kept). The standalone Feed page + Feed
+   buttons + the dead `MiniElevationPreview` were removed. A plan without a render
+   shows a "concept render pending" placeholder — never a broken image.
+2. **Photoreal render for every plan** — gen-001, loft-showcase, a-frame-22,
+   a-frame-bunk, outpost-medium, brief-aframe-2br each got a photoreal render
+   produced in ChatGPT and visually verified in Chrome against its deterministic
+   gable elevation (roof style, footprint aspect, gable openings, loft). All 6
+   cards are photoreal; no placeholders.
+3. **Polish to deploy-ready** — cohesive single centered column (max-w-680);
+   first card eager-loads (fetchPriority high), the rest lazy; renders shown at
+   their native 3:2 (no crop). Reads like a real plan feed.
+
+Gates updated to the feed-card design (assert MORE, not less): `check:den-seeds`,
+`qa:brochure` gallery signals (feed card + concept label + source-of-truth +
+repair/open + engagement), and the interactive sweep (home renders the feed;
+every card has plan + caption + concept label + engagement; render ABOVE the
+plan). Guardrails held: photoreal renders are labeled concept renders with the
+originality guard, subordinate to the plan; lookRender + expectedStructure stay
+ADDITIVE manifest metadata only; gen-001 JSON + traced deterministic artifacts
+byte-identical; view only.
+
+**Deploy note:** the look-render images live in the local `dev-compiler` data
+repo (consumed via the `public/data/den-image-loop` symlink; no remote). A real
+deploy needs that data shipped too — give the data repo a remote, or vendor the
+images into the planner repo / object storage — or swap the browser handoff for
+a `gpt-image-1` call behind the same prompt builder + import + card.
 
 ## 2026-06-16 Social Feed View (photoreal) — Shipped
 
