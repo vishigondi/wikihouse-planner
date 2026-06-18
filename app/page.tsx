@@ -2359,6 +2359,57 @@ function ValidationSummary({
   );
 }
 
+/**
+ * A destructive action that requires a deliberate two-step confirm — a single
+ * click only ARMS it (label switches to "Confirm?"); a second click within a few
+ * seconds fires `onConfirm`; blur or timeout disarms. Prevents one-misclick data
+ * loss without a native confirm() dialog. Used for every Delete in the app.
+ */
+function ConfirmButton({
+  onConfirm,
+  idleLabel,
+  confirmLabel = 'Confirm delete?',
+  idleClassName,
+  armedClassName,
+  title,
+  dataAttr,
+}: {
+  onConfirm: () => void;
+  idleLabel: string;
+  confirmLabel?: string;
+  idleClassName: string;
+  armedClassName: string;
+  title?: string;
+  dataAttr?: Record<string, string>;
+}) {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (!armed) return;
+    const timer = window.setTimeout(() => setArmed(false), 3500);
+    return () => window.clearTimeout(timer);
+  }, [armed]);
+  return (
+    <button
+      type="button"
+      title={title}
+      data-armed={armed ? 'true' : 'false'}
+      {...dataAttr}
+      onBlur={() => setArmed(false)}
+      onClick={() => {
+        if (armed) {
+          setArmed(false);
+          onConfirm();
+        } else {
+          setArmed(true);
+        }
+      }}
+      className={armed ? armedClassName : idleClassName}
+    >
+      {armed ? confirmLabel : idleLabel}
+    </button>
+  );
+}
+
 function WorkflowActionBar({
   home,
   lifecycle,
@@ -2409,14 +2460,14 @@ function WorkflowActionBar({
             </button>
           ))}
           {home && onDeletePlan && isDeletablePlan(home, lifecycle) && (
-            <button
-              type="button"
-              data-delete-plan={home.id}
-              onClick={() => onDeletePlan(home.id)}
-              className="rounded-sm border border-stone-300 bg-white px-3 py-1.5 text-[11px] text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700"
-            >
-              Delete Plan
-            </button>
+            <ConfirmButton
+              onConfirm={() => onDeletePlan(home.id)}
+              idleLabel="Delete Plan"
+              title={`Delete ${home.id}`}
+              dataAttr={{ 'data-delete-plan': home.id }}
+              idleClassName="rounded-sm border border-stone-300 bg-white px-3 py-1.5 text-[11px] text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700"
+              armedClassName="rounded-sm border border-red-700 bg-red-700 px-3 py-1.5 text-[11px] font-medium text-white"
+            />
           )}
         </div>
       </div>
@@ -4205,7 +4256,15 @@ function FeedCard({ home, index, lifecycle, deletable, onOpen, onRepair, onDelet
         </div>
         <div className="flex gap-1.5">
           {deletable && (
-            <button type="button" data-delete-plan={home.id} onClick={() => onDelete(home.id)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700">Delete</button>
+            <ConfirmButton
+              onConfirm={() => onDelete(home.id)}
+              idleLabel="Delete"
+              confirmLabel="Confirm?"
+              title={`Delete ${home.id}`}
+              dataAttr={{ 'data-delete-plan': home.id }}
+              idleClassName="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-stone-500 hover:border-red-700 hover:bg-red-50 hover:text-red-700"
+              armedClassName="rounded-sm border border-red-700 bg-red-700 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-white"
+            />
           )}
           <button type="button" onClick={() => onRepair(home.id)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800">Repair</button>
           <button type="button" onClick={() => onOpen(home.id)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-stone-700 hover:border-stone-800 hover:bg-stone-800 hover:text-white" data-feed-open>Open plan</button>

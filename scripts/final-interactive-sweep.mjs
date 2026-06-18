@@ -240,6 +240,28 @@ if (cardCount >= 1) {
   }
 }
 
+// (4b) destructive Delete is two-step (arm -> confirm). Class: a destructive
+// action must never fire on a single click. Root-cause fix: shared ConfirmButton.
+// This asserts the FIRST click ARMS and does NOT delete — it never sends the
+// second (confirming) click, so no real plan is removed by the gate.
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+const delBtns = page.locator('[data-delete-plan]');
+const delCount = await delBtns.count();
+note(delCount >= 1, `home feed exposes at least one Delete control (${delCount})`);
+if (delCount >= 1) {
+  const cardsBefore = await page.locator('[data-feed-card]').count();
+  const firstDel = delBtns.first();
+  const armedBefore = await firstDel.getAttribute('data-armed');
+  await firstDel.click();
+  await page.waitForTimeout(150);
+  const armedAfter = await firstDel.getAttribute('data-armed');
+  const labelAfter = ((await firstDel.textContent()) ?? '').trim();
+  const cardsAfterArm = await page.locator('[data-feed-card]').count();
+  note(armedBefore === 'false' && armedAfter === 'true' && /confirm/i.test(labelAfter) && cardsAfterArm === cardsBefore,
+    `single Delete click arms without deleting (armed ${armedBefore}->${armedAfter}, "${labelAfter}", cards ${cardsBefore}->${cardsAfterArm})`);
+}
+
 // (5) landing brief box: live parse echo + ignored-word honesty
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(6000);
