@@ -4062,6 +4062,24 @@ function ProductGallery({
   const [roofFilter, setRoofFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  const filtersActive =
+    query.trim() !== '' ||
+    bedFilter !== 'all' ||
+    bathFilter !== 'all' ||
+    sqftFilter !== 'all' ||
+    levelFilter !== 'all' ||
+    roofFilter !== 'all' ||
+    statusFilter !== 'all';
+  const clearFilters = useCallback(() => {
+    setQuery('');
+    setBedFilter('all');
+    setBathFilter('all');
+    setSqftFilter('all');
+    setLevelFilter('all');
+    setRoofFilter('all');
+    setStatusFilter('all');
+  }, []);
+
   const bedBathParts = useCallback((home: DenHome) => {
     const [beds = '', baths = ''] = `${home.bedBath ?? ''}`.split('/').map((part) => part.trim());
     return { beds, baths };
@@ -4152,6 +4170,7 @@ function ProductGallery({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search plans, features, size..."
+          data-filter-search
           className="col-span-2 border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700 outline-none focus:border-stone-400 sm:col-span-3"
         />
         <select value={bedFilter} onChange={(event) => setBedFilter(event.target.value)} className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
@@ -4185,6 +4204,21 @@ function ProductGallery({
             <option key={option} value={option}>{option === 'all' ? 'All statuses' : option}</option>
           ))}
         </select>
+        {filtersActive && (
+          <div className="col-span-2 flex items-center justify-between gap-2 sm:col-span-3">
+            <span className="text-[11px] text-stone-500" data-filter-count>
+              Showing {filteredHomes.length} of {homes.length} plans
+            </span>
+            <button
+              type="button"
+              data-clear-filters
+              onClick={clearFilters}
+              className="rounded-sm border border-stone-300 bg-white px-3 py-1 text-[11px] font-medium text-stone-600 hover:border-stone-800 hover:text-stone-900"
+            >
+              Clear filters
+            </button>
+          </div>
+        )}
       </section>
 
       <section className="space-y-5" data-plan-feed>
@@ -4209,7 +4243,17 @@ function ProductGallery({
       {!filteredHomes.length && (
         <div className="rounded-lg border border-dashed border-stone-300 bg-white p-12 text-center">
           <div className="font-sans text-base font-medium text-stone-700">No plans match those filters.</div>
-          <div className="mt-1 text-xs text-stone-400">Clear a filter, or describe a new home in the brief box above to generate one.</div>
+          <div className="mt-1 text-xs text-stone-400">Use “Clear filters” above, or describe a new home in the brief box to generate one.</div>
+          {filtersActive && (
+            <button
+              type="button"
+              data-clear-filters
+              onClick={clearFilters}
+              className="mt-3 rounded-sm border border-stone-300 bg-white px-4 py-1.5 text-[11px] font-medium text-stone-600 hover:border-stone-800 hover:text-stone-900"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       )}
     </main>

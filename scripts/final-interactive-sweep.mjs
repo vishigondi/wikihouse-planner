@@ -264,6 +264,25 @@ if (delCount >= 1) {
     `single Delete click arms without deleting (armed ${armedBefore}->${armedAfter}, "${labelAfter}", cards ${cardsBefore}->${cardsAfterArm})`);
 }
 
+// (4c) over-filtering offers a one-click reset. Class: a filtered/searched list
+// must give the user a way back to "all" — without one, an over-filter is a dead
+// end (the empty-state copy promised "Clear" with no control). Drive: search a
+// non-matching term -> 0 cards + a Clear-filters button appears -> click it ->
+// full feed restored and the search input emptied (gates assert MORE).
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+const fullCount = await page.locator('[data-feed-card]').count();
+await page.locator('[data-filter-search]').fill('zzzznotaplanzzz');
+await page.waitForTimeout(400);
+const emptyCount = await page.locator('[data-feed-card]').count();
+const clearShown = await page.locator('[data-clear-filters]').count();
+await page.locator('[data-clear-filters]').first().click().catch(() => {});
+await page.waitForTimeout(400);
+const restoredCount = await page.locator('[data-feed-card]').count();
+const searchAfter = await page.locator('[data-filter-search]').inputValue().catch(() => 'x');
+note(fullCount >= 1 && emptyCount === 0 && clearShown >= 1 && restoredCount === fullCount && searchAfter === '',
+  `over-filter has a one-click Clear (full ${fullCount} -> empty ${emptyCount}, clear shown ${clearShown} -> restored ${restoredCount}, search "${searchAfter}")`);
+
 // (5) landing brief box: live parse echo + ignored-word honesty
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(6000);

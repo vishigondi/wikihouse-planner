@@ -35,12 +35,10 @@ _(updated each fire)_
       mode/look toggles, modal focus-trap/initial-focus.
 - [x] Drive home-feed search + filters: empty-result state IS handled ("No plans
       match those filters…"). NEW candidate found → backlog item below.
-- [ ] Filter/search over-filtered state has NO one-click reset: the empty-state
-      copy says "Clear a filter" but there's no Clear-all button; user must
-      manually reset the search + up to 6 dropdowns. Add a Clear-filters
-      affordance (class: filtered state needs a reset).
-- [ ] Search box + all 6 filter selects lack data-* QA hooks (only the brief box
-      has one) — add hooks so gates can drive search/filter directly.
+- [x] Filter/search over-filtered state had NO one-click reset — fixed fire 4
+      (Clear filters button + result count). Search now has a data-filter-search
+      hook; the 6 selects still lack individual hooks (low priority — gate drives
+      via search + the shared clear).
 - [ ] Drive card Open / Repair actions and New Plan Handoff.
 - [ ] Confirm no other destructive/irreversible action fires on a single click
       (audit every onClick that mutates/deletes/exports/navigates-away).
@@ -119,4 +117,25 @@ _(bug → class → test → root-cause fix → commit)_
   (`data-copy-state="copied"`); Playwright pass confirms every modal copy button
   (New Plan 1, Look Render 1, Repair 2) goes idle→copied. No console errors.
   Artifact: `artifacts/customer-readiness/ux-fire3-copy-feedback.png`.
+- **Commit:** `bce9363`
+
+### Fire 4 — over-filtering the feed was a dead end (no Clear)
+- **Bug (found by clicking):** searching a non-matching term (or stacking filter
+  dropdowns) emptied the feed to "No plans match those filters" — and the only
+  way back was to manually empty the search and reset up to six dropdowns. The
+  empty-state copy literally said "Clear a filter" but there was no such control.
+- **Class:** _a filtered/searched list with no one-click route back to "all"._
+  Seven independent filter inputs (search + 6 selects) with no aggregate reset.
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4c) —
+  search a non-matching term → 0 cards AND a `[data-clear-filters]` control
+  appears → click it → the full feed is restored and the search input is emptied.
+- **Root-cause fix:** a single `filtersActive` flag + `clearFilters()` that
+  resets all seven inputs. A "Clear filters" button (with a "Showing N of M
+  plans" count) appears in the filter bar whenever any filter is active, and a
+  second one in the empty state; the empty-state copy now points to it. Added
+  `data-filter-search`, `data-clear-filters`, `data-filter-count` QA hooks.
+- **Verified in real Chrome (:3002):** non-matching search → 0 of 6 + Clear
+  shown → click restores 6 and empties search; a bed-filter dropdown ("2 bed
+  plans", 5 of 6) → Clear resets the select to "all" and restores 6. No console
+  errors. Artifact: `artifacts/customer-readiness/ux-fire4-filter-clear.png`.
 - **Commit:** _(pending — after gates + gates:live green)_
