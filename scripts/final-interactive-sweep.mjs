@@ -329,6 +329,47 @@ for (const mw of [390, 768]) {
     await page.waitForTimeout(300);
   }
 }
+// (7b) workflow modals dismiss the standard ways: Escape, backdrop click, AND the
+// Close button — and a click INSIDE the panel must NOT close it. One shared
+// WorkflowModal shell backs all five dialogs, so a missing affordance is a
+// whole-class bug; assert every dialog honors all three (gates assert MORE).
+await page.setViewportSize({ width: 1280, height: 900 });
+await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+const openModal = async (btn) => {
+  await page.locator('button', { hasText: new RegExp(`^${btn}$`) }).first().click().catch(() => {});
+  await page.waitForTimeout(400);
+  return page.locator('[data-workflow-modal]').count();
+};
+const modalGone = async () => (await page.locator('[data-workflow-modal]').count()) === 0;
+for (const btn of MODAL_BTNS) {
+  // Escape closes
+  await openModal(btn);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+  const byEsc = await modalGone();
+  // Backdrop click closes (top padding strip above the card is always backdrop)
+  await openModal(btn);
+  const pt = await page.evaluate(() => {
+    const card = document.querySelector('[data-workflow-modal]');
+    const r = card.getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.max(4, Math.round(r.top / 2)) };
+  });
+  await page.mouse.click(pt.x, pt.y);
+  await page.waitForTimeout(300);
+  const byBackdrop = await modalGone();
+  // A click INSIDE the panel must NOT close it (stopPropagation guard)
+  await openModal(btn);
+  await page.locator('[data-workflow-modal] h2').first().click().catch(() => {});
+  await page.waitForTimeout(200);
+  const survivesInside = (await page.locator('[data-workflow-modal]').count()) === 1;
+  // Close button still closes
+  await page.locator('button', { hasText: /^Close$/ }).first().click().catch(() => {});
+  await page.waitForTimeout(300);
+  const byClose = await modalGone();
+  note(byEsc && byBackdrop && survivesInside && byClose,
+    `modal "${btn}" dismisses via Escape/backdrop/Close, survives inside-click (esc ${byEsc}, backdrop ${byBackdrop}, inside-stays ${survivesInside}, close ${byClose})`);
+}
 await page.setViewportSize({ width: 1600, height: 1000 });
 
 await browser.close();

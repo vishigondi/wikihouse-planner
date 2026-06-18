@@ -2626,6 +2626,15 @@ function WorkflowModal({
     }
   }, [importText]);
 
+  // Standard modal dismissal: Escape closes any open workflow dialog. Guarded on
+  // `dialog` so the hook runs every render (stable order) but only binds when open.
+  useEffect(() => {
+    if (!dialog) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [dialog, onClose]);
+
   if (!dialog) return null;
 
   const updatePrompt = (key: keyof PromptRequest, value: string) => onPromptChange({ ...promptRequest, [key]: value });
@@ -2665,8 +2674,18 @@ function WorkflowModal({
   })();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-stone-950/40 p-6 backdrop-blur-sm">
-      <div className="w-full max-w-5xl rounded-xl border border-stone-200 bg-[#fffdf9] shadow-[0_40px_80px_-32px_rgba(41,37,36,0.45)]">
+    <div
+      data-modal-backdrop
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-stone-950/40 p-6 backdrop-blur-sm"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        data-workflow-modal={dialog}
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-5xl rounded-xl border border-stone-200 bg-[#fffdf9] shadow-[0_40px_80px_-32px_rgba(41,37,36,0.45)]"
+      >
         <div className="flex items-center justify-between border-b border-stone-200 px-4 py-3">
           <div>
             <h2 className="font-sans text-base font-semibold tracking-tight text-stone-900">

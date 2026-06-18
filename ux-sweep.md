@@ -29,9 +29,17 @@ _(updated each fire)_
 - [ ] Drive plan-detail VIEW controls deeply: Side view, Roof/White toggles,
       Ground/Loft/All level switch, Plan Top vs Cutaway parity.
 - [ ] Drive Compare ↔ Semantic toggle on a paired plan and a JSON-only plan.
-- [ ] Drive the modals end-to-end: New Plan, Import JSON (bad + good payload),
-      Export, Look Render (mode/look/copy), Repair — focus traps, escape, copy.
-- [ ] Drive home-feed search + the five filter dropdowns (empty-result state).
+- [x] Drive the modals end-to-end: dismissal (Escape / backdrop / Close) fixed
+      fire 2. STILL TODO: Import JSON bad-payload error surfacing, Look Render
+      copy-to-clipboard + mode/look toggles, focus-trap/initial-focus.
+- [x] Drive home-feed search + filters: empty-result state IS handled ("No plans
+      match those filters…"). NEW candidate found → backlog item below.
+- [ ] Filter/search over-filtered state has NO one-click reset: the empty-state
+      copy says "Clear a filter" but there's no Clear-all button; user must
+      manually reset the search + up to 6 dropdowns. Add a Clear-filters
+      affordance (class: filtered state needs a reset).
+- [ ] Search box + all 6 filter selects lack data-* QA hooks (only the brief box
+      has one) — add hooks so gates can drive search/filter directly.
 - [ ] Drive card Open / Repair actions and New Plan Handoff.
 - [ ] Confirm no other destructive/irreversible action fires on a single click
       (audit every onClick that mutates/deletes/exports/navigates-away).
@@ -60,4 +68,29 @@ _(bug → class → test → root-cause fix → commit)_
   armed, still on `?home=gen-001`; second click within window → plan deleted →
   routed back to feed. No console errors. Artifacts:
   `artifacts/customer-readiness/ux-fire1-delete-confirm-{detail,feed}.png`.
+- **Commit:** `eeb9de2`
+
+### Fire 2 — workflow modals couldn't be dismissed by Escape or backdrop
+- **Bug (found by clicking):** opening any workflow dialog (Import JSON shown)
+  and pressing **Escape** left it open; **clicking the dimmed backdrop** left it
+  open. The only way out was the single "Close" button — every other app trains
+  users to press Esc or click outside.
+- **Class:** _overlay modal offers no standard dismissal (Escape / click-outside)._
+  All five dialogs (New Plan, Import, Export, Look Render, Repair) render through
+  ONE shared `WorkflowModal` shell, so the missing affordance was the whole class
+  at a single root.
+- **Failing assertion added (gates assert MORE):** interactive sweep step (7b) —
+  for every one of the five dialogs: Escape closes it, a backdrop click closes
+  it, the Close button closes it, AND a click INSIDE the panel does NOT close it
+  (stopPropagation guard).
+- **Root-cause fix (`WorkflowModal`):** (1) a `keydown`→Escape `useEffect`
+  (placed before the `if (!dialog) return null` guard for stable hook order,
+  no-ops while closed); (2) `onClick={onClose}` on the `.fixed.inset-0` backdrop
+  with `onClick={e => e.stopPropagation()}` on the panel so inside clicks are
+  safe; (3) added `role="dialog"`, `aria-modal`, and durable
+  `data-modal-backdrop` / `data-workflow-modal` QA hooks.
+- **Verified in real Chrome (:3002):** Import + Look Render driven by hand
+  (Escape closes, backdrop closes, inside-click stays); Playwright pass confirms
+  all 5 dialogs `{esc, backdrop, insideStays}` true. No console errors. Artifact:
+  `artifacts/customer-readiness/ux-fire2-modal-dismiss.png`.
 - **Commit:** _(pending — after gates + gates:live green)_
