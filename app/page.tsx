@@ -1867,6 +1867,58 @@ function brochureHtmlForHome(
 </html>`;
 }
 
+// Shared clipboard-copy control. Every "Copy" button used to be a bare
+// `navigator.clipboard?.writeText(...)` fire-and-forget: no feedback on success
+// and a SILENT no-op when the clipboard API is unavailable (the `?.`). This
+// component confirms the copy ("Copied!"), surfaces failure ("Copy failed")
+// instead of swallowing it, and falls back to execCommand when the async API
+// is missing. `data-copy-state` exposes the state for gates.
+function CopyButton({
+  text,
+  idleLabel = 'Copy',
+  className,
+  title,
+}: {
+  text: string | (() => string);
+  idleLabel?: string;
+  className: string;
+  title?: string;
+}) {
+  const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  useEffect(() => {
+    if (state === 'idle') return;
+    const timer = window.setTimeout(() => setState('idle'), 2000);
+    return () => window.clearTimeout(timer);
+  }, [state]);
+  const copy = async () => {
+    const value = typeof text === 'function' ? text() : text;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        const area = document.createElement('textarea');
+        area.value = value;
+        area.style.position = 'fixed';
+        area.style.opacity = '0';
+        document.body.appendChild(area);
+        area.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(area);
+        if (!ok) throw new Error('execCommand copy failed');
+      }
+      setState('copied');
+    } catch {
+      setState('failed');
+    }
+  };
+  const label = state === 'copied' ? 'Copied!' : state === 'failed' ? 'Copy failed' : idleLabel;
+  return (
+    <button type="button" title={title} data-copy-state={state} onClick={copy} className={className}>
+      {label}
+    </button>
+  );
+}
+
 function ProductWorkflowPanel({
   home,
   renderedBounds,
@@ -2048,9 +2100,7 @@ function ProductWorkflowPanel({
           />
         </label>
         <div className="grid grid-cols-2 gap-1">
-          <button type="button" onClick={() => navigator.clipboard?.writeText(generationPrompt)} className="border border-stone-300 bg-white px-2 py-1 text-stone-700">
-            Copy GPT Prompt
-          </button>
+          <CopyButton text={generationPrompt} idleLabel="Copy GPT Prompt" className="border border-stone-300 bg-white px-2 py-1 text-stone-700" />
           <button type="button" onClick={() => downloadJson(`${home?.id ?? 'plan'}-prompt-packet.json`, { prompt: generationPrompt, request: promptRequest })} className="border border-stone-300 bg-white px-2 py-1 text-stone-700">
             Export Prompt
           </button>
@@ -2093,13 +2143,7 @@ function ProductWorkflowPanel({
             <div key={item} className="text-amber-700">{item}</div>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={() => navigator.clipboard?.writeText(feedbackPrompt)}
-          className="w-full border border-stone-300 bg-white px-2 py-1 text-stone-700"
-        >
-          Generate Feedback Prompt
-        </button>
+        <CopyButton text={feedbackPrompt} idleLabel="Generate Feedback Prompt" className="w-full border border-stone-300 bg-white px-2 py-1 text-stone-700" />
       </div>
     </div>
   );
@@ -2723,7 +2767,7 @@ function WorkflowModal({
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Generated GPT prompt preview</h3>
                   <div className="flex gap-1">
-                    <button type="button" onClick={() => navigator.clipboard?.writeText(generationPrompt)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50">Copy</button>
+                    <CopyButton text={generationPrompt} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50" />
                     <button type="button" onClick={() => downloadJson(`${home?.id ?? 'plan'}-handoff-packet.json`, { request: promptRequest, prompt: generationPrompt, referencePlan: home })} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50">Download Handoff Packet</button>
                   </div>
                 </div>
@@ -2837,7 +2881,7 @@ function WorkflowModal({
               <section>
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">ChatGPT render prompt ({LOOKS[lookId].label})</h3>
-                  <button type="button" onClick={() => navigator.clipboard?.writeText(lookRenderPrompt)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50">Copy</button>
+                  <CopyButton text={lookRenderPrompt} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50" />
                 </div>
                 <textarea readOnly value={lookRenderPrompt} data-look-render-prompt className="h-[420px] w-full resize-none rounded-sm border border-stone-200 bg-white p-3 font-mono text-[10px] leading-relaxed text-stone-700" />
               </section>
@@ -2969,13 +3013,7 @@ function WorkflowModal({
                 <div className="border border-stone-200 bg-white p-3">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Local repair commands</h3>
-                    <button
-                      type="button"
-                      onClick={() => navigator.clipboard?.writeText(repairCliCommands)}
-                      className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50"
-                    >
-                      Copy
-                    </button>
+                    <CopyButton text={repairCliCommands} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50" />
                   </div>
                   <div className="mt-2 text-[10px] leading-snug text-stone-500">
                     Use these after browser QA creates repair packets. `repair:gpt` requires local `OPENAI_API_KEY`; otherwise use the copied prompt manually.
@@ -2991,7 +3029,7 @@ function WorkflowModal({
                 <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Targeted repair prompt</h3>
                   <div className="flex gap-1">
-                    <button type="button" onClick={() => navigator.clipboard?.writeText(targetedPrompt || feedbackPrompt)} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50">Copy Prompt</button>
+                    <CopyButton text={() => targetedPrompt || feedbackPrompt} idleLabel="Copy Prompt" className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50" />
                     <button type="button" onClick={() => downloadJson(`${home?.id ?? 'plan'}-targeted-repair-packet.json`, { recommendation, targetedPrompt, driftReport: activeReport, validation: groups, semanticPlan: home ? semanticPlanForHome(home) : null })} className="rounded-sm border border-stone-300 bg-white px-2 py-1 text-[10px] text-stone-700 hover:border-stone-800 hover:bg-stone-50">Download Packet</button>
                   </div>
                 </div>

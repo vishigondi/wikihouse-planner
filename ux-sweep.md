@@ -30,8 +30,9 @@ _(updated each fire)_
       Ground/Loft/All level switch, Plan Top vs Cutaway parity.
 - [ ] Drive Compare ↔ Semantic toggle on a paired plan and a JSON-only plan.
 - [x] Drive the modals end-to-end: dismissal (Escape / backdrop / Close) fixed
-      fire 2. STILL TODO: Import JSON bad-payload error surfacing, Look Render
-      copy-to-clipboard + mode/look toggles, focus-trap/initial-focus.
+      fire 2; Import JSON bad-payload surfaces a clear parse error (verified good,
+      fire 3); copy-to-clipboard feedback fixed fire 3. STILL TODO: Look Render
+      mode/look toggles, modal focus-trap/initial-focus.
 - [x] Drive home-feed search + filters: empty-result state IS handled ("No plans
       match those filters…"). NEW candidate found → backlog item below.
 - [ ] Filter/search over-filtered state has NO one-click reset: the empty-state
@@ -93,4 +94,29 @@ _(bug → class → test → root-cause fix → commit)_
   (Escape closes, backdrop closes, inside-click stays); Playwright pass confirms
   all 5 dialogs `{esc, backdrop, insideStays}` true. No console errors. Artifact:
   `artifacts/customer-readiness/ux-fire2-modal-dismiss.png`.
+- **Commit:** `5b12e0f`
+
+### Fire 3 — "Copy" buttons gave no feedback and could fail silently
+- **Bug (found by clicking):** clicking the Look Render "Copy" button left the
+  label as "Copy" before, immediately after, and 1s later — no "Copied!", no
+  confirmation. The user has no idea the copy worked.
+- **Class:** _clipboard-copy buttons are fire-and-forget — no success feedback,
+  and a SILENT no-op when the clipboard API is unavailable._ Six buttons all
+  used the identical bare `navigator.clipboard?.writeText(...)` (the `?.` means
+  zero feedback AND silent failure — violates input honesty, principle 5).
+- **Failing assertion added (gates assert MORE):** interactive sweep step (7c) —
+  the Look Render Copy button starts `data-copy-state="idle"` and, on click,
+  must move to "copied" (or at minimum leave "idle" with a "Copy failed" label —
+  never a silent no-op). Sweep now grants clipboard permission so the success
+  path is deterministic.
+- **Root-cause fix:** new shared `CopyButton` component — awaits
+  `navigator.clipboard.writeText`, shows "Copied!" for 2s on success, falls back
+  to `execCommand('copy')` when the async API is missing, and shows "Copy
+  failed" (state `failed`) instead of swallowing the error. `data-copy-state`
+  exposes state to gates. Replaced ALL SIX copy sites (2 in Review Tools panel,
+  4 across the New Plan / Look Render / Repair dialogs).
+- **Verified in real Chrome (:3002):** Look Render Copy → "Copied!"
+  (`data-copy-state="copied"`); Playwright pass confirms every modal copy button
+  (New Plan 1, Look Render 1, Repair 2) goes idle→copied. No console errors.
+  Artifact: `artifacts/customer-readiness/ux-fire3-copy-feedback.png`.
 - **Commit:** _(pending — after gates + gates:live green)_

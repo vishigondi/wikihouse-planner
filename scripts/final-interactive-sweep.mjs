@@ -22,6 +22,8 @@ const note = (ok, label) => {
 await mkdir(SHOT_DIR, { recursive: true });
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+// Grant clipboard so the copy-feedback assertion can exercise the success path.
+await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
 
 for (const plan of PLANS) {
   console.log(`plan: ${plan}`);
@@ -370,6 +372,25 @@ for (const btn of MODAL_BTNS) {
   note(byEsc && byBackdrop && survivesInside && byClose,
     `modal "${btn}" dismisses via Escape/backdrop/Close, survives inside-click (esc ${byEsc}, backdrop ${byBackdrop}, inside-stays ${survivesInside}, close ${byClose})`);
 }
+
+// (7c) clipboard "Copy" buttons confirm the action instead of failing silently.
+// Every Copy button shares one CopyButton component, so one feedback gap is a
+// whole-class bug. Each [data-copy-state] starts "idle" and, on click, must move
+// to "copied" (or at least leave "idle" — never a silent no-op) (gates assert MORE).
+await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+await page.locator('button', { hasText: /^Look Render$/ }).first().click().catch(() => {});
+await page.waitForTimeout(600);
+const copyBtn = page.locator('[data-workflow-modal] [data-copy-state]').first();
+const copyPresent = await copyBtn.count();
+const copyBefore = copyPresent ? await copyBtn.getAttribute('data-copy-state') : null;
+if (copyPresent) await copyBtn.click().catch(() => {});
+await page.waitForTimeout(250);
+const copyAfter = copyPresent ? await copyBtn.getAttribute('data-copy-state') : null;
+const copyAfterLabel = copyPresent ? ((await copyBtn.textContent()) ?? '').trim() : '';
+note(copyPresent >= 1 && copyBefore === 'idle' && copyAfter !== 'idle' && /copied|copy failed/i.test(copyAfterLabel),
+  `Look Render Copy confirms the action (state ${copyBefore}->${copyAfter}, "${copyAfterLabel}")`);
+await page.locator('button', { hasText: /^Close$/ }).first().click().catch(() => {});
 await page.setViewportSize({ width: 1600, height: 1000 });
 
 await browser.close();
