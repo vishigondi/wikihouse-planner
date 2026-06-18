@@ -2670,13 +2670,45 @@ function WorkflowModal({
     }
   }, [importText]);
 
-  // Standard modal dismissal: Escape closes any open workflow dialog. Guarded on
-  // `dialog` so the hook runs every render (stable order) but only binds when open.
+  const modalRef = useRef<HTMLDivElement>(null);
+  // Standard modal behavior: when open, move focus INTO the dialog, trap Tab so
+  // it cycles within the dialog (never the hidden background), close on Escape,
+  // and restore focus to the trigger on close. One effect for the shared shell,
+  // guarded on `dialog` so the hook runs every render (stable order) but only
+  // binds when open.
   useEffect(() => {
     if (!dialog) return;
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+    const node = modalRef.current;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const focusables = (): HTMLElement[] =>
+      node
+        ? Array.from(
+            node.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ),
+          ).filter((el) => el.offsetParent !== null)
+        : [];
+    node?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { onClose(); return; }
+      if (event.key !== 'Tab' || !node) return;
+      const els = focusables();
+      if (!els.length) { event.preventDefault(); node.focus(); return; }
+      const first = els[0];
+      const last = els[els.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey) {
+        if (active === first || active === node || !node.contains(active)) { event.preventDefault(); last.focus(); }
+      } else if (active === last || !node.contains(active)) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      previouslyFocused?.focus?.();
+    };
   }, [dialog, onClose]);
 
   if (!dialog) return null;
@@ -2724,11 +2756,13 @@ function WorkflowModal({
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-stone-950/40 p-6 backdrop-blur-sm"
     >
       <div
+        ref={modalRef}
         role="dialog"
         aria-modal="true"
+        tabIndex={-1}
         data-workflow-modal={dialog}
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-5xl rounded-xl border border-stone-200 bg-[#fffdf9] shadow-[0_40px_80px_-32px_rgba(41,37,36,0.45)]"
+        className="w-full max-w-5xl rounded-xl border border-stone-200 bg-[#fffdf9] shadow-[0_40px_80px_-32px_rgba(41,37,36,0.45)] outline-none"
       >
         <div className="flex items-center justify-between border-b border-stone-200 px-4 py-3">
           <div>

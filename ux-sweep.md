@@ -32,7 +32,7 @@ _(updated each fire)_
 - [x] Drive the modals end-to-end: dismissal (Escape / backdrop / Close) fixed
       fire 2; Import JSON bad-payload surfaces a clear parse error (verified good,
       fire 3); copy-to-clipboard feedback fixed fire 3. STILL TODO: Look Render
-      mode/look toggles, modal focus-trap/initial-focus.
+      mode/look toggles. Modal focus-trap/initial-focus/restore fixed fire 5.
 - [x] Drive home-feed search + filters: empty-result state IS handled ("No plans
       match those filters…"). NEW candidate found → backlog item below.
 - [x] Filter/search over-filtered state had NO one-click reset — fixed fire 4
@@ -138,4 +138,26 @@ _(bug → class → test → root-cause fix → commit)_
   shown → click restores 6 and empties search; a bed-filter dropdown ("2 bed
   plans", 5 of 6) → Clear resets the select to "all" and restores 6. No console
   errors. Artifact: `artifacts/customer-readiness/ux-fire4-filter-clear.png`.
+- **Commit:** `052014c`
+
+### Fire 5 — modals didn't manage keyboard focus
+- **Bug (found by driving):** opening any workflow dialog left
+  `document.activeElement` on `<body>` — focus was never moved into the dialog —
+  and Tab cycled through the page controls hidden BEHIND the modal overlay
+  (Playwright baseline: `initialFocusInModal:false`, `focusEscapedDuringTab:true`).
+  A keyboard / screen-reader user can't tell a dialog opened and can drive the
+  hidden background controls.
+- **Class:** _an overlay dialog that doesn't move or trap focus (WCAG 2.4.3 /
+  dialog pattern)._ All five dialogs share one `WorkflowModal` shell → one root.
+- **Failing assertion added (gates assert MORE):** interactive sweep step (7d) —
+  on open, focus is inside `[data-workflow-modal]`; 15 Tabs never escape it; and
+  Escape closes the dialog AND restores focus to the trigger button.
+- **Root-cause fix (`WorkflowModal`):** one effect (extending the fire-2 Escape
+  handler) that on open captures the previously-focused element, moves focus to
+  the dialog container (`ref` + `tabIndex={-1}`), traps Tab/Shift-Tab to cycle
+  within the dialog, and on close restores focus to the trigger.
+- **Verified in real Chrome (:3002):** opening Import puts focus on the dialog
+  container (`activeInModal:true`). Playwright pass confirms all five dialogs
+  `{initial, trapped, restored}` all true. No console errors. Artifact:
+  `artifacts/customer-readiness/ux-fire5-modal-focus.png`.
 - **Commit:** _(pending — after gates + gates:live green)_

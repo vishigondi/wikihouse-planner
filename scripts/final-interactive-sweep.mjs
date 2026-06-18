@@ -410,6 +410,36 @@ const copyAfterLabel = copyPresent ? ((await copyBtn.textContent()) ?? '').trim(
 note(copyPresent >= 1 && copyBefore === 'idle' && copyAfter !== 'idle' && /copied|copy failed/i.test(copyAfterLabel),
   `Look Render Copy confirms the action (state ${copyBefore}->${copyAfter}, "${copyAfterLabel}")`);
 await page.locator('button', { hasText: /^Close$/ }).first().click().catch(() => {});
+
+// (7d) modal focus management: opening a dialog moves focus INTO it, Tab is
+// trapped inside (never the hidden background), and closing restores focus to the
+// trigger. Class: a dialog that strands focus on the page is unusable by keyboard
+// / assistive-tech users. One shared shell -> assert on a representative dialog
+// with many focusables (Import) (gates assert MORE).
+await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+await page.locator('button', { hasText: /^Import JSON$/ }).first().click().catch(() => {});
+await page.waitForTimeout(500);
+const focusInModal = () => page.evaluate(() => {
+  const m = document.querySelector('[data-workflow-modal]');
+  return m ? m.contains(document.activeElement) : false;
+});
+const focusInitiallyInModal = await focusInModal();
+let focusTrapped = true;
+for (let i = 0; i < 15; i += 1) {
+  await page.keyboard.press('Tab');
+  if (!(await focusInModal())) { focusTrapped = false; break; }
+}
+note(focusInitiallyInModal && focusTrapped,
+  `Import modal manages focus (initial-in-modal ${focusInitiallyInModal}, Tab trapped ${focusTrapped})`);
+await page.keyboard.press('Escape');
+await page.waitForTimeout(300);
+const focusRestored = await page.evaluate(() => {
+  const a = document.activeElement;
+  return !!a && a.tagName === 'BUTTON' && /Import JSON/.test(a.textContent || '');
+});
+note(focusRestored, `closing the modal restores focus to the trigger (${focusRestored})`);
+
 await page.setViewportSize({ width: 1600, height: 1000 });
 
 await browser.close();
