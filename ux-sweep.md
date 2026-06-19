@@ -422,3 +422,22 @@ new bug restarts the normal find→class→gate→fix cycle.
   flip is gated and green every run — gated+working, not a bug. With this, every
   listed surface has been driven. (Playwright, live :3002 — claude-in-chrome still
   unreachable.) No app-code change; gates green by identity.
+
+### Fire 19 — browser Back left the app instead of returning to the feed
+- **Bug (found by driving):** at the feed `history.length=2`; opening a plan from
+  a card used `replaceState` (still 2), so **browser Back went to about:blank /
+  left the app** instead of returning to the feed. Generate used full nav (Back
+  worked), card-Open did not — an inconsistent, stranding navigation model.
+- **Class:** _in-app navigation that replaces history strands the user_ (Back/
+  Forward don't step between the feed and a plan).
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4j) —
+  feed → open a card → browser Back shows the feed → Forward shows the plan again.
+- **Root-cause fix:** feed↔plan transitions now `pushState` (plan→plan stays
+  `replaceState` to avoid history spam, via a `showGalleryRef`), plus a `popstate`
+  effect that re-resolves the view (plan / feed / not-found) from the URL —
+  mirroring the initial-load logic, so Back/Forward re-render correctly.
+- **Verified (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  open plan → Back → feed (6 cards, URL `/`) → Forward → plan (URL `?home=…`),
+  no console errors. No regression: the fire-6 deep-link-not-found and fire-11
+  banner-clears gates stay green. gates + gates:live green.
+- **Commit:** _(pending push approval)_

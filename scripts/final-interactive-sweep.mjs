@@ -310,6 +310,26 @@ await page.waitForTimeout(1200);
 const notFoundStale = await page.locator('[data-plan-not-found]').count();
 note(notFoundStale === 0, `not-found notice clears after the repair-from-card path (stale ${notFoundStale})`);
 
+// (4j) browser Back/Forward steps feed <-> plan. Class: in-app nav that REPLACES
+// history strands the user — Back from a plan left the app instead of returning
+// to the feed (feed->plan was replaceState). Drive: open a card -> Back shows the
+// feed -> Forward shows the plan again (gates assert MORE).
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+await page.locator('[data-feed-open]').first().click().catch(() => {});
+await page.waitForTimeout(1500);
+const navDetailUrl = page.url();
+const navOnDetail = await page.locator('button', { hasText: /^Export$/ }).count();
+await page.goBack().catch(() => {});
+await page.waitForTimeout(1500);
+const navFeedAfterBack = await page.locator('[data-feed-card]').count();
+const navDetailAfterBack = await page.locator('button', { hasText: /^Export$/ }).count();
+await page.goForward().catch(() => {});
+await page.waitForTimeout(1500);
+const navDetailAfterFwd = await page.locator('button', { hasText: /^Export$/ }).count();
+note(/\?home=/.test(navDetailUrl) && navOnDetail === 1 && navFeedAfterBack >= 1 && navDetailAfterBack === 0 && navDetailAfterFwd === 1,
+  `browser Back/Forward steps feed<->plan (detail ${navOnDetail}, back→feed ${navFeedAfterBack}/${navDetailAfterBack}, fwd→plan ${navDetailAfterFwd})`);
+
 // (4e) the feed-card "Share" affordance actually shares: it copies a working
 // deep-link to that plan (not a dead label). Class: a labeled control that
 // implies a real capability (the app HAS shareable ?home= links, hardened in

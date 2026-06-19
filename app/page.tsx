@@ -4651,7 +4651,38 @@ export default function Home() {
     if (!showGallery) setNotFoundId(null);
   }, [showGallery]);
 
+  // Browser Back/Forward must work. Feed↔plan transitions pushState (below); this
+  // re-resolves the view from the URL on popstate so Back from a plan returns to
+  // the feed (and Forward returns to the plan), mirroring the initial-load logic.
+  const showGalleryRef = useRef(showGallery);
+  useEffect(() => { showGalleryRef.current = showGallery; }, [showGallery]);
+  useEffect(() => {
+    if (!homes.length) return;
+    const onPop = () => {
+      const params = new URLSearchParams(window.location.search);
+      const requested = params.get('home') ?? params.get('plan');
+      if (requested && homes.some((home) => home.id === requested)) {
+        setSelectedHomeId(requested);
+        setShowGallery(false);
+        setNotFoundId(null);
+      } else if (requested) {
+        setNotFoundId(requested);
+        setShowGallery(true);
+      } else {
+        setShowGallery(true);
+        setNotFoundId(null);
+      }
+      setSelectedComponent(null);
+      setRenderedBounds(null);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [homes]);
+
   const selectHome = useCallback((id: string) => {
+    // Coming from the feed → push a history entry so Back returns to the feed.
+    // Switching plan-to-plan → replace (don't spam history with every switch).
+    const fromFeed = showGalleryRef.current;
     setSelectedHomeId(id);
     setShowGallery(false);
     setNotFoundId(null);
@@ -4660,7 +4691,9 @@ export default function Home() {
     setActiveFloor(0);
     const query = new URLSearchParams(window.location.search);
     query.set('home', id);
-    window.history.replaceState(null, '', `/?${query.toString()}`);
+    const url = `/?${query.toString()}`;
+    if (fromFeed) window.history.pushState(null, '', url);
+    else window.history.replaceState(null, '', url);
   }, []);
 
   const repairHomeFromGallery = useCallback((id: string) => {
@@ -4673,7 +4706,8 @@ export default function Home() {
     setWorkflowDialog('repair');
     const query = new URLSearchParams(window.location.search);
     query.set('home', id);
-    window.history.replaceState(null, '', `/?${query.toString()}`);
+    // Always from the feed → push so Back returns to the feed.
+    window.history.pushState(null, '', `/?${query.toString()}`);
   }, []);
 
   const setLifecycleForSelected = useCallback((state: ArtifactLifecycle) => {
@@ -5030,7 +5064,8 @@ export default function Home() {
               type="button"
               onClick={() => {
                 setShowGallery(true);
-                window.history.replaceState(null, '', '/');
+                // Push so Back/Forward steps between the feed and this plan.
+                window.history.pushState(null, '', '/');
               }}
               className="rounded-sm border border-stone-300 bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-stone-600 hover:border-stone-800"
             >
