@@ -558,3 +558,14 @@ new bug restarts the normal find→class→gate→fix cycle.
   0 unlabeled fields).
 - **Result:** no bug — no unreachable control, no keyboard trap. No app-code
   change; gates green by identity.
+
+### Fire 28 — clean (create → share → recipient opens shared link, end-to-end)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** the
+  full value loop as one flow — generate a plan from a brief (gen-002) → Browse
+  Plans → Share that card (copy its deep-link) → open the link in a FRESH browser
+  context (a recipient with no shared state). Result: recipient lands on the
+  gen-002 detail (Export present, tab title "gen-002 - Floorplan Studio"), no
+  not-found banner, no console errors. Throwaway gen-002 deleted (only gen-001
+  remains).
+- **Result:** no bug — the create→share→open chain (fires 1/13 + 7 + 6 + 20)
+  coheres end-to-end. No app-code change; gates green by identity.
