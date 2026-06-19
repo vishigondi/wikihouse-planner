@@ -330,6 +330,21 @@ const navDetailAfterFwd = await page.locator('button', { hasText: /^Export$/ }).
 note(/\?home=/.test(navDetailUrl) && navOnDetail === 1 && navFeedAfterBack >= 1 && navDetailAfterBack === 0 && navDetailAfterFwd === 1,
   `browser Back/Forward steps feed<->plan (detail ${navOnDetail}, back→feed ${navFeedAfterBack}/${navDetailAfterBack}, fwd→plan ${navDetailAfterFwd})`);
 
+// (4k) the tab title reflects the current view. Class: a static document.title on
+// every plan makes tabs / bookmarks / history indistinguishable. Assert the feed
+// title is the base, each plan's title names that plan, and two plans differ.
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(3500);
+const feedTitle = await page.title();
+await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(3500);
+const gen001Title = await page.title();
+await page.goto(`${BASE}/?home=loft-showcase`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(3500);
+const loftTitle = await page.title();
+note(/Floorplan Studio/.test(feedTitle) && /gen-001/.test(gen001Title) && /loft-showcase/.test(loftTitle) && gen001Title !== loftTitle,
+  `tab title reflects the view (feed "${feedTitle}", gen-001 "${gen001Title}", loft "${loftTitle}")`);
+
 // (4e) the feed-card "Share" affordance actually shares: it copies a working
 // deep-link to that plan (not a dead label). Class: a labeled control that
 // implies a real capability (the app HAS shareable ?home= links, hardened in

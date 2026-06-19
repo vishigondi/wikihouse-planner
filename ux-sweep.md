@@ -441,3 +441,19 @@ new bug restarts the normal find→class→gate→fix cycle.
   no console errors. No regression: the fire-6 deep-link-not-found and fire-11
   banner-clears gates stay green. gates + gates:live green.
 - **Commit:** _(pending push approval)_
+
+### Fire 20 — tab title was static across every view
+- **Bug (found by driving):** `document.title` was a fixed "Floorplan Studio" on
+  the feed, gen-001, and loft-showcase alike (set once in `layout.tsx` metadata,
+  never updated). Multi-tab users, bookmarks, and browser history can't tell
+  plans apart — every entry reads "Floorplan Studio".
+- **Class:** _the document title doesn't reflect the current view._
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4k) —
+  the feed title is the base; each plan's title names that plan; two plans differ.
+- **Root-cause fix:** an effect that sets `document.title` from the view —
+  `"<plan id> - Floorplan Studio"` on a plan, `"Plan not found - …"` for a bad
+  deep-link, base on the feed (deps: showGallery / displayHome / notFoundId).
+- **Verified (Playwright, live :3002):** feed "Floorplan Studio"; gen-001
+  "gen-001 - Floorplan Studio"; loft "loft-showcase - Floorplan Studio"; returns
+  to base via Browse Plans. No regression. gates + gates:live green.
+- **Commit:** auto-pushed (gated fix).

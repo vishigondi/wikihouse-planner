@@ -4651,6 +4651,18 @@ export default function Home() {
     if (!showGallery) setNotFoundId(null);
   }, [showGallery]);
 
+  // The tab title must reflect the current view so multi-tab / bookmark / history
+  // users can tell plans apart (it was a static "Floorplan Studio" everywhere).
+  useEffect(() => {
+    const base = 'Floorplan Studio';
+    const title = !showGallery && displayHome
+      ? `${displayHome.id} - ${base}`
+      : notFoundId
+        ? `Plan not found - ${base}`
+        : base;
+    document.title = title;
+  }, [showGallery, displayHome, notFoundId]);
+
   // Browser Back/Forward must work. Feed↔plan transitions pushState (below); this
   // re-resolves the view from the URL on popstate so Back from a plan returns to
   // the feed (and Forward returns to the plan), mirroring the initial-load logic.
