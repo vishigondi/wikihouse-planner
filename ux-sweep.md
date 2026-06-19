@@ -664,3 +664,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   view switch works, canvas renders). No console errors.
 - **Result:** no bug — the reduced-motion preference is respected without
   breaking anything. No app-code change; gates green by identity.
+
+### Fire 39 — clean (all 6 feed plans render cleanly)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** loaded
+  each of the 6 visible plans' detail pages (a-frame-bunk, brief-aframe-2br,
+  gen-001, loft-showcase, outpost-medium, a-frame-22) capturing console
+  errors+warnings. Result: every plan renders its 3D canvas + plan sheet with
+  **0 errors and 0 warnings** — no plan type breaks.
+- **Result:** no bug — cross-plan render/console hygiene holds. No app-code
+  change; gates green by identity.
