@@ -619,3 +619,11 @@ new bug restarts the normal find→class→gate→fix cycle.
   errors. The "hand-to-a-client" deliverable surface is fully functional.
 - **Result:** no bug — every export yields a distinct, non-empty file. No
   app-code change; gates green by identity.
+
+### Fire 34 — clean (plan-selector wrap-around + Resume)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** the
+  plan-selector boundaries — at the first plan, Previous wraps to the last
+  (a-frame-bunk → a-frame-22); at the last, Next wraps to the first; and the feed
+  header "Resume <id>" button returns to the active plan. No console errors.
+- **Result:** no bug — boundary wrap-around and Resume both behave. No app-code
+  change; gates green by identity.
