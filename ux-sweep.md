@@ -673,3 +673,15 @@ new bug restarts the normal find→class→gate→fix cycle.
   **0 errors and 0 warnings** — no plan type breaks.
 - **Result:** no bug — cross-plan render/console hygiene holds. No app-code
   change; gates green by identity.
+
+### Fire 40 — clean (full-ladder regression confirmation)
+- **Ran the whole gate suite** (`npm run gates` + `npm run gates:live`): every
+  battery + build, the live brochure QA, and the full interactive sweep — all 17
+  class-gates from fires 1–25 (delete-confirm, modal dismiss/focus, copy
+  feedback, filter clear, deep-link not-found + transient banner, share-link,
+  control names, tap targets, form labels, double-submit, Back/Forward, tab
+  title, scroll restoration, arrow-key scoping, 320px) plus responsive across 5
+  breakpoints (320→1440) and all 5 modals. Result: **all live gates green.**
+- **Result:** the entire hardened envelope holds — comprehensive regression
+  confirmed. (App byte-identical since fire 25; this is periodic full-suite
+  hygiene rather than a new micro-angle, since the app has converged.)
