@@ -4668,6 +4668,21 @@ export default function Home() {
   // the feed (and Forward returns to the plan), mirroring the initial-load logic.
   const showGalleryRef = useRef(showGallery);
   useEffect(() => { showGalleryRef.current = showGallery; }, [showGallery]);
+
+  // Restore the feed's scroll position on Back. The browser's auto scroll
+  // restoration is unreliable with an async SPA re-render (it landed at a wrong
+  // offset), so we take it over: save scrollY when leaving the feed (in selectHome
+  // / repair-from-gallery), and restore it after the feed re-renders.
+  const feedScrollYRef = useRef(0);
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+  }, []);
+  useEffect(() => {
+    if (!showGallery) return;
+    const y = feedScrollYRef.current;
+    const frame = window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.scrollTo(0, y)));
+    return () => window.cancelAnimationFrame(frame);
+  }, [showGallery]);
   useEffect(() => {
     if (!homes.length) return;
     const onPop = () => {
@@ -4695,6 +4710,7 @@ export default function Home() {
     // Coming from the feed → push a history entry so Back returns to the feed.
     // Switching plan-to-plan → replace (don't spam history with every switch).
     const fromFeed = showGalleryRef.current;
+    if (fromFeed) feedScrollYRef.current = window.scrollY; // restore this on Back
     setSelectedHomeId(id);
     setShowGallery(false);
     setNotFoundId(null);
@@ -4709,6 +4725,7 @@ export default function Home() {
   }, []);
 
   const repairHomeFromGallery = useCallback((id: string) => {
+    feedScrollYRef.current = window.scrollY; // restore the feed's scroll on Back
     setSelectedHomeId(id);
     setShowGallery(false);
     setSelectedComponent(null);

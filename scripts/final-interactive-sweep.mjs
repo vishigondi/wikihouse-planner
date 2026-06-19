@@ -374,6 +374,23 @@ const arrowsOnDetailNav = bareBefore !== bareAfter;
 note(arrowsInFieldDidNotNav && arrowsOnDetailNav,
   `arrow-key nav respects text fields/modals but still works bare (in-field-no-nav ${arrowsInFieldDidNotNav}, bare-navs ${arrowsOnDetailNav})`);
 
+// (4m) the feed restores its scroll position on Back. Class: a scrollable list
+// that jumps away from the user's place on Back. Drive: scroll the feed, open a
+// plan, browser Back -> the feed is back at (≈) the same scroll offset.
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(5000); // let the feed fully settle (lazy renders) before scrolling
+await page.evaluate(() => window.scrollTo(0, 1200));
+await page.waitForTimeout(500);
+const scrollBefore = await page.evaluate(() => Math.round(window.scrollY));
+await page.locator('[data-feed-open]').first().click().catch(() => {});
+await page.waitForTimeout(1500);
+const scrollOnDetail = await page.locator('button', { hasText: /^Export$/ }).count();
+await page.goBack().catch(() => {});
+await page.waitForTimeout(2000);
+const scrollAfterBack = await page.evaluate(() => Math.round(window.scrollY));
+note(scrollBefore > 200 && scrollOnDetail === 1 && Math.abs(scrollAfterBack - scrollBefore) < 200,
+  `feed restores scroll on Back (before ${scrollBefore}, after ${scrollAfterBack})`);
+
 // (4e) the feed-card "Share" affordance actually shares: it copies a working
 // deep-link to that plan (not a dead label). Class: a labeled control that
 // implies a real capability (the app HAS shareable ?home= links, hardened in

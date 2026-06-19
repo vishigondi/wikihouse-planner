@@ -476,3 +476,21 @@ new bug restarts the normal find→class→gate→fix cycle.
   detail still navigates (gen-001 → loft-showcase). No regression. gates +
   gates:live green.
 - **Commit:** auto-pushed (gated fix).
+
+### Fire 22 — feed lost the user's scroll position on Back
+- **Bug (found by driving):** after fire 19 enabled Back→feed, the browser's
+  `scrollRestoration="auto"` mishandled the async SPA re-render — scrolling the
+  feed to ~5000px, opening a plan, and pressing Back landed at ~7766px (a wrong
+  offset), not where the user was. A long feed loses your place on Back.
+- **Class:** _a scrollable list that doesn't restore scroll position on Back._
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4m) —
+  scroll the feed, open a plan, browser Back → the feed is back at (≈) the same
+  scroll offset.
+- **Root-cause fix:** take over scroll restoration — `history.scrollRestoration =
+  'manual'`; save `window.scrollY` when leaving the feed (selectHome from-feed +
+  repair-from-gallery into a `feedScrollYRef`); restore it via a double-rAF when
+  the feed re-renders (`showGallery` true).
+- **Verified (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  scroll to 1200 → open plan → Back → scrollY 1200 (was a wrong offset). No
+  regression (Back/Forward, deep-link, title all green). gates + gates:live green.
+- **Commit:** auto-pushed (gated fix).
