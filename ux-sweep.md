@@ -494,3 +494,17 @@ new bug restarts the normal find→class→gate→fix cycle.
   scroll to 1200 → open plan → Back → scrollY 1200 (was a wrong offset). No
   regression (Back/Forward, deep-link, title all green). gates + gates:live green.
 - **Commit:** auto-pushed (gated fix).
+
+### Fire 23 — clean (adversarial input / XSS robustness)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** the
+  brief box with adversarial input — `<img onerror>` + `<script>` + quotes/&,
+  and a 40×-repeated long brief. Result: **no script executed** (`window.__xss`
+  undefined, no dialog), the parser strips special chars and surfaces the ignored
+  words as plain escaped text (React), **zero horizontal overflow** from either
+  the evil or the very-long brief, no console errors.
+- **Code audit:** the 4 `dangerouslySetInnerHTML` sites render deterministic SVG
+  from geometry; `elevationSvgMarkup` embeds no unescaped user text, and the
+  SVG/HTML generators use `escapeHtml` on every interpolated field (room labels,
+  packet fields). No XSS vector via brief / import / plan fields.
+- **Result:** no usability or security bug; input handling is honest and safe.
+  No app-code change; gates green by identity.
