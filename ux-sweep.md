@@ -546,3 +546,15 @@ new bug restarts the normal find→class→gate→fix cycle.
   button reachable on-screen; no console errors.
 - **Result:** no bug — short/landscape viewports are handled (modals scroll
   inside, controls reachable). No app-code change; gates green by identity.
+
+### Fire 27 — clean (keyboard reachability of the plan detail)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** a
+  Tab-only sweep of the plan detail (60 Tab presses). All key controls are
+  reachable in a logical order — prev/next, Select plan, every VIEW preset
+  (incl. the absolutely-positioned overlay buttons), the full action bar (New
+  Plan / Import / Export / Look Render / Repair / Delete), Browse Plans, Review
+  Tools, Compare/Semantic (23 tab stops). The one bare `INPUT` is a Roof/White
+  checkbox labeled via its wrapping `<label>` (4h gate already asserts detail has
+  0 unlabeled fields).
+- **Result:** no bug — no unreachable control, no keyboard trap. No app-code
+  change; gates green by identity.
