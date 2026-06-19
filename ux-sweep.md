@@ -610,3 +610,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   emptied, both dropdowns→"all"). No console errors.
 - **Result:** no bug — combined filter logic + count + Clear-all all coherent.
   No app-code change; gates green by identity.
+
+### Fire 33 — clean (all 15 Export buttons produce real files)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** clicked
+  every export button in the Export modal (fire 18 only spot-checked 3–4) and
+  captured each download. Result: 15 export buttons → 15 downloads, 0 failures,
+  15 unique filenames, all non-empty (52KB–227KB JSON/SVG/HTML), no console
+  errors. The "hand-to-a-client" deliverable surface is fully functional.
+- **Result:** no bug — every export yields a distinct, non-empty file. No
+  app-code change; gates green by identity.
