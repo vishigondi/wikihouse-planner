@@ -601,3 +601,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   overflow throughout, no console errors.
 - **Result:** no bug — the canvas + layout reflow correctly on live resize, not
   just on fixed-size loads. No app-code change; gates green by identity.
+
+### Fire 32 — clean (multi-filter combination + Clear)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  stacked filters together (fire 4 only did singles) — roof=a-frame (6→5), +bed=2
+  (→4), +search "a" (→4). AND-narrowing is monotonic, the count label tracks
+  ("Showing 4 of 6 plans"), and one Clear resets EVERYTHING (cards→6, search
+  emptied, both dropdowns→"all"). No console errors.
+- **Result:** no bug — combined filter logic + count + Clear-all all coherent.
+  No app-code change; gates green by identity.
