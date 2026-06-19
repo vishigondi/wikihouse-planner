@@ -5051,12 +5051,13 @@ export default function Home() {
       />
 
       <div className="flex items-center gap-1 border-b border-stone-200 bg-white/80 px-3 py-1">
-        <button onClick={prevHome} className="rounded px-2 py-1 font-mono text-sm text-stone-500 hover:bg-stone-100">&larr;</button>
-        <button onClick={nextHome} className="rounded px-2 py-1 font-mono text-sm text-stone-500 hover:bg-stone-100">&rarr;</button>
+        <button type="button" onClick={prevHome} aria-label="Previous plan" title="Previous plan" className="rounded px-2 py-1 font-mono text-sm text-stone-500 hover:bg-stone-100">&larr;</button>
+        <button type="button" onClick={nextHome} aria-label="Next plan" title="Next plan" className="rounded px-2 py-1 font-mono text-sm text-stone-500 hover:bg-stone-100">&rarr;</button>
         <span className="font-mono text-[10px] text-stone-400">{homes.length ? `${Math.max(homeIdx + 1, 1)}/${homes.length}` : '0/0'}</span>
         <select
           value={selectedHomeId}
           onChange={(event) => selectHome(event.target.value)}
+          aria-label="Select plan"
           className="min-w-[240px] border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-700 outline-none hover:bg-stone-100 focus:border-stone-400"
         >
           {!homes.length && <option value="">No promoted paired plans</option>}

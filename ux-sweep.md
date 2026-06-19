@@ -213,4 +213,26 @@ _(bug → class → test → root-cause fix → commit)_
   shareable; no console errors. The shared link is exactly the kind fire 6
   hardened (a stale link shows the not-found notice). Artifact:
   `artifacts/customer-readiness/ux-fire7-share-link.png`.
+- **Commit:** `518a5e3`
+
+### Fire 8 — icon-only nav buttons had no accessible name
+- **Bug (found by driving + scanning):** the plan-detail plan-selector prev/next
+  buttons were bare glyphs (`←` / `→`) with no `aria-label`/`title` — a screen
+  reader announces "left arrow / right arrow" or nothing, so a non-sighted user
+  can't tell what they do. The adjacent plan `<select>` also had no name.
+  (Scanned every button/link on home + detail; home was clean, detail had these.
+  Driven via Playwright — claude-in-chrome extension still unreachable.)
+- **Class:** _icon/glyph-only interactive controls with no accessible name_
+  (WCAG 4.1.2 Name, Role, Value).
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4f) —
+  scans EVERY visible button / link / role=button on both the home feed and the
+  plan detail and asserts none lacks an accessible name (text / aria-label /
+  title). This guards the whole class, not just today's two buttons.
+- **Root-cause fix:** added `aria-label` + `title` ("Previous plan" / "Next
+  plan") and `type="button"` to the nav arrows, and `aria-label="Select plan"`
+  to the plan `<select>`.
+- **Verified (Playwright, live :3002):** nameless-control count home 0 / detail 0
+  (was 2); clicking "Next plan" by its accessible name navigates
+  (gen-001 → loft-showcase). Artifact:
+  `artifacts/customer-readiness/ux-fire8-aria-nav.png`.
 - **Commit:** _(pending — after gates + gates:live green)_

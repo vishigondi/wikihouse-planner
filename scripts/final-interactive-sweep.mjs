@@ -314,6 +314,31 @@ const clip = await page.evaluate(() => navigator.clipboard.readText().catch(() =
 note(shareIsButton && shareBefore === 'idle' && shareAfter === 'copied' && /\/\?home=/.test(clip),
   `feed Share copies a deep-link (button ${shareIsButton}, state ${shareBefore}->${shareAfter}, "${shareLabel}", clip ${/\/\?home=/.test(clip) ? clip.slice(-32) : 'no-link'})`);
 
+// (4f) every interactive control has an accessible name. Class: icon/glyph-only
+// controls (the plan-nav arrows were bare ← / →) are invisible to screen readers.
+// Scan EVERY visible button / link / role=button on both surfaces and assert none
+// is left without an accessible name (text / aria-label / title) (gates assert MORE).
+const scanNameless = () => page.evaluate(() => {
+  const out = [];
+  for (const el of document.querySelectorAll('button, a[href], [role="button"]')) {
+    if (el.offsetParent === null && el.getClientRects().length === 0) continue; // skip hidden
+    const aria = (el.getAttribute('aria-label') || '').trim();
+    const title = (el.getAttribute('title') || '').trim();
+    const txt = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    const name = aria || txt || title;
+    if (!/[a-z0-9]/i.test(name)) out.push((txt || aria || 'empty').slice(0, 6));
+  }
+  return out;
+});
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+const namelessHome = await scanNameless();
+await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+const namelessDetail = await scanNameless();
+note(namelessHome.length === 0 && namelessDetail.length === 0,
+  `every control has an accessible name (home ${namelessHome.length} [${namelessHome.join(',')}], detail ${namelessDetail.length} [${namelessDetail.join(',')}])`);
+
 // (5) landing brief box: live parse echo + ignored-word honesty
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(6000);
