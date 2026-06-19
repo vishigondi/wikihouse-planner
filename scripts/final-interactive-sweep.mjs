@@ -283,6 +283,20 @@ const searchAfter = await page.locator('[data-filter-search]').inputValue().catc
 note(fullCount >= 1 && emptyCount === 0 && clearShown >= 1 && restoredCount === fullCount && searchAfter === '',
   `over-filter has a one-click Clear (full ${fullCount} -> empty ${emptyCount}, clear shown ${clearShown} -> restored ${restoredCount}, search "${searchAfter}")`);
 
+// (4d) an unknown ?home=<id> deep-link (typo, or a link to a since-deleted gen-*)
+// must NOT silently render a different plan. Class: a stale/invalid deep-link is
+// surfaced, not swapped. Drive: visit a bogus id -> the feed renders WITH a
+// not-found notice naming the id, and no plan-detail surface is shown.
+await page.goto(`${BASE}/?home=zzz-no-such-plan-zzz`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+const notFound = page.locator('[data-plan-not-found]');
+const notFoundShown = await notFound.count();
+const notFoundText = notFoundShown ? ((await notFound.first().textContent()) ?? '').trim() : '';
+const feedShown = await page.locator('[data-plan-feed]').count();
+const detailShown = await page.locator('button', { hasText: /^Export$/ }).count();
+note(notFoundShown >= 1 && /zzz-no-such-plan-zzz/.test(notFoundText) && feedShown >= 1 && detailShown === 0,
+  `unknown deep-link is surfaced, not swapped (notice ${notFoundShown}, names-id ${/zzz-no-such-plan-zzz/.test(notFoundText)}, feed ${feedShown}, detail ${detailShown})`);
+
 // (5) landing brief box: live parse echo + ignored-word honesty
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(6000);

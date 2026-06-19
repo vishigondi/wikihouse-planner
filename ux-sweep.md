@@ -160,4 +160,29 @@ _(bug → class → test → root-cause fix → commit)_
   container (`activeInModal:true`). Playwright pass confirms all five dialogs
   `{initial, trapped, restored}` all true. No console errors. Artifact:
   `artifacts/customer-readiness/ux-fire5-modal-focus.png`.
+- **Commit:** `44b025e`
+
+### Fire 6 — an unknown ?home= deep-link silently showed the wrong plan
+- **Bug (found by driving):** visiting `?home=<unknown-id>` (a typo, or a link to
+  a since-deleted gen-* plan) rendered the FIRST plan (a-frame-bunk) on the full
+  detail surface as if it were the requested plan — no error, no indication. A
+  user following a stale link believes they're viewing plan X but it's actually a
+  different plan. (Note: the real-Chrome extension was unreachable post-restart —
+  chrome-error on every navigate — so this fire was driven via Playwright against
+  the same live dev server; flagged to the user to re-grant the extension's
+  localhost permission.)
+- **Class:** _a stale/invalid deep-link silently resolves to a fallback instead
+  of being surfaced (input honesty / no silent swap)._
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4d) —
+  an unknown `?home=` id renders the feed WITH a `[data-plan-not-found]` notice
+  that names the id, and shows NO plan-detail surface (no Export button).
+- **Root-cause fix:** in the URL-resolution effect, a requested id that matches
+  no plan now sets `notFoundId`, falls back to the feed (`showGallery`), and
+  resets the URL to `/` — instead of dropping through to the silent
+  `setSelectedHomeId(homes[0])` fallback. A dismissible amber banner
+  (`data-plan-not-found`) names the missing id; `selectHome` clears it.
+- **Verified (Playwright, live :3002):** bogus id → notice names the id, feed
+  shown, no detail, URL reset to `/`; Dismiss works; valid id (gen-001) still
+  loads its own detail; no console errors. Artifact:
+  `artifacts/customer-readiness/ux-fire6-deeplink-notfound.png`.
 - **Commit:** _(pending — after gates + gates:live green)_

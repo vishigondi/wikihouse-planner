@@ -4412,6 +4412,9 @@ function FeedCard({ home, index, lifecycle, deletable, onOpen, onRepair, onDelet
 export default function Home() {
   const [selectedHomeId, setSelectedHomeId] = useState('');
   const [showGallery, setShowGallery] = useState(false);
+  // Set when a `?home=<id>` deep-link names a plan that doesn't exist (typo or a
+  // since-deleted gen-*). We surface it instead of silently showing another plan.
+  const [notFoundId, setNotFoundId] = useState<string | null>(null);
   const [reviewToolsVisible, setReviewToolsVisible] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [wallOpacity, setWallOpacity] = useState(RENDER_THEMES['product-presentation'].wallOpacity);
@@ -4589,9 +4592,14 @@ export default function Home() {
           if (selectionTimer !== undefined) window.clearTimeout(selectionTimer);
         };
       }
-      if (!requested) {
-        setShowGallery(true);
+      if (requested) {
+        // Requested an unknown plan id (a typo, or a link to a since-deleted
+        // gen-* plan). Never silently swap in a different plan — surface the
+        // miss and fall back to the feed, resetting the URL to match.
+        setNotFoundId(requested);
+        window.history.replaceState(null, '', '/');
       }
+      setShowGallery(true);
     }
 
     if (!selectedHomeId || !homes.some((home) => home.id === selectedHomeId)) {
@@ -4605,6 +4613,7 @@ export default function Home() {
   const selectHome = useCallback((id: string) => {
     setSelectedHomeId(id);
     setShowGallery(false);
+    setNotFoundId(null);
     setSelectedComponent(null);
     setRenderedBounds(null);
     setActiveFloor(0);
@@ -4934,6 +4943,25 @@ export default function Home() {
           onExportPacket={exportProductPacket}
           onApplyRepairPatch={applyRepairPatch}
         />
+        {notFoundId && (
+          <div
+            data-plan-not-found={notFoundId}
+            className="mx-auto mt-4 flex max-w-2xl items-start justify-between gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900"
+          >
+            <span>
+              The plan <span className="font-semibold">“{notFoundId}”</span> wasn’t found — it may have been
+              deleted or the link is out of date. Showing all plans instead.
+            </span>
+            <button
+              type="button"
+              data-plan-not-found-dismiss
+              onClick={() => setNotFoundId(null)}
+              className="shrink-0 rounded-sm border border-amber-400 bg-white px-2 py-0.5 text-[11px] font-medium text-amber-800 hover:border-amber-600"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
         <ProductGallery
           homes={homes}
           lifecycleStates={lifecycleStates}
