@@ -693,3 +693,11 @@ new bug restarts the normal find→class→gate→fix cycle.
   console errors.
 - **Result:** no bug — core feed→filter→open path holds. No app-code change;
   gates green by identity.
+
+### Fire 42 — clean (plan-detail smoke)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** quick
+  detail-side regression tick (complements fire 41's feed side) — load gen-001 →
+  switch to Cutaway (active) → open Look Render → Escape closes → canvas intact.
+  No console errors.
+- **Result:** no bug — detail view-switch + modal path holds. No app-code change;
+  gates green by identity.
