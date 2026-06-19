@@ -655,3 +655,12 @@ new bug restarts the normal find→class→gate→fix cycle.
 - **Result:** no bug — controls are fully keyboard-operable (Enter + Space),
   completing WCAG 2.1.1 alongside fire 27's reachability. No app-code change;
   gates green by identity.
+
+### Fire 38 — clean (prefers-reduced-motion honored)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  emulated `prefers-reduced-motion: reduce`. Result: the globals.css media block
+  takes effect — button transition-duration is `0s` and scroll-behavior is `auto`
+  (no smooth-scroll) — AND the app stays fully functional (modal opens/closes,
+  view switch works, canvas renders). No console errors.
+- **Result:** no bug — the reduced-motion preference is respected without
+  breaking anything. No app-code change; gates green by identity.
