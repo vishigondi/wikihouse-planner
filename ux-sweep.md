@@ -508,3 +508,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   packet fields). No XSS vector via brief / import / plan fields.
 - **Result:** no usability or security bug; input handling is honest and safe.
   No app-code change; gates green by identity.
+
+### Fire 24 — clean (console hygiene: warnings + errors)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** a full
+  session — feed, plan detail, all 5 modals (open/Escape), all view presets, the
+  loft plan — capturing console **warnings AND errors** (prior fires only checked
+  errors). Result: **0 warnings, 0 errors** — no React missing-key warnings, no
+  hydration mismatches, no deprecation notices.
+- **Result:** no bug; console is clean across every surface. Second consecutive
+  clean sweep after fire 22's fix. No app-code change; gates green by identity.
