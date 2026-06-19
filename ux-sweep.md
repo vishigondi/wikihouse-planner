@@ -40,10 +40,10 @@ _(updated each fire)_
       hook; the 6 selects still lack individual hooks (low priority — gate drives
       via search + the shared clear).
 - [ ] Drive card Open / Repair actions and New Plan Handoff.
-- [ ] Confirm no other destructive/irreversible action fires on a single click
+- [x] Confirm no other destructive/irreversible action fires on a single click
       (audit every onClick that mutates/deletes/exports/navigates-away). Audited
-      fire 7: Import is idempotent; only the dev-only Review-Tools generate lacks
-      a double-submit busy guard (low priority).
+      fire 7: Import is idempotent. Fire 13: BOTH generate handlers (home +
+      Review-Tools) double-fired on a synchronous double-click — now guarded.
 - [ ] Plan-detail dense review chrome on mobile: `[repair]` status chips (~14px)
       and Compare/Semantic (~23px) are under the 24px touch minimum. Deliberate
       desktop-density tradeoff for now; revisit if mobile review becomes a goal.
@@ -323,4 +323,28 @@ _(bug → class → test → root-cause fix → commit)_
   Throwaway gen-002 deleted; only gen-001 remains. This is the **first of the two
   consecutive clean fires** the loop needs to close. (`npm run gates` green; no
   app-code change this fire, so `gates:live` is green by identity with fire 11.)
-- **Commit:** _(doc-only)_
+- **Commit:** `682c09e` _(doc-only)_
+
+### Fire 13 — generate buttons double-fired (duplicate-plan hazard)
+- **Bug (found by driving):** a rapid/synchronous double-click on "Generate Plan
+  From Brief" (Review-Tools panel) fired TWO `POST /api/generate-plan` and could
+  create two plans from one intent. Probing further, the prominent home-feed
+  "Generate Plan" had the SAME flaw — its `busy` *state* guard doesn't stop a
+  synchronous re-entry because React state doesn't update within a tick. (Driven
+  via Playwright; claude-in-chrome still unreachable.)
+- **Class:** _async-mutation buttons guarded only by React state still
+  double-submit on a synchronous/rapid double-click; they need a synchronous ref
+  guard._ Spanned BOTH generate handlers.
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4i) —
+  intercept+abort `POST /api/generate-plan` (so the gate makes no throwaway
+  plans) and assert a synchronous double-click on each generate button yields
+  exactly ONE POST.
+- **Root-cause fix:** a synchronous `useRef` flag (`generatingRef` / `busyRef`)
+  set before the await and reset on every error path, in BOTH
+  `ProductWorkflowPanel` and `GalleryBriefGenerate`; the button also disables and
+  shows "Generating…".
+- **Verified (Playwright, live :3002):** double- AND triple-click → 1 POST on
+  both buttons (was 2); button disabled + "Generating…" while in flight; no
+  throwaway plans created (route-aborted; only gen-001 remains). Artifact:
+  `artifacts/customer-readiness/ux-fire13-generate-guard.png`.
+- **Commit:** _(pending — after gates + gates:live green)_

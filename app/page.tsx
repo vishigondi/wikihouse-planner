@@ -1960,6 +1960,11 @@ function ProductWorkflowPanel({
   const [briefText, setBriefText] = useState('');
   const [briefUnparsed, setBriefUnparsed] = useState<string[]>([]);
   const [generateStatus, setGenerateStatus] = useState('');
+  const [generating, setGenerating] = useState(false);
+  // Synchronous guard: React state doesn't update within a tick, so two rapid
+  // (or programmatic) clicks both pass a state check before re-render. A ref
+  // flips synchronously and blocks the second submit.
+  const generatingRef = useRef(false);
   const [hasGenerationKey, setHasGenerationKey] = useState<boolean | null>(null);
   useEffect(() => {
     fetch('/api/generate-plan')
@@ -1968,10 +1973,13 @@ function ProductWorkflowPanel({
       .catch(() => setHasGenerationKey(false));
   }, []);
   const onGeneratePlan = async () => {
+    if (generatingRef.current) return; // guard against double-submit
     if (!briefText.trim()) {
       setGenerateStatus('Type a brief first.');
       return;
     }
+    generatingRef.current = true;
+    setGenerating(true);
     setGenerateStatus(hasGenerationKey ? 'Generating via OpenAI...' : 'Generating from deterministic template (no OPENAI_API_KEY)...');
     try {
       const res = await fetch('/api/generate-plan', {
@@ -1982,12 +1990,16 @@ function ProductWorkflowPanel({
       const body = await res.json();
       if (!res.ok) {
         setGenerateStatus(`Generation failed: ${body.error ?? res.status}${body.errors ? ` - ${body.errors.slice(0, 3).join('; ')}` : ''}`);
+        generatingRef.current = false;
+        setGenerating(false);
         return;
       }
       setGenerateStatus(`Generated ${body.planId} (${body.mode}). Loading...`);
       window.location.href = body.url;
     } catch (error) {
       setGenerateStatus(`Generation failed: ${(error as Error).message}`);
+      generatingRef.current = false;
+      setGenerating(false);
     }
   };
 
@@ -2052,9 +2064,10 @@ function ProductWorkflowPanel({
           type="button"
           data-generate-plan
           onClick={onGeneratePlan}
-          className="w-full rounded-sm border border-emerald-800 bg-emerald-800 px-2 py-1 text-white hover:bg-emerald-700"
+          disabled={generating}
+          className="w-full rounded-sm border border-emerald-800 bg-emerald-800 px-2 py-1 text-white hover:bg-emerald-700 disabled:opacity-60"
         >
-          Generate Plan From Brief
+          {generating ? 'Generating…' : 'Generate Plan From Brief'}
         </button>
         {hasGenerationKey === false && (
           <div className="text-[9px] leading-snug text-stone-400">
@@ -3970,14 +3983,19 @@ function GalleryBriefGenerate() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
+  // Synchronous guard: state updates don't apply within a tick, so two rapid
+  // clicks both pass a state check before re-render. A ref blocks the second.
+  const busyRef = useRef(false);
   // Live echo of what the parser understood — silent drops are the enemy.
   const [echo, setEcho] = useState<ReturnType<typeof parseBrief> | null>(null);
   const generate = async () => {
+    if (busyRef.current) return; // guard against double-submit
     const brief = (inputRef.current?.value ?? '').trim();
     if (!brief) {
       setStatus('Describe the home first - e.g. "2-bed A-frame, 40x60 lot, 5 ft side setbacks".');
       return;
     }
+    busyRef.current = true;
     setBusy(true);
     setStatus('Generating plan...');
     try {
@@ -3989,6 +4007,7 @@ function GalleryBriefGenerate() {
       const body = await res.json();
       if (!res.ok) {
         setStatus(`Could not generate: ${body.error ?? res.status}${body.errors ? ` - ${body.errors.slice(0, 2).join('; ')}` : ''}`);
+        busyRef.current = false;
         setBusy(false);
         return;
       }
@@ -3996,6 +4015,7 @@ function GalleryBriefGenerate() {
       window.location.href = body.url;
     } catch (error) {
       setStatus(`Could not generate: ${(error as Error).message}`);
+      busyRef.current = false;
       setBusy(false);
     }
   };

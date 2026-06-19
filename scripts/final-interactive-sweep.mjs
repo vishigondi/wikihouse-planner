@@ -403,6 +403,40 @@ const unlabeledDetail = await scanUnlabeled();
 note(unlabeledHome.length === 0 && unlabeledDetail.length === 0,
   `every form field has a label (home ${unlabeledHome.length} [${unlabeledHome.join(',')}], detail ${unlabeledDetail.length} [${unlabeledDetail.join(',')}])`);
 
+// (4i) generate buttons guard against double-submit. Class: an async mutation
+// guarded only by React state still double-fires on a synchronous/rapid double
+// click (state doesn't update within a tick) — creating duplicate plans. A
+// synchronous ref guard must cap it at one POST. We intercept+abort the POST so
+// the gate counts submit attempts without creating throwaway plans (assert MORE).
+let genPosts = 0;
+await page.route('**/api/generate-plan', async (route) => {
+  if (route.request().method() === 'POST') { genPosts += 1; await route.abort(); }
+  else await route.continue();
+});
+// home-feed Generate
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+await page.locator('[data-home-brief-input]').fill('2 bed a-frame, 700 sqft, 40x60 lot, 5 ft setbacks');
+await page.waitForTimeout(200);
+genPosts = 0;
+await page.evaluate(() => { const b = document.querySelector('[data-home-generate]'); b.click(); b.click(); });
+await page.waitForTimeout(1200);
+const homeGenPosts = genPosts;
+// Review-Tools Prompt-To-Plan Generate
+await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+await page.locator('button', { hasText: /^Review Tools$/ }).first().click().catch(() => {});
+await page.waitForTimeout(700);
+await page.locator('[data-brief-input]').fill('2 bed a-frame, 700 sqft, 40x60 lot, 5 ft setbacks').catch(() => {});
+await page.waitForTimeout(200);
+genPosts = 0;
+await page.evaluate(() => { const b = [...document.querySelectorAll('[data-generate-plan]')][0]; if (b) { b.click(); b.click(); } });
+await page.waitForTimeout(1200);
+const panelGenPosts = genPosts;
+await page.unroute('**/api/generate-plan');
+note(homeGenPosts === 1 && panelGenPosts === 1,
+  `generate guards against double-submit (home ${homeGenPosts} POST, panel ${panelGenPosts} POST on a synchronous double-click)`);
+
 // (5) landing brief box: live parse echo + ignored-word honesty
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(6000);
