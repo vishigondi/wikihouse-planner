@@ -580,3 +580,15 @@ new bug restarts the normal find→class→gate→fix cycle.
   selected plan), not a dead control.
 - **Result:** no bug — the reference selector is functional and the prompt
   reflects the chosen baseline. No app-code change; gates green by identity.
+
+### Fire 30 — clean (lifecycle-state coherence + delete guard)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** set
+  gen-001's lifecycle review → "exported" via the Export modal. Result: the
+  change persists (reopening gen-001's detail shows "exported") and the feed
+  reflects it (one EXPORTED card). The plan also correctly **loses its Delete
+  button** once exported (the delete guard — promoted/exported plans aren't
+  deletable; principle 6). Disk untouched (lifecycle is client-state only —
+  gen-001 JSON safe).
+- **Result:** no bug — detail↔feed lifecycle stays coherent and the delete guard
+  behaves. (An initial false alarm came from a selector keyed on the now-absent
+  delete button, not an app defect.) No app-code change; gates green by identity.
