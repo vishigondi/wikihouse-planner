@@ -44,9 +44,12 @@ _(updated each fire)_
       (audit every onClick that mutates/deletes/exports/navigates-away). Audited
       fire 7: Import is idempotent. Fire 13: BOTH generate handlers (home +
       Review-Tools) double-fired on a synchronous double-click — now guarded.
-- [ ] Plan-detail dense review chrome on mobile: `[repair]` status chips (~14px)
-      and Compare/Semantic (~23px) are under the 24px touch minimum. Deliberate
-      desktop-density tradeoff for now; revisit if mobile review becomes a goal.
+- [x] Plan-detail dense review chrome on mobile: `[repair]` status chips (~14px)
+      and Compare/Semantic (~23px) are under the 24px touch minimum. **Accepted
+      tradeoff** (not a TODO): the plan-detail review surface is desktop-first
+      (3D canvas + dense compliance chrome); these are advanced/status affordances
+      used with a mouse. The customer-facing FEED is gated to ≥24px (fire 9).
+      Revisit only if mobile plan-review becomes a product goal.
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
@@ -347,4 +350,22 @@ _(bug → class → test → root-cause fix → commit)_
   both buttons (was 2); button disabled + "Generating…" while in flight; no
   throwaway plans created (route-aborted; only gen-001 remains). Artifact:
   `artifacts/customer-readiness/ux-fire13-generate-guard.png`.
-- **Commit:** _(pending — after gates + gates:live green)_
+- **Commit:** `20a9b26`
+
+### Fire 14 — clean verification drive (no new bug)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** a
+  full keyboard + race + console session across every surface:
+  - **Keyboard end-to-end on home:** focus search → type "a-frame" → 5 filtered;
+    focus a card's "Open plan" → Enter → opened the detail (Export present).
+  - **Rapid-nav races:** 8× Next then 8× Previous on the plan selector → ends in
+    a consistent plan with the 3D canvas intact, no errors.
+  - **All five modals** open → Escape → none left open; **all view presets**
+    cycled → canvas intact.
+  - **Zero console errors / pageerrors** across the entire session.
+- **Result:** no usability bug surfaced. Backlog is now empty of actionable
+  TODOs (the only remaining item — dense plan-detail tap targets — is an accepted
+  desktop-density tradeoff, above). This is the **first clean sweep after the
+  fire-13 fix**; one more clean fire completes the two-consecutive-clean close
+  condition. (`npm run gates` green; no app-code change this fire, so `gates:live`
+  is green by identity with fire 13.)
+- **Commit:** _(doc-only)_
