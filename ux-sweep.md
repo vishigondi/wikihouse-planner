@@ -685,3 +685,11 @@ new bug restarts the normal find→class→gate→fix cycle.
 - **Result:** the entire hardened envelope holds — comprehensive regression
   confirmed. (App byte-identical since fire 25; this is periodic full-suite
   hygiene rather than a new micro-angle, since the app has converged.)
+
+### Fire 41 — clean (feed happy-path smoke)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** quick
+  happy-path regression tick — feed (6 cards) → search "barn" (→0 + Clear shown)
+  → Clear (→6 restored) → open a plan → detail renders (Export + canvas). No
+  console errors.
+- **Result:** no bug — core feed→filter→open path holds. No app-code change;
+  gates green by identity.
