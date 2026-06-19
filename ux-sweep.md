@@ -701,3 +701,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   No console errors.
 - **Result:** no bug — detail view-switch + modal path holds. No app-code change;
   gates green by identity.
+
+### Fire 43 — clean (live regression spot-check of shipped fixes)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** re-verified
+  shipped fixes directly in the running app (not just via gates) — fire 1 Delete
+  two-step (single click arms `data-armed=true`, cards unchanged), fire 5 modal
+  focus-in (opening Import focuses inside the dialog), fire 2 Escape-closes. All
+  hold; no console errors.
+- **Result:** no regression — the fixes still behave live. No app-code change;
+  gates green by identity.
