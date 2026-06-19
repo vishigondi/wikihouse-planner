@@ -386,3 +386,16 @@ _(bug → class → test → root-cause fix → commit)_
   consecutive fires. PROJECT_STATUS.md + the playbook updated. Push / CronDelete
   held pending the user's go-ahead (no-push-without-asking guardrail).
 - **Commit:** _(doc-only close)_
+
+## Watch mode (post-close)
+
+The sweep met its close condition at fire 15 and shipped to origin/main; the loop
+was kept running as a regression watch. Each watch fire drives a fresh angle; a
+new bug restarts the normal find→class→gate→fix cycle.
+
+- **Fire 16 — clean.** Drove the angles not yet output-verified: Look Render
+  **mode toggle** (photoreal → "architectural visualization"; illustration →
+  "architectural illustration" + concept/not-a-photo wording; distinct prompts,
+  active state flips) and **New Plan handoff** copy (idle→copied, clipboard holds
+  the prompt). No bug, zero console errors. (Playwright, live :3002 —
+  claude-in-chrome still unreachable.) No app-code change; gates green by identity.
