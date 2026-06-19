@@ -637,3 +637,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   path confirmed working.
 - **Result:** no bug — file-upload import works end-to-end. No app-code change;
   gates green by identity.
+
+### Fire 36 — clean (3D canvas orbit + zoom)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** the
+  core review interaction — dragged across the 3D canvas center to orbit and
+  wheel-zoomed in/out. Result: the render changed (model rotated — canvas PNG
+  bytes differ before/after the drag), canvas stays present, no horizontal
+  overflow, no console errors.
+- **Result:** no bug — orbit/zoom of the 3D model works. No app-code change;
+  gates green by identity.
