@@ -646,3 +646,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   overflow, no console errors.
 - **Result:** no bug — orbit/zoom of the 3D model works. No app-code change;
   gates green by identity.
+
+### Fire 37 — clean (keyboard activation of controls)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  keyboard ACTIVATION (fire 27 covered reachability) — focused the Cutaway VIEW
+  preset and pressed Enter (→ Cutaway active), then focused Front and pressed
+  Space (→ Front active), from a BIM 3D start. Both activate; no console errors.
+- **Result:** no bug — controls are fully keyboard-operable (Enter + Space),
+  completing WCAG 2.1.1 alongside fire 27's reachability. No app-code change;
+  gates green by identity.
