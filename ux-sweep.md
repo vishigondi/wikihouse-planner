@@ -592,3 +592,12 @@ new bug restarts the normal find→class→gate→fix cycle.
 - **Result:** no bug — detail↔feed lifecycle stays coherent and the delete guard
   behaves. (An initial false alarm came from a selector keyed on the now-absent
   delete button, not an app defect.) No app-code change; gates green by identity.
+
+### Fire 31 — clean (live window resize on the detail)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** loaded
+  the plan detail at 1280 then live-resized 1280 → 600 → 360 → 1440 (exercising
+  resize handlers the fixed-size responsive gate can't). Result: the 3D canvas
+  width tracks the viewport at every step (1280/600/360/1440), zero horizontal
+  overflow throughout, no console errors.
+- **Result:** no bug — the canvas + layout reflow correctly on live resize, not
+  just on fixed-size loads. No app-code change; gates green by identity.
