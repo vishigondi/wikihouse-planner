@@ -517,3 +517,23 @@ new bug restarts the normal find→class→gate→fix cycle.
   hydration mismatches, no deprecation notices.
 - **Result:** no bug; console is clean across every surface. Second consecutive
   clean sweep after fire 22's fix. No app-code change; gates green by identity.
+
+### Fire 25 — plan detail overflowed horizontally at 320px
+- **Bug (found by driving):** the responsive gate covered 390+, not 320 (small
+  phones). At 320px the plan **detail** overflowed 32px horizontally — the
+  plan-selector `<select>` (`min-w-[240px]`, couldn't shrink) and the plan-sheet
+  header label (no `min-w-0`, pushed the Compare/Semantic toggle past the edge).
+  Home was fine; 360px was fine.
+- **Class:** _fixed-width controls that don't shrink below the smallest supported
+  viewport (horizontal overflow at 320px)._
+- **Failing assertion added (gates assert MORE):** added a `small` 320px
+  breakpoint to the responsive loop (home + detail no-overflow + landmarks) and
+  to the modal-fit loop (all 5 modals fit @ 320px).
+- **Root-cause fix (layout CSS only):** plan-selector select →
+  `min-w-0 max-w-[240px] flex-1` (grows to 240, shrinks below); plan-sheet header
+  label → `min-w-0` (shrinks/truncates); Compare/Semantic toggle → `shrink-0`
+  (stays intact).
+- **Verified (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  detail overflow 320px 32→0; 360/390/1440 still 0; canvas + sheet intact. No
+  regression. gates + gates:live green (320 breakpoint + modal-fit @ 320 all ok).
+- **Commit:** auto-pushed (gated fix).

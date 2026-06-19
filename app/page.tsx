@@ -3872,7 +3872,7 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
     <div className="min-h-[560px] overflow-visible bg-[#fdfbf7] p-4">
       {qaPrimitiveMetadataRender}
       <div className="relative z-20 mb-3 flex items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <div className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
             {isJsonOnlyPlan(home) ? 'Plan Sheet + Elevations' : 'GPT Proposal + Deterministic Render'}
             {isJsonOnlyPlan(home) && (
@@ -3883,7 +3883,7 @@ function PairedComparison({ home, mode, onModeChange }: { home: DenHome; mode: C
           </div>
           <div className="mt-0.5 font-mono text-[10px] text-stone-400">{info.proposalId}</div>
         </div>
-        <div className="relative z-20 flex overflow-hidden rounded-sm border border-stone-200 bg-white">
+        <div className="relative z-20 flex shrink-0 overflow-hidden rounded-sm border border-stone-200 bg-white">
           {buttons.map((button) => (
             <button
               key={button.id}
@@ -5163,7 +5163,7 @@ export default function Home() {
           value={selectedHomeId}
           onChange={(event) => selectHome(event.target.value)}
           aria-label="Select plan"
-          className="min-w-[240px] border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-700 outline-none hover:bg-stone-100 focus:border-stone-400"
+          className="min-w-0 max-w-[240px] flex-1 border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-700 outline-none hover:bg-stone-100 focus:border-stone-400"
         >
           {!homes.length && <option value="">No promoted paired plans</option>}
           {homes.map((home) => (

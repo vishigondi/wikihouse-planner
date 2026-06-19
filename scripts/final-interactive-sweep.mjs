@@ -533,6 +533,7 @@ note(/farmhouse/.test(ignoredText), 'landing echo surfaces ignored words');
 // assertions are added as those surfaces are made responsive (gates assert MORE
 // as each surface is fixed — never assert overflow before the fix lands).
 const BREAKPOINTS = [
+  { id: 'small', width: 320, height: 720 },
   { id: 'mobile', width: 390, height: 844 },
   { id: 'tablet', width: 768, height: 1024 },
   { id: 'laptop', width: 1024, height: 768 },
@@ -567,7 +568,7 @@ for (const bp of BREAKPOINTS) {
 // (7) the workflow modals fit narrow viewports: panel within bounds, no page
 // overflow, scroll inside the modal (two-column layouts stack on mobile).
 const MODAL_BTNS = ['New Plan', 'Import JSON', 'Export', 'Look Render', 'Repair With GPT'];
-for (const mw of [390, 768]) {
+for (const mw of [320, 390, 768]) {
   await page.setViewportSize({ width: mw, height: 900 });
   await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForTimeout(4000);
