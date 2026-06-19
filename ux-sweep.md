@@ -26,9 +26,13 @@ backlog is empty and the app is genuinely usable. (See memory: ux-bug-prime-dire
 ## Backlog
 _(updated each fire)_
 
-- [ ] Drive plan-detail VIEW controls deeply: Side view, Roof/White toggles,
-      Ground/Loft/All level switch, Plan Top vs Cutaway parity.
-- [ ] Drive Compare ↔ Semantic toggle on a paired plan and a JSON-only plan.
+- [x] Drive plan-detail VIEW controls deeply — fire 17 (clean): Roof/White
+      toggles flip without error; Ground/Loft/All level switch works on a loft
+      plan (active state correct); Plan Top hides Roof/White; White state persists
+      consistently across view changes; canvas intact, no console errors.
+- [x] Compare ↔ Semantic toggle — verified working (fire 6), and the JSON-only vs
+      GPT-paired overlay distinction is already gated in the interactive sweep
+      ("overlay hidden for JSON-only plan" / "overlay tab present only on paired").
 - [x] Drive the modals end-to-end: dismissal (Escape / backdrop / Close) fixed
       fire 2; Import JSON bad-payload surfaces a clear parse error (verified good,
       fire 3); copy-to-clipboard feedback fixed fire 3. STILL TODO: Look Render
@@ -399,3 +403,11 @@ new bug restarts the normal find→class→gate→fix cycle.
   active state flips) and **New Plan handoff** copy (idle→copied, clipboard holds
   the prompt). No bug, zero console errors. (Playwright, live :3002 —
   claude-in-chrome still unreachable.) No app-code change; gates green by identity.
+
+- **Fire 17 — clean.** Drove the plan-detail VIEW controls deeply on the loft
+  plan (loft-showcase) + gen-001: White toggle flips (no error); Ground/Loft/All
+  level switch flips active state correctly; Plan Top hides Roof/White; White
+  state persists consistently when returning to BIM 3D (no checkbox desync);
+  canvas intact; zero console errors. Ticks the last two "drive to verify"
+  backlog items. (Playwright, live :3002 — claude-in-chrome still unreachable.)
+  No app-code change; gates green by identity.
