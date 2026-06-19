@@ -345,6 +345,35 @@ const loftTitle = await page.title();
 note(/Floorplan Studio/.test(feedTitle) && /gen-001/.test(gen001Title) && /loft-showcase/.test(loftTitle) && gen001Title !== loftTitle,
   `tab title reflects the view (feed "${feedTitle}", gen-001 "${gen001Title}", loft "${loftTitle}")`);
 
+// (4l) global ArrowLeft/Right plan-nav must not hijack a control the user is
+// editing or fire behind an open modal. Class: a global keyboard shortcut that
+// ignores text fields / modals. Drive: type in the Import textarea + arrows ->
+// plan UNCHANGED; then on the bare detail (no field, no modal) arrows DO navigate.
+await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+await page.locator('button', { hasText: /^Import JSON$/ }).first().click().catch(() => {});
+await page.waitForTimeout(600);
+const taUrlBefore = page.url();
+const importTa = page.locator('[data-workflow-modal] textarea:not([readonly])').first();
+await importTa.click();
+await importTa.type('arrow guard test', { delay: 5 });
+for (let i = 0; i < 5; i += 1) { await page.keyboard.press('ArrowLeft'); }
+for (let i = 0; i < 2; i += 1) { await page.keyboard.press('ArrowRight'); }
+await page.waitForTimeout(300);
+const taUrlAfter = page.url();
+const arrowsInFieldDidNotNav = taUrlBefore === taUrlAfter;
+// close modal, then bare arrows on the detail DO navigate (feature still works)
+await page.keyboard.press('Escape');
+await page.waitForTimeout(400);
+await page.evaluate(() => document.body.focus());
+const bareBefore = page.url();
+await page.keyboard.press('ArrowRight');
+await page.waitForTimeout(1200);
+const bareAfter = page.url();
+const arrowsOnDetailNav = bareBefore !== bareAfter;
+note(arrowsInFieldDidNotNav && arrowsOnDetailNav,
+  `arrow-key nav respects text fields/modals but still works bare (in-field-no-nav ${arrowsInFieldDidNotNav}, bare-navs ${arrowsOnDetailNav})`);
+
 // (4e) the feed-card "Share" affordance actually shares: it copies a working
 // deep-link to that plan (not a dead label). Class: a labeled control that
 // implies a real capability (the app HAS shareable ?home= links, hardened in

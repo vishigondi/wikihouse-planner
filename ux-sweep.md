@@ -457,3 +457,22 @@ new bug restarts the normal find→class→gate→fix cycle.
   "gen-001 - Floorplan Studio"; loft "loft-showcase - Floorplan Studio"; returns
   to base via Browse Plans. No regression. gates + gates:live green.
 - **Commit:** auto-pushed (gated fix).
+
+### Fire 21 — global Arrow-key plan-nav hijacked text fields
+- **Bug (found by driving):** the global ArrowLeft/Right plan-nav guard skipped
+  `input`/`select` but NOT `textarea` or contentEditable, and fired even behind an
+  open modal. Typing JSON in the Import textarea and pressing arrows to move the
+  caret silently switched the plan (gen-001 → a-frame-bunk) behind the dialog.
+- **Class:** _a global keyboard shortcut that fires while the user is editing a
+  text field / behind a modal._
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4l) —
+  arrows while typing in the Import textarea do NOT navigate; bare arrows on the
+  detail (no field, no modal) DO navigate (the feature still works).
+- **Root-cause fix:** expanded the keydown guard to also skip `HTMLTextAreaElement`
+  and `isContentEditable`, and to no-op when any `[data-workflow-modal]` is open.
+- **Verified (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  arrows in the Import textarea (modal stays open, plan unchanged) AND the
+  non-modal Review-Tools brief textarea don't navigate; bare ArrowRight on the
+  detail still navigates (gen-001 → loft-showcase). No regression. gates +
+  gates:live green.
+- **Commit:** auto-pushed (gated fix).

@@ -4970,7 +4970,18 @@ export default function Home() {
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) return;
+      // Don't hijack arrow keys away from a control the user is editing: text
+      // fields move the caret (textarea was the gap — typing JSON + arrows used
+      // to switch the plan behind the dialog), and don't navigate plans behind an
+      // open modal.
+      const target = event.target;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLSelectElement ||
+        target instanceof HTMLTextAreaElement ||
+        (target instanceof HTMLElement && target.isContentEditable)
+      ) return;
+      if (document.querySelector('[data-workflow-modal]')) return;
       if (event.key === 'ArrowLeft') prevHome();
       if (event.key === 'ArrowRight') nextHome();
     };
