@@ -306,4 +306,21 @@ _(bug → class → test → root-cause fix → commit)_
   after the repair path + return (was 1); Open path also clears; repair modal
   still opens; no console errors. Artifact:
   `artifacts/customer-readiness/ux-fire11-notfound-transient.png`.
-- **Commit:** _(pending — after gates + gates:live green)_
+- **Commit:** `6cfea7a`
+
+### Fire 12 — clean drive (no new bug found)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** the
+  full plan lifecycle as feature *combinations*, where the last few real bugs
+  hid:
+  - generate from brief → land on detail → Browse Plans (shows "Resume gen-002")
+    → delete from feed card (two-step) → **count 7→6, no stale "Resume gen-002"
+    button, deleted card gone, no console errors.** The post-delete state
+    self-corrects cleanly (no dangling reference to the removed plan).
+  - filter the feed ("a-frame" → 5) → open a plan → Browse Plans → **filter
+    resets to the full feed (6), search box empty, no Clear button** — internally
+    consistent (no "box shows a term but feed is unfiltered" desync).
+- **Result:** no usability bug surfaced; every gate from fires 1–11 still green.
+  Throwaway gen-002 deleted; only gen-001 remains. This is the **first of the two
+  consecutive clean fires** the loop needs to close. (`npm run gates` green; no
+  app-code change this fire, so `gates:live` is green by identity with fire 11.)
+- **Commit:** _(doc-only)_
