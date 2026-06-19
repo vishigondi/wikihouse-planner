@@ -537,3 +537,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   detail overflow 320px 32→0; 360/390/1440 still 0; canvas + sheet intact. No
   regression. gates + gates:live green (320 breakpoint + modal-fit @ 320 all ok).
 - **Commit:** auto-pushed (gated fix).
+
+### Fire 26 — clean (short / landscape viewport)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** a
+  landscape-phone viewport (740×360, very short height) — plan detail + all 5
+  modals. Result: detail no horizontal overflow; every modal panel stays capped
+  (height 349 ≤ 360 viewport via `max-h-[78vh]` + scroll-inside) with the Close
+  button reachable on-screen; no console errors.
+- **Result:** no bug — short/landscape viewports are handled (modals scroll
+  inside, controls reachable). No app-code change; gates green by identity.
