@@ -368,4 +368,21 @@ _(bug → class → test → root-cause fix → commit)_
   fire-13 fix**; one more clean fire completes the two-consecutive-clean close
   condition. (`npm run gates` green; no app-code change this fire, so `gates:live`
   is green by identity with fire 13.)
-- **Commit:** _(doc-only)_
+- **Commit:** `15541e8` _(doc-only)_
+
+### Fire 15 — clean verification drive (no new bug) — CLOSE
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable) fresh
+  angles not covered by fire 14:**
+  - **Repair Apply Patch:** Apply disabled when empty; invalid JSON → clear parse
+    error; valid-but-bad-path → "outside allowed paths for walls" (server-enforced
+    invariant rejecting cleanly); modal stays open; no corruption.
+  - **Lifecycle buttons** (draft/review/promoted/exported) cycled → 0 errors.
+  - **Nav re-render integrity:** Next then Previous back to gen-001 → 3D canvas +
+    plan sheet intact.
+  - **Zero console errors** throughout.
+- **Result:** no usability bug surfaced — the **second consecutive clean sweep**
+  after the fire-13 fix. Close condition met: every surface driven, backlog empty
+  of actionable TODOs, would genuinely use the app, full ladder green on two
+  consecutive fires. PROJECT_STATUS.md + the playbook updated. Push / CronDelete
+  held pending the user's go-ahead (no-push-without-asking guardrail).
+- **Commit:** _(doc-only close)_

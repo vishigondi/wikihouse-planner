@@ -1,6 +1,53 @@
 # Project Status
 
-Last updated: 2026-06-17 (responsive pass — every page clean at mobile/tablet/laptop/desktop)
+Last updated: 2026-06-19 (UX sweep — 12 usability classes fixed by driving the live app, two consecutive clean verification fires)
+
+## 2026-06-19 UX Sweep — Shipped
+
+Drove the real running app (clicking real flows, reading the console) to find
+usability bugs, generalized each to its CLASS, added a failing interactive-sweep
+assertion that guards the whole class, then fixed the ROOT CAUSE. 12 classes
+fixed across 13 fires, then two consecutive clean verification sweeps (fires 14
+& 15) with the full ladder green. Living log: `ux-sweep.md`.
+
+The 12 classes (each: bug → class → gate → root-cause fix, all verified live):
+1. **Destructive Delete had no confirmation** → shared `ConfirmButton`
+   (two-step arm→confirm) on both delete sites. (`eeb9de2`)
+2. **Modals couldn't be dismissed** (no Escape / backdrop) → one effect +
+   backdrop handler on the shared `WorkflowModal`. (`5b12e0f`)
+3. **Copy buttons gave no feedback / failed silently** → shared `CopyButton`
+   (Copied!/Copy failed + execCommand fallback), all 6 sites. (`bce9363`)
+4. **Over-filtered feed was a dead end** → `Clear filters` + result count +
+   `filtersActive`/`clearFilters`. (`052014c`)
+5. **Modals didn't manage focus** → focus-in + Tab-trap + restore-on-close in
+   `WorkflowModal`. (`44b025e`)
+6. **Unknown `?home=` silently showed a different plan** → not-found banner +
+   feed fallback + URL reset. (`d0effd2`)
+7. **Feed "Share" did nothing** → wired to copy the plan's deep-link via
+   `CopyButton`. (`518a5e3`)
+8. **Icon-only nav buttons had no accessible name** → aria-labels + a
+   scan-every-control gate. (`e0f84a7`)
+9. **Feed Share was a sub-24px touch target** → min hit area; feed-card mobile
+   tap-target gate. (`dea2e2b`)
+10. **Form fields had no programmatic labels** → aria-labels on brief/search +
+    6 filter selects; scan-every-field gate. (`7939d00`)
+11. **"Not found" banner went stale** across nav paths → cleared in one effect
+    when leaving the feed. (`6cfea7a`)
+12. **Generate double-fired** (state guard ≠ synchronous) → `useRef` guard on
+    both generate handlers; abort-the-POST double-submit gate. (`20a9b26`)
+
+Verification: fire 12 (lifecycle + filter combos), fire 14 (keyboard end-to-end,
+rapid-nav races, all modals/views, zero console errors), fire 15 (Repair patch
+validation, lifecycle buttons, nav re-render integrity) — all clean. Accepted
+tradeoff: dense plan-detail review chrome (`[repair]` chips, Compare/Semantic)
+stays below 24px touch on mobile — desktop-first surface; the customer feed is
+gated ≥24px.
+
+Note: fires 6–15 were driven via Playwright against the same live dev server
+(:3002) because the claude-in-chrome extension lost its localhost site
+permission on a Chrome restart; fires 1–5 used real Chrome. All fixes are
+additive (aria-labels, guards, shared UI components, QA hooks); deterministic
+sheet/3D/elevations/code + consistency lane + every data-* hook untouched.
 
 ## 2026-06-17 Responsive Design Pass — Shipped
 

@@ -258,6 +258,44 @@ Don't change these casually — each encodes a decision.
   perspective." Killed by the loop discipline (verify from the bug's angle).
 - **Loosening a gate to make a feature pass** — killed by P3.
 
+### UX-sweep era (2026-06-19) — usability/a11y anti-patterns
+
+Found only by DRIVING the live app and clicking at the angle a defect hides;
+each killed by a class-level interactive-sweep assertion + a root-cause fix.
+
+- **Destructive action on a single unconfirmed click** — Delete fired instantly.
+  Killed by a shared two-step `ConfirmButton` (fire 1).
+- **Overlay with no standard dismissal / no focus management** — modal ignored
+  Escape, backdrop click, and left focus on `<body>`. Killed by one effect on the
+  shared `WorkflowModal` (Escape + backdrop + focus-in/trap/restore) (fires 2, 5).
+- **Fire-and-forget side effect with no feedback, silent on failure** — copy
+  buttons used `navigator.clipboard?.writeText(...)` (the `?.` swallows failure).
+  Killed by a shared `CopyButton` (Copied!/Copy failed + execCommand fallback,
+  `data-copy-state`) (fire 3).
+- **Silent fallback that lies** — an unknown `?home=` id rendered a *different*
+  plan as if it were the requested one. Killed by surfacing a not-found notice +
+  feed fallback + URL reset (fire 6).
+- **Dead / false affordance** — a labeled control ("Share") that does nothing
+  though the app has the capability (deep-links). Killed by wiring it up (fire 7).
+- **Control with no accessible name; field labeled only by a placeholder** —
+  glyph-only nav arrows, six unlabeled filter selects. Killed by aria-labels +
+  *scan-every-control / scan-every-field* gates (fires 8, 10).
+- **Sub-24px touch target on a customer surface** — the feed Share link. Killed
+  by a min hit area + a feed-card mobile tap-target gate (fire 9).
+- **Transient UI state cleared by only one of several nav paths** — the
+  not-found banner went stale via the repair-from-card path. Killed by clearing
+  it in ONE effect when leaving the feed (fire 11).
+- **Double-submit guarded only by React state** — state doesn't update within a
+  tick, so a synchronous/rapid double-click re-enters and fires the mutation
+  twice (duplicate plans). Killed by a synchronous `useRef` guard on both
+  generate handlers, gated by an abort-the-POST double-submit test (fire 13).
+
+Methodological lesson: the interactive sweep can assert whole-class invariants by
+*scanning* the live DOM (every interactive control has an accessible name; every
+form field has a label; every feed-card control is ≥24px on mobile; a synchronous
+double-click yields exactly one POST) — not just per-element spot checks. That is
+how a single gate guards the class, not the instance.
+
 ---
 
 ## 6. The "keep it alive" rubric
