@@ -41,7 +41,12 @@ _(updated each fire)_
       via search + the shared clear).
 - [ ] Drive card Open / Repair actions and New Plan Handoff.
 - [ ] Confirm no other destructive/irreversible action fires on a single click
-      (audit every onClick that mutates/deletes/exports/navigates-away).
+      (audit every onClick that mutates/deletes/exports/navigates-away). Audited
+      fire 7: Import is idempotent; only the dev-only Review-Tools generate lacks
+      a double-submit busy guard (low priority).
+- [ ] Plan-detail dense review chrome on mobile: `[repair]` status chips (~14px)
+      and Compare/Semantic (~23px) are under the 24px touch minimum. Deliberate
+      desktop-density tradeoff for now; revisit if mobile review becomes a goal.
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
@@ -235,4 +240,24 @@ _(bug → class → test → root-cause fix → commit)_
   (was 2); clicking "Next plan" by its accessible name navigates
   (gen-001 → loft-showcase). Artifact:
   `artifacts/customer-readiness/ux-fire8-aria-nav.png`.
+- **Commit:** `e0f84a7`
+
+### Fire 9 — feed "Share" was a sub-24px touch target on mobile
+- **Bug (found by measuring at 390px):** the fire-7 Share button was a borderless
+  text link with no hit padding — 33×17px, under the 24px WCAG 2.5.8 minimum, so
+  it's a hard tap target on phones. (Also checked: focus-visible ring present —
+  good; all images have alt — good. Driven via Playwright; claude-in-chrome still
+  unreachable.)
+- **Class:** _customer-facing touch targets under 24px on mobile (WCAG 2.5.8)._
+  Scoped to the home feed (the primary browse surface); the dense plan-detail
+  review chrome (`[repair]` status chips ~14px, Compare/Semantic ~23px) is a
+  deliberate desktop-density tradeoff — logged in Backlog, not forced.
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4g) —
+  at 390px, every interactive control inside a `[data-feed-card]` is ≥24px tall.
+- **Root-cause fix:** gave the Share `CopyButton` a min hit area
+  (`min-h-[24px] py-1 -my-1 inline-flex items-center`) — 17→25px tall — without
+  growing the engagement-bar row (negative margin absorbs the padding).
+- **Verified (Playwright, 390px):** no feed-card control under 24px (was 6 Share
+  at 17px); Share now 33×25 and still copies the link. Artifact:
+  `artifacts/customer-readiness/ux-fire9-tap-targets.png`.
 - **Commit:** _(pending — after gates + gates:live green)_

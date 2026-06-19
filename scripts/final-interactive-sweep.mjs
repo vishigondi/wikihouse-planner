@@ -339,6 +339,26 @@ const namelessDetail = await scanNameless();
 note(namelessHome.length === 0 && namelessDetail.length === 0,
   `every control has an accessible name (home ${namelessHome.length} [${namelessHome.join(',')}], detail ${namelessDetail.length} [${namelessDetail.join(',')}])`);
 
+// (4g) feed-card action controls stay comfortably tappable on mobile. Class: a
+// touch target under 24px tall (WCAG 2.5.8) is hard to hit. Scope: the
+// customer-facing feed (the dense desktop review chrome is a separate density
+// tradeoff, logged in ux-sweep). Assert every interactive control inside a feed
+// card is >= 24px tall at 390px (gates assert MORE).
+await page.setViewportSize({ width: 390, height: 844 });
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+const smallFeedTargets = await page.evaluate(() => {
+  const out = [];
+  for (const el of document.querySelectorAll('[data-feed-card] button, [data-feed-card] a[href], [data-feed-card] [role="button"]')) {
+    const r = el.getBoundingClientRect();
+    if (r.height > 0 && r.height < 24) out.push(`${(el.textContent || '').trim().slice(0, 8)}:${Math.round(r.height)}`);
+  }
+  return out;
+});
+note(smallFeedTargets.length === 0,
+  `feed-card controls are tappable on mobile (sub-24px: ${smallFeedTargets.length} [${smallFeedTargets.slice(0, 6).join(',')}])`);
+await page.setViewportSize({ width: 1600, height: 1000 });
+
 // (5) landing brief box: live parse echo + ignored-word honesty
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(6000);

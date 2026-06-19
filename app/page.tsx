@@ -4397,7 +4397,7 @@ function FeedCard({ home, index, lifecycle, deletable, onOpen, onRepair, onDelet
             copiedLabel="Link copied!"
             title={`Copy a shareable link to ${home.id}`}
             dataAttr={{ 'data-feed-action': 'share' }}
-            className="text-[11px] text-stone-500 hover:text-stone-800 hover:underline"
+            className="-my-1 inline-flex min-h-[24px] items-center py-1 text-[11px] text-stone-500 hover:text-stone-800 hover:underline"
           />
         </div>
         <div className="flex gap-1.5">
