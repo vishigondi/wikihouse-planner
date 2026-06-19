@@ -569,3 +569,14 @@ new bug restarts the normal find→class→gate→fix cycle.
   remains).
 - **Result:** no bug — the create→share→open chain (fires 1/13 + 7 + 6 + 20)
   coheres end-to-end. No app-code change; gates green by identity.
+
+### Fire 29 — clean (New Plan reference selector re-bases the prompt)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** the
+  New Plan Handoff modal's reference-plan `<select>` — changed it gen-001 →
+  a-frame-bunk and compared the copied prompt. The "Selected baseline" section
+  updates correctly (`planId: gen-001` → `planId: a-frame-bunk`; prompts differ).
+  Changing the reference also navigates the underlying selected plan (URL →
+  `?home=a-frame-bunk`, modal stays open) — by-design coupling (baseline = the
+  selected plan), not a dead control.
+- **Result:** no bug — the reference selector is functional and the prompt
+  reflects the chosen baseline. No app-code change; gates green by identity.
