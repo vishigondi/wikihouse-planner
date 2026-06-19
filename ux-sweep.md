@@ -260,4 +260,25 @@ _(bug → class → test → root-cause fix → commit)_
 - **Verified (Playwright, 390px):** no feed-card control under 24px (was 6 Share
   at 17px); Share now 33×25 and still copies the link. Artifact:
   `artifacts/customer-readiness/ux-fire9-tap-targets.png`.
+- **Commit:** `dea2e2b`
+
+### Fire 10 — form fields had no programmatic labels
+- **Bug (found by scanning):** on the home feed, 8 form fields had no
+  accessible name — the brief box and search box were labelled only by a
+  placeholder (which disappears on input and isn't a label), and all SIX filter
+  selects (bed/bath/sqft/levels/roof/status) had no label at all. A screen-reader
+  user tabbing the filter row hears "combo box" with no purpose. (Detail page was
+  already clean after fire 8. Driven via Playwright; claude-in-chrome still
+  unreachable.)
+- **Class:** _form fields without a programmatic label (WCAG 3.3.2 / 4.1.2;
+  placeholder ≠ label)._
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4h) —
+  no visible input/select/textarea on home or detail may lack a name from
+  aria-label / aria-labelledby / a wrapping or `for=` `<label>` / title.
+- **Root-cause fix:** added descriptive `aria-label`s — "Describe your home in
+  one line", "Search plans", and "Filter by bedrooms/bathrooms/square feet/
+  levels/roof type/status".
+- **Verified (Playwright, live :3002):** unlabeled-field count home 0 / detail 0
+  (was 8 on home); all eight names present. Artifact:
+  `artifacts/customer-readiness/ux-fire10-form-labels.png`.
 - **Commit:** _(pending — after gates + gates:live green)_

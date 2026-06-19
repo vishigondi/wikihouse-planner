@@ -359,6 +359,37 @@ note(smallFeedTargets.length === 0,
   `feed-card controls are tappable on mobile (sub-24px: ${smallFeedTargets.length} [${smallFeedTargets.slice(0, 6).join(',')}])`);
 await page.setViewportSize({ width: 1600, height: 1000 });
 
+// (4h) every visible form field has a programmatic label. Class: a field labelled
+// only by a placeholder (or nothing) is unnamed for assistive tech — the search
+// box, brief box, and six filter selects had no label. Assert no visible
+// input/select/textarea on either surface lacks a name from aria-label /
+// aria-labelledby / a wrapping or for= <label> / title (gates assert MORE).
+const scanUnlabeled = () => page.evaluate(() => {
+  const out = [];
+  for (const f of document.querySelectorAll('input, select, textarea')) {
+    if (f.type === 'hidden') continue;
+    if (f.offsetParent === null && f.getClientRects().length === 0) continue;
+    const id = f.getAttribute('id');
+    const named = !!(
+      (f.getAttribute('aria-label') || '').trim() ||
+      f.getAttribute('aria-labelledby') ||
+      f.closest('label') ||
+      (id && document.querySelector(`label[for="${CSS.escape(id)}"]`)) ||
+      (f.getAttribute('title') || '').trim()
+    );
+    if (!named) out.push(`${f.tagName.toLowerCase()}${f.type ? '/' + f.type : ''}`);
+  }
+  return out;
+});
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+const unlabeledHome = await scanUnlabeled();
+await page.goto(`${BASE}/?home=gen-001`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+const unlabeledDetail = await scanUnlabeled();
+note(unlabeledHome.length === 0 && unlabeledDetail.length === 0,
+  `every form field has a label (home ${unlabeledHome.length} [${unlabeledHome.join(',')}], detail ${unlabeledDetail.length} [${unlabeledDetail.join(',')}])`);
+
 // (5) landing brief box: live parse echo + ignored-word honesty
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(6000);

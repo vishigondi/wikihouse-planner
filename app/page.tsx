@@ -4011,6 +4011,7 @@ function GalleryBriefGenerate() {
           }}
           onKeyDown={(event) => { if (event.key === 'Enter' && !busy) generate(); }}
           placeholder="Describe it: 2-bed A-frame, ≤800 sqft, 40×60 lot, 5 ft side setbacks"
+          aria-label="Describe your home in one line"
           data-home-brief-input
           className="flex-1 border border-stone-300 bg-white px-3 py-2.5 font-mono text-xs text-stone-800 outline-none focus:border-stone-500"
         />
@@ -4208,36 +4209,37 @@ function ProductGallery({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search plans, features, size..."
+          aria-label="Search plans"
           data-filter-search
           className="col-span-2 border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700 outline-none focus:border-stone-400 sm:col-span-3"
         />
-        <select value={bedFilter} onChange={(event) => setBedFilter(event.target.value)} className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
+        <select value={bedFilter} onChange={(event) => setBedFilter(event.target.value)} aria-label="Filter by bedrooms" className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
           {bedOptions.map((option) => (
             <option key={option} value={option}>{option === 'all' ? 'All bed/bath' : `${option} bed plans`}</option>
           ))}
         </select>
-        <select value={bathFilter} onChange={(event) => setBathFilter(event.target.value)} className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
+        <select value={bathFilter} onChange={(event) => setBathFilter(event.target.value)} aria-label="Filter by bathrooms" className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
           {bathOptions.map((option) => (
             <option key={option} value={option}>{option === 'all' ? 'All baths' : `${option} bath plans`}</option>
           ))}
         </select>
-        <select value={sqftFilter} onChange={(event) => setSqftFilter(event.target.value)} className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
+        <select value={sqftFilter} onChange={(event) => setSqftFilter(event.target.value)} aria-label="Filter by square feet" className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
           <option value="all">All square feet</option>
           <option value="under-500">Under 500 sf</option>
           <option value="500-1000">500-1000 sf</option>
           <option value="1000-plus">1000+ sf</option>
         </select>
-        <select value={levelFilter} onChange={(event) => setLevelFilter(event.target.value)} className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
+        <select value={levelFilter} onChange={(event) => setLevelFilter(event.target.value)} aria-label="Filter by levels" className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
           {levelOptions.map((option) => (
             <option key={option} value={option}>{option === 'all' ? 'All levels' : `${option} level`}</option>
           ))}
         </select>
-        <select value={roofFilter} onChange={(event) => setRoofFilter(event.target.value)} className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
+        <select value={roofFilter} onChange={(event) => setRoofFilter(event.target.value)} aria-label="Filter by roof type" className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
           {roofOptions.map((option) => (
             <option key={option} value={option}>{option === 'all' ? 'All roof types' : `${option} roof`}</option>
           ))}
         </select>
-        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
+        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter by status" className="border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
           {['all', 'blocked', 'review', 'promoted', 'exported'].map((option) => (
             <option key={option} value={option}>{option === 'all' ? 'All statuses' : option}</option>
           ))}
