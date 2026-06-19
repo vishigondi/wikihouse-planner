@@ -4623,6 +4623,14 @@ export default function Home() {
     };
   }, [refreshCount, selectedHomeId]);
 
+  // The "plan not found" banner is a feed-only, transient notice. Clear it the
+  // moment the user views any real plan (every nav path leaves the gallery), so
+  // it can't go stale and reappear when they return to the feed. One place
+  // covers selectHome / repair-from-gallery / prev-next / resume.
+  useEffect(() => {
+    if (!showGallery) setNotFoundId(null);
+  }, [showGallery]);
+
   const selectHome = useCallback((id: string) => {
     setSelectedHomeId(id);
     setShowGallery(false);

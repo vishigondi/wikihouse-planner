@@ -281,4 +281,29 @@ _(bug → class → test → root-cause fix → commit)_
 - **Verified (Playwright, live :3002):** unlabeled-field count home 0 / detail 0
   (was 8 on home); all eight names present. Artifact:
   `artifacts/customer-readiness/ux-fire10-form-labels.png`.
+- **Commit:** `7939d00`
+
+### Fire 11 — the "plan not found" banner went stale (transient state leak)
+- **Bug (found by driving):** after a bogus `?home=` showed the not-found banner
+  (fire 6), clicking a feed card's **Repair** navigated to that plan and opened
+  the repair modal correctly — but returning to the feed ("Browse Plans") showed
+  the not-found banner AGAIN, stale, for a plan the user had since opened.
+  `selectHome` cleared `notFoundId` (fire 6) but `repairHomeFromGallery` (and the
+  prev/next/resume paths) did not. (Driven via Playwright; claude-in-chrome still
+  unreachable.)
+- **Class:** _transient, surface-scoped UI state not cleared by every path that
+  resolves it_ (the banner is feed-only but only one of several nav paths cleared
+  it).
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4d
+  follow-on) — after the not-found banner, drive the previously-broken
+  repair-from-card path (card Repair → close → Browse Plans) and assert the
+  banner is gone.
+- **Root-cause fix:** one effect — `useEffect(() => { if (!showGallery)
+  setNotFoundId(null); }, [showGallery])` — clears the banner the moment the user
+  views any real plan, covering ALL nav paths (select / repair / prev-next /
+  resume) in a single place instead of per-handler.
+- **Verified (Playwright, live :3002):** banner present after bogus link → 0
+  after the repair path + return (was 1); Open path also clears; repair modal
+  still opens; no console errors. Artifact:
+  `artifacts/customer-readiness/ux-fire11-notfound-transient.png`.
 - **Commit:** _(pending — after gates + gates:live green)_

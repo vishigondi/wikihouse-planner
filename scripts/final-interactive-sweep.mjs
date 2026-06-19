@@ -297,6 +297,19 @@ const detailShown = await page.locator('button', { hasText: /^Export$/ }).count(
 note(notFoundShown >= 1 && /zzz-no-such-plan-zzz/.test(notFoundText) && feedShown >= 1 && detailShown === 0,
   `unknown deep-link is surfaced, not swapped (notice ${notFoundShown}, names-id ${/zzz-no-such-plan-zzz/.test(notFoundText)}, feed ${feedShown}, detail ${detailShown})`);
 
+// The not-found notice is transient: once the user opens any real plan it must
+// not linger and reappear on return to the feed. This was leaking specifically
+// via the repair-from-card path (selectHome cleared it; repair did not). Drive
+// that exact path: card Repair -> close -> Browse Plans -> notice is gone.
+await page.locator('[data-feed-card] button', { hasText: /^Repair$/ }).first().click().catch(() => {});
+await page.waitForTimeout(1500);
+await page.keyboard.press('Escape');
+await page.waitForTimeout(400);
+await page.locator('button', { hasText: /^Browse Plans$/ }).first().click().catch(() => {});
+await page.waitForTimeout(1200);
+const notFoundStale = await page.locator('[data-plan-not-found]').count();
+note(notFoundStale === 0, `not-found notice clears after the repair-from-card path (stale ${notFoundStale})`);
+
 // (4e) the feed-card "Share" affordance actually shares: it copies a working
 // deep-link to that plan (not a dead label). Class: a labeled control that
 // implies a real capability (the app HAS shareable ?home= links, hardened in
