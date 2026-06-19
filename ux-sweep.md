@@ -627,3 +627,13 @@ new bug restarts the normal find→class→gate→fix cycle.
   header "Resume <id>" button returns to the active plan. No console errors.
 - **Result:** no bug — boundary wrap-around and Resume both behave. No app-code
   change; gates green by identity.
+
+### Fire 35 — clean (Import via file upload)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** the
+  Import modal's "Choose File" input (prior fires only pasted into the textarea) —
+  uploaded gen-001's real paired `.json`. Result: the file content loads into the
+  textarea (22,557 chars) and Import Draft → "imported draft into current plan",
+  no console errors, disk untouched (client-state import). Last untested input
+  path confirmed working.
+- **Result:** no bug — file-upload import works end-to-end. No app-code change;
+  gates green by identity.
