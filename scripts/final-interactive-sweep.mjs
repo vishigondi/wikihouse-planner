@@ -297,6 +297,23 @@ const detailShown = await page.locator('button', { hasText: /^Export$/ }).count(
 note(notFoundShown >= 1 && /zzz-no-such-plan-zzz/.test(notFoundText) && feedShown >= 1 && detailShown === 0,
   `unknown deep-link is surfaced, not swapped (notice ${notFoundShown}, names-id ${/zzz-no-such-plan-zzz/.test(notFoundText)}, feed ${feedShown}, detail ${detailShown})`);
 
+// (4e) the feed-card "Share" affordance actually shares: it copies a working
+// deep-link to that plan (not a dead label). Class: a labeled control that
+// implies a real capability (the app HAS shareable ?home= links, hardened in
+// 4d) must perform it, with feedback (gates assert MORE).
+await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForTimeout(4000);
+const shareBtn = page.locator('[data-feed-action="share"]').first();
+const shareIsButton = await shareBtn.evaluate((el) => el.tagName === 'BUTTON').catch(() => false);
+const shareBefore = await shareBtn.getAttribute('data-copy-state').catch(() => null);
+await shareBtn.click().catch(() => {});
+await page.waitForTimeout(300);
+const shareAfter = await shareBtn.getAttribute('data-copy-state').catch(() => null);
+const shareLabel = ((await shareBtn.textContent()) ?? '').trim();
+const clip = await page.evaluate(() => navigator.clipboard.readText().catch(() => '')).catch(() => '');
+note(shareIsButton && shareBefore === 'idle' && shareAfter === 'copied' && /\/\?home=/.test(clip),
+  `feed Share copies a deep-link (button ${shareIsButton}, state ${shareBefore}->${shareAfter}, "${shareLabel}", clip ${/\/\?home=/.test(clip) ? clip.slice(-32) : 'no-link'})`);
+
 // (5) landing brief box: live parse echo + ignored-word honesty
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(6000);

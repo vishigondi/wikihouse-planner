@@ -185,4 +185,32 @@ _(bug → class → test → root-cause fix → commit)_
   shown, no detail, URL reset to `/`; Dismiss works; valid id (gen-001) still
   loads its own detail; no console errors. Artifact:
   `artifacts/customer-readiness/ux-fire6-deeplink-notfound.png`.
+- **Commit:** `d0effd2`
+
+### Fire 7 — the feed-card "Share" affordance did nothing
+- **Bug (found by driving):** the home feed is styled as a social feed with
+  Like / Comment / Share on every card. "Share" was a dead `<span>` — clicking it
+  did nothing — even though the app HAS real shareable `?home=` deep-links (just
+  hardened in fire 6). A user wanting to send a plan to a client clicks Share and
+  gets nothing. (Drove the broader surface too — Export downloads, New Plan
+  handoff, Repair, plan-selector dropdown URL-sync, double-submit guards,
+  generation of extreme briefs — all robust; Share was the one dead control.
+  Driven via Playwright; the claude-in-chrome extension is still unreachable
+  post-restart — see note to re-grant localhost permission.)
+- **Class:** _a labeled control that implies a capability the app actually has
+  must perform it (no dead/false affordances)._
+- **Failing assertion added (gates assert MORE):** interactive sweep step (4e) —
+  the feed-card `[data-feed-action="share"]` is a real button that, on click,
+  copies a working `/?home=<id>` deep-link to the clipboard and confirms ("Link
+  copied!", `data-copy-state="copied"`).
+- **Root-cause fix:** replaced the dead Share span with the shared `CopyButton`
+  (fire 3) wired to copy `${origin}/?home=${home.id}`; extended `CopyButton` with
+  optional `copiedLabel` ("Link copied!") and pass-through `dataAttr` so the
+  `data-feed-action="share"` hook is preserved. Like/Comment stay decorative
+  (they map to no real capability; Share does).
+- **Verified (Playwright, live :3002):** Share is a button; click → state
+  idle→copied, "Link copied!", clipboard = `…/?home=a-frame-bunk`; all 6 cards
+  shareable; no console errors. The shared link is exactly the kind fire 6
+  hardened (a stale link shows the not-found notice). Artifact:
+  `artifacts/customer-readiness/ux-fire7-share-link.png`.
 - **Commit:** _(pending — after gates + gates:live green)_

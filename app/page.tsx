@@ -1876,13 +1876,17 @@ function brochureHtmlForHome(
 function CopyButton({
   text,
   idleLabel = 'Copy',
+  copiedLabel = 'Copied!',
   className,
   title,
+  dataAttr,
 }: {
   text: string | (() => string);
   idleLabel?: string;
+  copiedLabel?: string;
   className: string;
   title?: string;
+  dataAttr?: Record<string, string>;
 }) {
   const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
   useEffect(() => {
@@ -1911,9 +1915,9 @@ function CopyButton({
       setState('failed');
     }
   };
-  const label = state === 'copied' ? 'Copied!' : state === 'failed' ? 'Copy failed' : idleLabel;
+  const label = state === 'copied' ? copiedLabel : state === 'failed' ? 'Copy failed' : idleLabel;
   return (
-    <button type="button" title={title} data-copy-state={state} onClick={copy} className={className}>
+    <button type="button" title={title} data-copy-state={state} {...dataAttr} onClick={copy} className={className}>
       {label}
     </button>
   );
@@ -4384,10 +4388,17 @@ function FeedCard({ home, index, lifecycle, deletable, onOpen, onRepair, onDelet
       </div>
       {/* engagement bar + actions */}
       <div className="flex items-center justify-between gap-2 border-t border-stone-200 px-3 py-2 text-[11px] text-stone-500" data-feed-engagement>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
           <span data-feed-action="like">Like</span>
           <span data-feed-action="comment">Comment</span>
-          <span data-feed-action="share">Share</span>
+          <CopyButton
+            text={() => `${window.location.origin}/?home=${home.id}`}
+            idleLabel="Share"
+            copiedLabel="Link copied!"
+            title={`Copy a shareable link to ${home.id}`}
+            dataAttr={{ 'data-feed-action': 'share' }}
+            className="text-[11px] text-stone-500 hover:text-stone-800 hover:underline"
+          />
         </div>
         <div className="flex gap-1.5">
           {deletable && (
