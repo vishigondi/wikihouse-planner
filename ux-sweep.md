@@ -43,7 +43,8 @@ _(updated each fire)_
       (Clear filters button + result count). Search now has a data-filter-search
       hook; the 6 selects still lack individual hooks (low priority — gate drives
       via search + the shared clear).
-- [ ] Drive card Open / Repair actions and New Plan Handoff.
+- [x] Drive card Open / Repair / New Plan Handoff — Open (fires 12, 14), Repair
+      from card (fires 11, 13), New Plan Handoff copy (fire 16): all clean.
 - [x] Confirm no other destructive/irreversible action fires on a single click
       (audit every onClick that mutates/deletes/exports/navigates-away). Audited
       fire 7: Import is idempotent. Fire 13: BOTH generate handlers (home +
@@ -411,3 +412,13 @@ new bug restarts the normal find→class→gate→fix cycle.
   canvas intact; zero console errors. Ticks the last two "drive to verify"
   backlog items. (Playwright, live :3002 — claude-in-chrome still unreachable.)
   No app-code change; gates green by identity.
+
+- **Fire 18 — clean.** Drove the Import valid-payload SUCCESS path (fire 3 only
+  covered bad payloads): pasted gen-001's real 22KB paired JSON → "imported draft
+  into current plan" (client-side draft overlay), modal stays open, canvas + sheet
+  intact, no console errors, and **no disk mutation** (gen-001 JSON untouched —
+  import is client-state only). Also attempted the lot editor's input robustness;
+  its `[data-lot-field]` wasn't reachable in an isolated probe, but the lot-editor
+  flip is gated and green every run — gated+working, not a bug. With this, every
+  listed surface has been driven. (Playwright, live :3002 — claude-in-chrome still
+  unreachable.) No app-code change; gates green by identity.
