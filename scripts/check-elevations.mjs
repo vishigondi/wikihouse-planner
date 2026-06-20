@@ -116,6 +116,14 @@ const hipSq = compiled('2 bed hip roof, 40x60 lot, 5 ft setbacks');
 const hipSqFront = assertHonest('hip-square front', hipSq, 'front');
 check('hip square footprint still renders an honest elevation', hipSqFront.eaveFt < hipSqFront.ridgeFt);
 
+console.log('plan: fresh 2-bed gambrel (two-pitch gable end)');
+const gambrelPlan = compiled('2 bed gambrel, 40x60 lot, 5 ft setbacks');
+const gambrelFront = assertHonest('gambrel front', gambrelPlan, 'front');
+assertHonest('gambrel side', gambrelPlan, 'side');
+check('gambrel front face is the two-pitch gable end', Boolean(gambrelFront.gambrel) && gambrelFront.gambrel.knuckleHeightFt > gambrelFront.eaveFt && gambrelFront.gambrel.knuckleHeightFt < gambrelFront.ridgeFt, JSON.stringify(gambrelFront.gambrel));
+check('gambrel knuckle sits inset from both ends', gambrelFront.gambrel.knuckleStartFt > 0.5 && gambrelFront.gambrel.knuckleEndFt < gambrelFront.spanFt - 0.5);
+check('gambrel openings clamp under the ridge', gambrelFront.openings.every((o) => o.headFt <= gambrelFront.ridgeFt + 1e-6));
+
 console.log('plan: traced a-frame-22 (ridge along x, inset openings, loft level)');
 const { readFileSync } = await import('node:fs');
 const traced = JSON.parse(readFileSync(join(root, 'public/data/den-image-loop/a-frame-22/paired/a-frame-22-proposal-paired-v10.paired.json'), 'utf8'));

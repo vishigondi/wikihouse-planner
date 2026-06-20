@@ -48,14 +48,13 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
       R312 *verdict* — pass/advise on guard presence — remains a possible future
       add, but the geometry now satisfies the requirement.)
 - [ ] _(enhancement)_ Constructively implement the remaining roof styles —
-      **flat DONE (fire 14), shed DONE (fire 15), hip DONE (fire 16)**; next:
-      gambrel → barn — end-to-end (planes + elevations + clip + code), built not
-      refused. **GAMBREL next:** a two-pitch gable (steep lower slope, shallow
-      upper slope, like a barn roof but only on two sides) → 4 planes (2 per
-      side) meeting at a ridge; the gable-end elevation is a 5-sided polygon
-      (eave → knuckle → ridge → knuckle → eave). **BARN** = gambrel on all four
-      sides (gambrel : gable :: hip : ... ) — reuse the gambrel plane builder +
-      hip-style end treatment. Both reuse the ceiling/R305/clip machinery.
+      **flat (14), shed (15), hip (16), gambrel (17) DONE**; LAST: barn —
+      end-to-end. **BARN** = a gambrel hipped on all four sides (gambrel : gable
+      :: barn : hip): the two long sides are gambrel two-pitch planes; the two
+      ends are also two-pitch but hipped inward to the ridge. Reuse the gambrel
+      knuckle geometry + the hip ridge-inset; elevation: long side = 5-sided
+      gambrel end silhouette, end = a hipped two-pitch. Most complex; once done,
+      ALL 7 parser roof styles build → that part of the backlog is empty.
       **HIP build plan (scouted fire 15, next fire) — ONE model, degenerates:**
       ridge line along the LONGER axis, inset from each end by (shorter_dim / 2)
       (standard 45°-in-plan hip), at the footprint center, height ridgeH. FOUR
@@ -102,6 +101,36 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 17 — BUILD the gambrel roof (two-pitch gable)
+- **Capability:** the generator REFUSED `gambrel` roofs; now it BUILDS them.
+  `"2 bed gambrel, 40x60 lot"` → a sound, code-checked plan.
+- **One constructive model:** a gambrel is a two-pitch gable — per side a STEEP
+  lower plane (eave → knuckle) + a SHALLOW upper plane (knuckle → ridge) = four
+  planes. The knuckle sits a quarter of the width in from each side, ¾ of the way
+  up from eave (8) to ridge (16). Same plane machinery: `ceilingProfileForRect`
+  takes the min over the four planes, R305 passes (eave 8 → ceiling ≥ 8).
+- **Elevation:** the gable end is a 5-sided two-pitch silhouette (eave → knuckle
+  → ridge → knuckle → eave). Added `gambrel {knuckleStart,knuckleEnd,knuckleHeight}`
+  to the elevation model + a gambrel render branch in `elevationSvgString` (drawn
+  before the gable triangle). Long side reuses the facade (full-length ridge).
+  gable/a-frame/flat/shed/hip paths untouched → traced plans don't regress.
+- **Failing assertions FIRST (gates assert MORE):**
+  - `check:generation` — fire-10 "gambrel → refused" case became 3 positive cases
+    + a structural block: style gambrel, FOUR planes, the LOWER slope steeper than
+    the UPPER (the gambrel signature), single level, a 5-sided front silhouette,
+    R305 passes for every bedroom, zero constraint fails.
+  - `check:elevations` — gambrel front+side models build, the front is the
+    two-pitch end (knuckle between eave and ridge, inset from both sides),
+    openings clamp under the ridge.
+- **Plumbing:** `'gambrel'` added to the union + `BUILDABLE_ROOF_STYLES`;
+  `GAMBREL_EAVE/KNUCKLE/RIDGE_FT` (8/14/16); `mockIntentFromBrief` selects
+  gambrel + reuses gable footprints; `compileIntent` emits the four gambrel
+  planes + 5-point gable-end outline.
+- **Verified:** offline batteries green; live `POST /api/generate-plan` builds the
+  gambrel (was 422); render primitives = 0 offenders; full `gates` + `gates:live`
+  green. Throwaway gen-002 deleted.
+- **Commit:** _(pending push)_
 
 ### Fire 16 — BUILD the hip roof (four planes; pyramid on a square footprint)
 - **Capability:** the generator REFUSED `hip` roofs; now it BUILDS them, for both

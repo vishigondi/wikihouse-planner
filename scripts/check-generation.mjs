@@ -187,10 +187,15 @@ const CASES = [
   { name: 'maxSqft cap below smallest template (a-frame)', brief: '2 bed a-frame, ≤600 sqft', expectCompileError: /exceeds the requested ≤600 sq ft cap/i },
 
   // Roof-style honesty: a recognized style the generator does not BUILD must be
-  // REFUSED, never silently substituted. Flat + shed + hip ARE built now (blocks
-  // below); gambrel/barn are still refused until built.
-  { name: 'gambrel roof unsupported -> refused', brief: '2 bed gambrel, 60x80 lot, 10 ft setbacks', expectCompileError: /builds only .*roofs/i },
+  // REFUSED, never silently substituted. Flat + shed + hip + gambrel ARE built
+  // now (blocks below); barn is still refused until built.
   { name: 'barn roof unsupported -> refused', brief: '2 bed barn roof, 60x80 lot, 10 ft setbacks', expectCompileError: /builds only .*roofs/i },
+
+  // Gambrel roof — BUILT (fire 17): two-pitch gable (steep lower, shallow upper),
+  // four planes meeting at a ridge. style 'gambrel'; R305 passes (eave ≥ 7 ft).
+  { name: '2-bed gambrel', brief: '2 bed gambrel, 40x60 lot, 5 ft setbacks', bedrooms: 2, style: 'gambrel', hasLot: true, expectWidth: 28 },
+  { name: '3-bed gambrel', brief: '3 bed gambrel, 60x80 lot, 10 ft setbacks', bedrooms: 3, style: 'gambrel', hasLot: true, expectWidth: 36 },
+  { name: '1-bed gambrel, no lot', brief: '1 bed gambrel', bedrooms: 1, style: 'gambrel', hasLot: false, expectWidth: 28 },
 
   // Hip roof — BUILT (fire 16): four planes to a central ridge (a pyramid on a
   // square footprint). style 'hip'; R305 passes (eave runs around the whole
@@ -423,6 +428,28 @@ for (const [label, brief, expectSquare] of [['2-bed hip (square)', '2 bed hip ro
   }
   check(`${label}: zero constraint-fail findings`, hipReport.findings.filter((f) => f.status === 'fail').length === 0, hipReport.findings.filter((f) => f.status === 'fail').map((f) => f.ruleId).join(', '));
 }
+
+// --- Gambrel roof (fire 17): built, not refused -----------------------------
+// A gambrel is a two-pitch gable: a steep lower plane (eave -> knuckle) and a
+// shallow upper plane (knuckle -> ridge) per side = four planes. Eave 8 ft so
+// R305 passes; the gable end is a 5-sided silhouette.
+console.log('gambrel roof: a gambrel-roof brief builds a sound two-pitch plan');
+const gambrel = compileIntent(mockIntentFromBrief(parseBrief('2 bed gambrel, 40x60 lot, 5 ft setbacks')), 'battery-gambrel', 'gambrel roof');
+check('compiles cleanly', gambrel.ok, gambrel.errors.join('; '));
+check('roof style is gambrel', gambrel.artifact?.roof?.style === 'gambrel', gambrel.artifact?.roof?.style);
+check('gambrel has four roof planes (two per side)', (gambrel.artifact?.roof?.planes ?? []).length === 4, `${(gambrel.artifact?.roof?.planes ?? []).length} planes`);
+// The lower slope must be STEEPER than the upper slope (the gambrel signature).
+const gPlanes = gambrel.artifact?.roof?.planes ?? [];
+const slopeOf = (id) => { const p = gPlanes.find((q) => q.id === id); if (!p) return 0; const ys = p.points.map((pt) => pt.y); const xs = p.points.map((pt) => pt.x); return (Math.max(...ys) - Math.min(...ys)) / Math.max(1e-6, Math.max(...xs) - Math.min(...xs)); };
+check('gambrel lower slope is steeper than the upper slope', slopeOf('roof-plane-west-lower') > slopeOf('roof-plane-west-upper'), `${slopeOf('roof-plane-west-lower').toFixed(2)} vs ${slopeOf('roof-plane-west-upper').toFixed(2)}`);
+check('gambrel stays single level', gambrel.artifact?.footprint?.levels !== 2);
+const gFront = (gambrel.artifact?.elevations ?? []).find((e) => e.view === 'front');
+check('gambrel front elevation is a 5-sided two-pitch silhouette', (gFront?.outline ?? []).length === 5, `${(gFront?.outline ?? []).length} pts`);
+const gReport = reportForArtifact(gambrel.artifact);
+for (const bed of gambrel.artifact.rooms.filter((r) => r.type === 'bedroom')) {
+  check(`gambrel ${bed.id} R305 passes`, statusOf(gReport, 'IRC-R305.1', bed.id) === 'pass', statusOf(gReport, 'IRC-R305.1', bed.id));
+}
+check('gambrel has zero constraint-fail findings', gReport.findings.filter((f) => f.status === 'fail').length === 0, gReport.findings.filter((f) => f.status === 'fail').map((f) => f.ruleId).join(', '));
 
 console.log('loft: a roof with no headroom degrades honestly (no loft built)');
 // Direct intent with a near-flat roof: buildLoft must refuse rather than fake

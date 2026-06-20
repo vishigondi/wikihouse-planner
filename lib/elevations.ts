@@ -89,6 +89,10 @@ export interface ElevationModel {
    * On a square footprint start == end -> the trapezoid collapses to a triangle
    * (pyramid). */
   hipTrapezoid: { ridgeStartFt: number; ridgeEndFt: number } | null;
+  /** For a gambrel roof's gable-end face: the two-pitch silhouette breaks at a
+   * knuckle (knuckleHeightFt) located knuckleStartFt / knuckleEndFt along the
+   * span; the ridge is at the center. Null otherwise. */
+  gambrel: { knuckleStartFt: number; knuckleEndFt: number; knuckleHeightFt: number } | null;
   openings: ElevationOpening[];
 }
 
@@ -218,6 +222,11 @@ export function buildElevationModel(artifact: ElevationArtifactInput, side: 'fro
   const hipTrapezoid = roof.style === 'hip' && !gableFacing
     ? { ridgeStartFt: hipInset, ridgeEndFt: Math.max(hipInset, spanFt - hipInset) }
     : null;
+  // A gambrel's gable end is a two-pitch silhouette: the knuckle sits a quarter
+  // of the span in from each side, three-quarters up from eave to ridge.
+  const gambrel = roof.style === 'gambrel' && gableFacing
+    ? { knuckleStartFt: spanFt / 4, knuckleEndFt: (spanFt * 3) / 4, knuckleHeightFt: eaveFt + (ridgeFt - eaveFt) * 0.75 }
+    : null;
 
   openings.sort((lhs, rhs) => lhs.center - rhs.center);
   return {
@@ -232,6 +241,7 @@ export function buildElevationModel(artifact: ElevationArtifactInput, side: 'fro
     monoPitch,
     monoPitchHighAtStart,
     hipTrapezoid,
+    gambrel,
     openings,
   };
 }
@@ -271,6 +281,15 @@ export function elevationSvgString(model: ElevationModel): string {
     const re = model.hipTrapezoid.ridgeEndFt;
     parts.push(`<polygon points="${X(0)},${Y(0)} ${X(model.spanFt)},${Y(0)} ${X(model.spanFt)},${Y(model.eaveFt)} ${X(re)},${Y(model.ridgeFt)} ${X(rs)},${Y(model.ridgeFt)} ${X(0)},${Y(model.eaveFt)}" fill="#f2eee7" stroke="#3d3933" stroke-width="1.4"/>`);
     parts.push(`<polyline points="${X(-ov)},${Y(model.eaveFt)} ${X(rs)},${Y(model.ridgeFt)} ${X(re)},${Y(model.ridgeFt)} ${X(model.spanFt + ov)},${Y(model.eaveFt)}" fill="none" stroke="#26231f" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`);
+  } else if (model.gambrel) {
+    // Gambrel gable end: two-pitch silhouette — eave -> knuckle -> ridge ->
+    // knuckle -> eave (steep lower slope, shallow upper slope).
+    const ks = model.gambrel.knuckleStartFt;
+    const ke = model.gambrel.knuckleEndFt;
+    const kh = model.gambrel.knuckleHeightFt;
+    const apexX = X(model.spanFt / 2);
+    parts.push(`<polygon points="${X(0)},${Y(0)} ${X(model.spanFt)},${Y(0)} ${X(model.spanFt)},${Y(model.eaveFt)} ${X(ke)},${Y(kh)} ${apexX},${Y(model.ridgeFt)} ${X(ks)},${Y(kh)} ${X(0)},${Y(model.eaveFt)}" fill="#f2eee7" stroke="#3d3933" stroke-width="1.4"/>`);
+    parts.push(`<polyline points="${X(-ov)},${Y(model.eaveFt)} ${X(ks)},${Y(kh)} ${apexX},${Y(model.ridgeFt)} ${X(ke)},${Y(kh)} ${X(model.spanFt + ov)},${Y(model.eaveFt)}" fill="none" stroke="#26231f" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`);
   } else if (model.gableFacing) {
     // Gable face: wall polygon rises to the ridge; roof edge with overhang.
     const apexX = X(model.spanFt / 2);
