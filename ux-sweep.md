@@ -768,3 +768,10 @@ new bug restarts the normal find→class→gate→fix cycle.
 - **Result:** fire-50 milestone — the entire hardened envelope (all 17 fixed
   classes + responsive 320→1440 + every plan/modal) confirmed green. 25
   consecutive clean sweeps; app byte-identical since fire 25.
+
+### Fire 51 — clean (input honesty: bad import error)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** pasted
+  invalid JSON into Import → Import Draft. A clear parse error surfaces (not a
+  silent failure), modal stays open; no console errors.
+- **Result:** no regression — input honesty (principle 5) holds. No app-code
+  change; gates green by identity.
