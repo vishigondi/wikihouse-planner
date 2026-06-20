@@ -47,10 +47,11 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
       guard + flag baluster spacing/attachment as shop-drawing scope. (An engine
       R312 *verdict* — pass/advise on guard presence — remains a possible future
       add, but the geometry now satisfies the requirement.)
-- [ ] _(enhancement)_ Constructively implement the other roof styles (shed/flat/
-      hip/barn/gambrel) end-to-end (planes + elevations + clip + code) so they're
-      built, not just refused (fire 10 made the refusal honest; the constructive
-      model is the bigger win — each needs real massing geometry, gate carefully).
+- [ ] _(enhancement)_ Constructively implement the remaining roof styles —
+      **flat DONE (fire 14)**; next: shed → hip → gambrel → barn — end-to-end
+      (planes + elevations + clip + code), built not refused. Each reuses the
+      plane-fit / clip / ceiling-profile / elevation machinery; shed is the next
+      simplest (single slope: ridge on one edge, eave on the other).
 - [ ] _(enhancement)_ Truly synthesize N-bedroom layouts (4+) in the deterministic
       generator so large briefs are honored, not just refused (fire 1 made the
       refusal honest). Needs room-packing + walls/doors/windows/dims/code-check
@@ -77,6 +78,37 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 14 — BUILD the flat roof (first constructive-frontier capability)
+- **Capability:** the generator REFUSED `flat` roofs (fire 10 made the refusal
+  honest); now it BUILDS them. `"2 bed flat roof, 40x60 lot"` → a sound,
+  code-checked single-level plan instead of a 422.
+- **One constructive model, reusing the a-frame/gable machinery:** a flat roof
+  is ONE horizontal `roof-plane` at a constant height (ridge == eave == 9 ft) —
+  fed through the SAME `planeEquation` / `ceilingProfileForRect` (R305) / clip /
+  `buildElevationModel` paths, with no rise. No special-case branch in the
+  geometry consumers; they degenerate correctly (the elevation renders a
+  flat-topped box; the ceiling profile is constant). Reuses the gable footprint
+  set (flat has uniform full headroom, the most permissive) and the whole room/
+  fixture/egress layout — so bedroom windows are still `egress`, fixtures
+  complete, rooms reachable (all prior fixes carry over).
+- **Failing assertions FIRST (gates assert MORE):**
+  - `check:generation` — converted the fire-10 "flat → refused" case into 3
+    positive cases (2/3/1-bed flat) + a structural block: roof.style flat, EXACTLY
+    one horizontal plane (ridge==eave), single level, ≥3-pt elevation outlines,
+    R305 passes on the flat ceiling for every bedroom, zero constraint fails.
+  - `check:elevations` — a flat-roof front+side model builds, openings clamp
+    under the flat roofline, ridge==eave, SVG renders.
+- **Geometry/plumbing:** added `'flat'` to the roof-style union +
+  `BUILDABLE_ROOF_STYLES`; `mockIntentFromBrief` selects flat + sets
+  ridge=eave=`FLAT_ROOF_HEIGHT_FT` (9); `compileIntent` emits the single flat
+  plane + `front-flat`/`side-flat` slab outlines; the refusal message now lists
+  the buildable set with an Oxford comma (shed/hip/gambrel still refused).
+- **Verified:** offline R305 + structural battery green; live `POST
+  /api/generate-plan` builds the flat plan (was 422); render primitives = 0
+  offenders, all layers valid; full `gates` + `gates:live` green. Throwaway
+  gen-002 deleted.
+- **Commit:** _(pending push)_
 
 ### Fire 13 — clean (drove dimensions, fixtures, loft+guard, connectivity, extremes)
 - **Drove 5 hard angles, all sound — no real defect:**

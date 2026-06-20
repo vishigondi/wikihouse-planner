@@ -186,14 +186,19 @@ const CASES = [
   { name: 'maxSqft cap below smallest template (gable)', brief: '2 bed gable, ≤500 sqft', expectCompileError: /exceeds the requested ≤500 sq ft cap/i },
   { name: 'maxSqft cap below smallest template (a-frame)', brief: '2 bed a-frame, ≤600 sqft', expectCompileError: /exceeds the requested ≤600 sq ft cap/i },
 
-  // Roof-style honesty: the deterministic generator builds only a-frame and
-  // gable. A brief requesting any other recognized style (hip/flat/shed/barn/
-  // gambrel) must be REFUSED, never silently substituted with an a-frame — the
-  // user asked for a flat roof and would otherwise receive an 18 ft ridge.
-  { name: 'shed roof unsupported -> refused', brief: '2 bed shed roof, 40x60 lot, 5 ft setbacks', expectCompileError: /builds only a-frame and gable/i },
-  { name: 'flat roof unsupported -> refused', brief: '2 bed flat roof, 60x80 lot, 10 ft setbacks', expectCompileError: /builds only a-frame and gable/i },
-  { name: 'hip roof unsupported -> refused', brief: '3 bed hip roof, 80x60 lot, 10 ft setbacks', expectCompileError: /builds only a-frame and gable/i },
-  { name: 'gambrel roof unsupported -> refused', brief: '2 bed gambrel, 60x80 lot, 10 ft setbacks', expectCompileError: /builds only a-frame and gable/i },
+  // Roof-style honesty: a recognized style the generator does not BUILD must be
+  // REFUSED, never silently substituted with an a-frame. Flat IS built now (see
+  // the flat-roof block below); shed/hip/gambrel are still refused until built.
+  { name: 'shed roof unsupported -> refused', brief: '2 bed shed roof, 40x60 lot, 5 ft setbacks', expectCompileError: /builds only .*roofs/i },
+  { name: 'hip roof unsupported -> refused', brief: '3 bed hip roof, 80x60 lot, 10 ft setbacks', expectCompileError: /builds only .*roofs/i },
+  { name: 'gambrel roof unsupported -> refused', brief: '2 bed gambrel, 60x80 lot, 10 ft setbacks', expectCompileError: /builds only .*roofs/i },
+
+  // Flat roof — BUILT (fire 14): a flat-roof brief produces a sound plan, not a
+  // refusal. style 'flat', single horizontal plane, R305 passes on the flat
+  // ceiling (driven through the shared report below like every other case).
+  { name: '2-bed flat roof', brief: '2 bed flat roof, 40x60 lot, 5 ft setbacks', bedrooms: 2, style: 'flat', hasLot: true, expectWidth: 28 },
+  { name: '3-bed flat roof', brief: '3 bed flat roof, 60x80 lot, 10 ft setbacks', bedrooms: 3, style: 'flat', hasLot: true, expectWidth: 36 },
+  { name: '1-bed flat roof, no lot', brief: '1 bed flat roof', bedrooms: 1, style: 'flat', hasLot: false, expectWidth: 28 },
 ];
 
 for (const testCase of CASES) {
@@ -335,6 +340,28 @@ check('no floor-1 panel', !(noLoft.artifact?.floorPanels ?? []).some((panel) => 
 check('no level-1 rooms', !(noLoft.artifact?.rooms ?? []).some((room) => room.levelIndex === 1));
 check('single-level plan has no fall-protection note', !(noLoft.notes ?? []).some((note) => /guard|R312|fall protection/i.test(note)), JSON.stringify(noLoft.notes ?? null));
 check('single-level plan has no loft guard walls', !(noLoft.artifact?.interiorWalls ?? []).some((wall) => /guard|rail/i.test(`${wall.wallKind ?? ''} ${wall.kind ?? ''}`)));
+
+// --- Flat roof (fire 14): built, not refused -------------------------------
+// A flat roof is ONE horizontal plane at a constant ceiling height — the same
+// plane-fit / clip / ceiling-profile machinery, with no rise. It must compile,
+// expose a single horizontal roof plane, a flat ceiling for every habitable
+// room, and pass R305 from that ceiling.
+console.log('flat roof: a flat-roof brief builds a sound single-level plan');
+const flat = compileIntent(mockIntentFromBrief(parseBrief('2 bed flat roof, 40x60 lot, 5 ft setbacks')), 'battery-flat', 'flat roof');
+check('compiles cleanly', flat.ok, flat.errors.join('; '));
+check('roof style is flat', flat.artifact?.roof?.style === 'flat', flat.artifact?.roof?.style);
+check('flat roof has exactly one roof plane', (flat.artifact?.roof?.planes ?? []).length === 1, `${(flat.artifact?.roof?.planes ?? []).length} planes`);
+const flatPlane = (flat.artifact?.roof?.planes ?? [])[0];
+const flatYs = (flatPlane?.points ?? []).map((p) => p.y);
+check('flat roof plane is horizontal (ridge == eave)', flatYs.length > 0 && Math.max(...flatYs) - Math.min(...flatYs) < 1e-6 && flat.artifact.roof.ridgeHeightFt === flat.artifact.roof.eaveHeightFt, `${flat.artifact?.roof?.ridgeHeightFt}/${flat.artifact?.roof?.eaveHeightFt}`);
+check('flat roof stays single level (no loft band under a flat roof)', flat.artifact?.footprint?.levels !== 2);
+check('flat roof elevations are valid outlines (>=3 pts)', (flat.artifact?.elevations ?? []).length === 2 && (flat.artifact?.elevations ?? []).every((e) => (e.outline ?? []).length >= 3));
+const flatReport = reportForArtifact(flat.artifact);
+const flatBeds = flat.artifact.rooms.filter((r) => r.type === 'bedroom');
+for (const bed of flatBeds) {
+  check(`flat-roof ${bed.id} R305 passes on the flat ceiling`, statusOf(flatReport, 'IRC-R305.1', bed.id) === 'pass', statusOf(flatReport, 'IRC-R305.1', bed.id));
+}
+check('flat roof has zero constraint-fail findings', flatReport.findings.filter((f) => f.status === 'fail').length === 0, flatReport.findings.filter((f) => f.status === 'fail').map((f) => f.ruleId).join(', '));
 
 console.log('loft: a roof with no headroom degrades honestly (no loft built)');
 // Direct intent with a near-flat roof: buildLoft must refuse rather than fake

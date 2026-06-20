@@ -83,6 +83,13 @@ const loftOpening = aLoftFront.openings.find((o) => o.sillFt >= 8);
 check('loft window drawn at loft sill height (>= 8 ft)', Boolean(loftOpening), JSON.stringify(aLoftFront.openings.map((o) => [o.id, Math.round(o.sillFt * 10) / 10])));
 check('loft window stays under the ridge', !loftOpening || loftOpening.headFt <= aLoftFront.ridgeFt + 1e-6);
 
+console.log('plan: fresh 2-bed flat roof (constant ceiling, no slope)');
+const flatPlan = compiled('2 bed flat roof, 40x60 lot, 5 ft setbacks');
+const flatFront = assertHonest('flat front', flatPlan, 'front');
+const flatSide = assertHonest('flat side', flatPlan, 'side');
+check('flat roof ridge == eave in the elevation model', flatFront.ridgeFt === flatFront.eaveFt && flatSide.ridgeFt === flatSide.eaveFt, `${flatFront.ridgeFt}/${flatFront.eaveFt}`);
+check('flat roof openings clamp under the flat roofline', [...flatFront.openings, ...flatSide.openings].every((o) => o.headFt <= flatFront.ridgeFt + 1e-6));
+
 console.log('plan: traced a-frame-22 (ridge along x, inset openings, loft level)');
 const { readFileSync } = await import('node:fs');
 const traced = JSON.parse(readFileSync(join(root, 'public/data/den-image-loop/a-frame-22/paired/a-frame-22-proposal-paired-v10.paired.json'), 'utf8'));
