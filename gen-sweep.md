@@ -33,6 +33,15 @@ _(updated each fire)_
       property that isn't checked. Low stakes (fire 8 rendered swings are visually
       clear); revisit only if a real swing collision is ever found.
 
+- [ ] **DEFECT (deferred, render-heavy): build the loft guard geometry.** Fire 11
+      made the omission honest (R312 note); the loft still ships with no actual
+      guard. Constructive fix: emit guard-rail walls/openings at the loft's open
+      long edges (mirror a-frame-bunk's `lowGuardRail`/`openGuardRailBoundary`),
+      TEACH `drawing-primitives.ts:113` (+ elevations/3D clip) to recognize guard
+      kinds so they tag instead of becoming untagged offenders, and add an
+      engine R312 check (needs an `advisory` status or openings-attributed guard
+      detection). Gate the rendered guard. High-value (fall safety) but touches
+      the source-of-truth render pipeline — do it as a focused fire.
 - [ ] Constructively implement the other roof styles (shed/flat/hip/barn/gambrel)
       end-to-end (planes + elevations + clip + code) so they're built, not just
       refused (fire 10 made the refusal honest; the constructive model is the
@@ -62,6 +71,43 @@ _(updated each fire)_
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 11 — loft is open to below with NO fall protection, shipped silently
+- **Bug (found by driving loft + circulation):** the generated loft (level 1,
+  ~8 ft above the floor) is open to below on its long edges with **no guard
+  rail** (zero guard/rail elements; no open-to-below marker) — an IRC R312.1
+  fall hazard — and the plan ships it **silently** (no callout, no note). The
+  constraint report says nothing about it. Both traced lofts (a-frame-22,
+  a-frame-bunk) DO model a guard (guard-rail window referencing the loft),
+  proving the model supports it; the compiler emits none.
+- **Also driven, clean (no defect):** hallway width (48 ft… 48 in, >36 in min)
+  and door clear widths (36 in egress door; 30 in interior doors are
+  code-compliant under base IRC); window/door placement + same-wall overlaps;
+  habitable min area; a-frame ground-floor sloped-ceiling headroom (R305 honest,
+  the low eave edges are expected a-frame behavior, ≥50% at 7 ft).
+- **Class:** _a required safety element omitted AND not surfaced_ — the
+  input-honesty family (P5) applied to a code requirement the template can't yet
+  model. Same channel as the fire-3 bath-downgrade note.
+- **Why the geometry fix was deferred (not rushed):** building the guard means
+  emitting guard walls/openings + having the render classifier recognize them.
+  `drawing-primitives.ts:113` (the wall-layer classifier) does NOT match guard
+  kinds, so a compiler-emitted `lowGuardRail` would render as an UNTAGGED
+  OFFENDER and fail the evidence gate. The constraint-engine path is also fragile
+  (engine sees openings, not walls; no `advisory` status). That is render-/
+  source-of-truth work deserving a focused fire — logged as a backlog DEFECT
+  with the full plan, not a rushed half-measure.
+- **Failing assertion added (gates assert MORE):** `check:generation` — a loft
+  plan MUST surface a fall-protection note (`/guard|R312|fall protection/i`); a
+  single-level plan must NOT (no false note). Was null before the fix.
+- **Root-cause fix (honest surfacing now, via the established notes channel):**
+  `compileIntent` pushes an R312 note whenever a loft is built — "loft is open to
+  below (~8 ft above…); IRC R312.1 requires a 36 in guard… add/verify before
+  construction (not modeled in this deterministic plan)." The generator never
+  again silently ships a loft that looks fully detailed.
+- **Verified:** note flows through `POST /api/generate-plan` (live, a-frame with
+  loft); single-level plans unaffected; traced lofts (which model real guards)
+  untouched. Throwaway gen-002 deleted. Full `gates` + `gates:live` green.
+- **Commit:** _(pending push)_
 
 ### Fire 10 — requested roof style silently substituted with an a-frame
 - **Bug (found by driving all 7 parser-recognized roof styles):** the parser

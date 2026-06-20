@@ -310,6 +310,11 @@ check('loft window hosts on the loft wall', Boolean(loftWall) && loftWindow?.wal
 const aLoftReport = reportForArtifact(aLoft.artifact);
 check('loft room R305 evaluated', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id) !== 'missing' && statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id) !== 'not-evaluated', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id));
 check('loft room passes R305 from the loft floor', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id) === 'pass', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id));
+// Fall protection (IRC R312): the deterministic loft is open to below and does
+// not yet model a guard. That MUST be surfaced as a note, never silently
+// shipped — a loft handed to a builder without a guard callout is a real hazard
+// (input honesty, P5 — same channel as the bath-downgrade note).
+check('loft surfaces a fall-protection note', (aLoft.notes ?? []).some((note) => /guard|R312|fall protection/i.test(note)), JSON.stringify(aLoft.notes ?? null));
 
 console.log('loft: a steep gable earns a loft too');
 const gLoft = compileIntent(mockIntentFromBrief(parseBrief('2 bed gable with loft, 40x60 lot, 5 ft side setbacks')), 'battery-loft-g', 'gable loft');
@@ -324,6 +329,7 @@ const noLoft = compileIntent(mockIntentFromBrief(parseBrief('2 bed a-frame, 40x6
 check('stays single level', noLoft.artifact?.footprint?.levels !== 2);
 check('no floor-1 panel', !(noLoft.artifact?.floorPanels ?? []).some((panel) => panel.floor === 1));
 check('no level-1 rooms', !(noLoft.artifact?.rooms ?? []).some((room) => room.levelIndex === 1));
+check('single-level plan has no fall-protection note', !(noLoft.notes ?? []).some((note) => /guard|R312|fall protection/i.test(note)), JSON.stringify(noLoft.notes ?? null));
 
 console.log('loft: a roof with no headroom degrades honestly (no loft built)');
 // Direct intent with a near-flat roof: buildLoft must refuse rather than fake

@@ -657,6 +657,17 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
         clearance: { frontFt: 3, doorSwingClear: true, note: 'ladder up to loft' },
         sourceAnchorId: 'fx-loft-ladder',
       });
+      // The loft floor sits ~8 ft above the level below and is open to below on
+      // its long edges. IRC R312.1 requires a 36 in guard there — which this
+      // deterministic template does not yet model. Surface that as a note rather
+      // than ship a loft a builder might read as fully detailed (input honesty,
+      // P5 — same channel as the bath-downgrade note). Hand-traced lofts model a
+      // real guard; the constructive guard geometry for compiled lofts is
+      // tracked in gen-sweep.md.
+      notes.push(
+        `loft is open to below (~${LOFT_BASE_FT} ft above the level below); IRC R312.1 requires a 36 in guard at its open sides `
+        + `— add or verify a guard rail before construction (not modeled in this deterministic plan)`,
+      );
     }
   }
 
