@@ -775,3 +775,9 @@ new bug restarts the normal find→class→gate→fix cycle.
   silent failure), modal stays open; no console errors.
 - **Result:** no regression — input honesty (principle 5) holds. No app-code
   change; gates green by identity.
+
+### Fire 52 — clean (outpost-medium detail tick)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** varied
+  the plan under test to outpost-medium — detail renders (canvas + sheet), Front
+  view activates, Export modal opens + Escape closes. No console errors.
+- **Result:** no bug. No app-code change; gates green by identity.
