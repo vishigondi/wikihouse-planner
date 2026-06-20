@@ -710,3 +710,11 @@ new bug restarts the normal find→class→gate→fix cycle.
   hold; no console errors.
 - **Result:** no regression — the fixes still behave live. No app-code change;
   gates green by identity.
+
+### Fire 44 — clean (live spot-check: share-link + copy feedback)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** rotated
+  the live regression spot-check to fire 7 (feed Share → `data-copy-state=copied`,
+  clipboard holds a `/?home=` deep-link) and fire 3 (Look Render Copy →
+  `copied`). Both hold; no console errors.
+- **Result:** no regression — shipped feedback/share fixes still behave live. No
+  app-code change; gates green by identity.
