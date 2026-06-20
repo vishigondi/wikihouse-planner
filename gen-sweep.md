@@ -50,11 +50,26 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
 - [ ] _(enhancement)_ Constructively implement the remaining roof styles —
       **flat DONE (fire 14), shed DONE (fire 15)**; next: hip → gambrel → barn —
       end-to-end (planes + elevations + clip + code), built not refused.
-      **HIP next:** four planes sloping up to a central ridge (for a rectangular
-      footprint, the ridge is a line, not a point) — all four faces are hips. The
-      elevation model already handles gable (apex) and longitudinal (facade);
-      hip needs both faces to show a trapezoid (hipped ends). More elevation work
-      than shed; reuse the plane machinery for ceiling/R305/clip as usual.
+      **HIP build plan (scouted fire 15, next fire) — ONE model, degenerates:**
+      ridge line along the LONGER axis, inset from each end by (shorter_dim / 2)
+      (standard 45°-in-plan hip), at the footprint center, height ridgeH. FOUR
+      planes: 2 long trapezoids (the long sides) + 2 triangular hip ends. When
+      the footprint is SQUARE (1/2-bed are 28×28) the inset = W/2 so the ridge
+      degenerates to a POINT → a pyramid (4 triangles) — the same formula, no
+      special case. 3-bed (36×28) gets a real ridge line along x.
+      - HEIGHTS: eave 8, ridge ~14. Eave runs around the WHOLE perimeter at 8 ft,
+        so the ceiling is ≥8 everywhere → R305 100% (no headroom-limited footprint
+        needed). Reuse gable footprints.
+      - ELEVATIONS: set ridgeAxis to the longer axis. The hip-END view
+        (gableFacing) is a TRIANGLE (apex at center) → the EXISTING gable render
+        already works. The long-SIDE view (!gableFacing) needs a NEW TRAPEZOID
+        render (eave → rise to ridge-start → flat ridge top → descend to eave);
+        with a zero-length top it degenerates to the pyramid triangle, so ONE
+        trapezoid render covers both square + rect. Do NOT touch gable/a-frame/
+        flat/shed paths (traced plans must not regress).
+      - GATES: convert the check:generation "hip → refused" case to positive +
+        structural (4 planes, eave around perimeter, R305 passes, trapezoid/centered
+        silhouette); add a hip case to check:elevations. Confirm 0 render offenders.
 - [ ] _(enhancement)_ Truly synthesize N-bedroom layouts (4+) in the deterministic
       generator so large briefs are honored, not just refused (fire 1 made the
       refusal honest). Needs room-packing + walls/doors/windows/dims/code-check
