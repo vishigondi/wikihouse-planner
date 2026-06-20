@@ -52,6 +52,9 @@ export interface GenerationIntent {
   lot?: { widthFt: number; depthFt: number; setbacksFt?: { front?: number; rear?: number; left?: number; right?: number }; maxCoverageRatio?: number } | null;
   /** Brief asked for a loft. A loft level is emitted only if the roof gives headroom. */
   hasLoft?: boolean;
+  /** Bedrooms the brief asked for, BEFORE any template clamp — so the compiler can
+   * refuse (rather than silently misrepresent) a program it can't build. */
+  requestedBedrooms?: number;
   rooms: IntentRoom[];
   doors: IntentDoor[];
   windows: IntentWindow[];
@@ -65,6 +68,11 @@ export interface CompileResult {
 }
 
 const EPS = 1e-6;
+
+/** The deterministic (no-API) generator hand-authors layouts for 1–3 bedrooms
+ * only. A brief asking for more is refused at compile with a clear message
+ * rather than silently collapsed to a 3-bedroom plan that misrepresents it. */
+export const MAX_TEMPLATE_BEDROOMS = 3;
 
 function rectsOverlap(a: IntentRoom, b: IntentRoom): boolean {
   return a.x < b.x + b.w - EPS && b.x < a.x + a.w - EPS && a.z < b.z + b.d - EPS && b.z < a.z + a.d - EPS;
@@ -308,6 +316,16 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
   const rooms = intent.rooms ?? [];
   if (rooms.length < 2) errors.push('at least two rooms required');
   const roomIds = new Set(rooms.map((room) => room.id));
+
+  // A requested bedroom count beyond the deterministic template ceiling is a
+  // program the generator cannot honestly build: refuse rather than silently
+  // ship a 3-bedroom plan that misrepresents the brief (input honesty, P5).
+  if (typeof intent.requestedBedrooms === 'number' && intent.requestedBedrooms > MAX_TEMPLATE_BEDROOMS) {
+    errors.push(
+      `requested ${intent.requestedBedrooms} bedrooms; the deterministic generator builds at most ${MAX_TEMPLATE_BEDROOMS} `
+      + `— reduce the bedroom count or supply an OPENAI_API_KEY for full generation`,
+    );
+  }
 
   // A footprint that cannot sit inside the lot's buildable envelope is a hard
   // design failure, not an advisory: refuse to compile rather than emit a plan
@@ -751,6 +769,9 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
     roof: { style, ridgeAxis: 'z', ridgeHeightFt: style === 'a-frame' ? 18 : (brief.hasLoft ? 20 : 14), eaveHeightFt: style === 'a-frame' ? 1 : 8 },
     lot: brief.lot ?? null,
     hasLoft: brief.hasLoft,
+    // Carry the RAW request (unclamped) so compile can refuse an unbuildable
+    // bedroom count instead of silently shipping the clamped 3-bed layout.
+    requestedBedrooms: brief.bedrooms,
     rooms,
     doors,
     windows,

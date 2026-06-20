@@ -167,6 +167,11 @@ const CASES = [
   { name: '2-bed 2-bath a-frame ensuite', brief: '2 bed 2 bath a-frame, 40x60 lot, 5 ft side setbacks', bedrooms: 2, style: 'a-frame', hasLot: true, expectWidth: 28, expectBaths: 2 },
   { name: '3-bed 2-bath a-frame', brief: '3 bed 2 bath a-frame ≤1200 sqft, 80x60 lot, 10 ft setbacks', bedrooms: 3, style: 'a-frame', hasLot: true, expectWidth: 36, expectBaths: 2 },
   { name: '2-bath downgrades when only narrow fits', brief: '2 bed 2 bath gable, ≤700 sqft', bedrooms: 2, style: 'gable', hasLot: false, expectWidth: 24, expectBaths: 1 },
+
+  // Program honesty: a bedroom count beyond the template ceiling (3) must be
+  // refused with a clear message, NOT silently collapsed to a 3-bedroom plan.
+  { name: '4-bed exceeds template ceiling', brief: '4 bed 2 bath gable, 1600 sqft, 80x100 lot, 10 ft setbacks', expectCompileError: /builds at most 3|requested 4 bedrooms/i },
+  { name: '5-bed exceeds template ceiling', brief: '5 bed 3 bath gable, 2400 sqft, 80x120 lot, 10 ft setbacks', expectCompileError: /builds at most 3|requested 5 bedrooms/i },
 ];
 
 for (const testCase of CASES) {
@@ -178,7 +183,7 @@ for (const testCase of CASES) {
   if (testCase.expectCompileError) {
     check('compile fails (honest validator catch)', !compiled.ok);
     check(
-      'failure message names the envelope',
+      'failure message matches expected reason',
       compiled.errors.some((error) => testCase.expectCompileError.test(error)),
       compiled.errors.join('; ') || 'no errors reported',
     );
