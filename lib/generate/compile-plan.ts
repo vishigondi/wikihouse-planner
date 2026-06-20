@@ -7,6 +7,11 @@
 //
 // Single-story V1. All coordinates in feet, rooms expected on the 4 ft grid.
 
+// Coverage cap is owned by the constraint engine; the compiler imports it so a
+// generated footprint is refused on the SAME threshold the report would fail
+// (one source of truth — never two 0.35s that can drift apart).
+import { DEFAULT_MAX_COVERAGE_RATIO } from '../standards/code-advisory.ts';
+
 export interface IntentRoom {
   id: string;
   label: string;
@@ -341,6 +346,19 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
         + `(lot ${lot.widthFt}x${lot.depthFt} ft minus setbacks)`,
       );
     }
+    // Likewise refuse a footprint over the lot-coverage cap — the SAME threshold
+    // (and tolerance) the ZON-COVERAGE report uses — so the generator never ships
+    // a plan that fails its own coverage report. Smaller templates have already
+    // been tried by mockIntentFromBrief; reaching here means none fit this lot.
+    const maxRatio = lot.maxCoverageRatio ?? DEFAULT_MAX_COVERAGE_RATIO;
+    const coverage = (widthFt * depthFt) / (lot.widthFt * lot.depthFt);
+    if (coverage > maxRatio + 1e-6) {
+      errors.push(
+        `footprint ${widthFt}x${depthFt} ft covers ${(coverage * 100).toFixed(1)}% of the `
+        + `${lot.widthFt}x${lot.depthFt} ft lot, over the ${(maxRatio * 100).toFixed(0)}% coverage cap `
+        + `— enlarge the lot or lower the program`,
+      );
+    }
   }
 
   for (const room of rooms) {
@@ -616,7 +634,7 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
     }
     : null;
   const maxCoverageSqft = lotValid
-    ? brief.lot!.widthFt * brief.lot!.depthFt * (brief.lot!.maxCoverageRatio ?? 0.35)
+    ? brief.lot!.widthFt * brief.lot!.depthFt * (brief.lot!.maxCoverageRatio ?? DEFAULT_MAX_COVERAGE_RATIO)
     : null;
   const fits = ([w, d]: [number, number]) =>
     (!envelope || (w <= envelope.w + EPS && d <= envelope.d + EPS))

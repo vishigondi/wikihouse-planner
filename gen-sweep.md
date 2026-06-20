@@ -65,4 +65,31 @@ _(bug → class → test → root-cause fix → commit)_
   gen-001 + traced unchanged). Live API: 5-bed → 422 with the clear message (no
   plan created); 3-bed → still generates. gates + gates:live green. Throwaway
   gen-002 deleted; only gen-001 remains.
+- **Commit:** `a45654c`
+
+### Fire 2 — generator ships footprints that fail their own coverage report
+- **Bug (found by driving):** a footprint that fits the setback envelope but
+  exceeds the 35% lot-coverage cap compiles OK and is shipped — e.g. "2 bed
+  a-frame, 38×38 lot, 5 ft setbacks" → 28×28 footprint = **54.3% coverage**
+  (`ZON-SETBACK: pass`, `ZON-COVERAGE: fail`); 48×48 3-bed = 43.8%; 40×40 gable =
+  42%. The constraint engine is HONEST (correctly fails), but the compiler
+  refuses **envelope** violations and NOT **coverage** ones — contradicting
+  `mockIntentFromBrief`'s own comment that generated plans "never fail their own
+  report." (mockIntentFromBrief tries coverage as a fit criterion, but its
+  fallback `?? candidates[last]` ships a non-fitting footprint anyway.)
+- **Class:** _the generator emits a plan that fails its own constraint report
+  (asymmetric refusal: envelope hard-refused, coverage silently shipped)._
+- **Failing assertion added (gates assert MORE):** `check:generation` cases
+  "fits envelope but over coverage cap (a-frame / gable)" — such a brief must
+  FAIL compile with a clear message, not ship a coverage-failing plan.
+- **Root-cause fix:** `compileIntent` now refuses an over-coverage footprint with
+  a clear message, right beside the envelope refusal, using the SAME threshold +
+  tolerance the report uses. Exported `DEFAULT_MAX_COVERAGE_RATIO` from
+  code-advisory and imported it into compile-plan (replacing the duplicated
+  `?? 0.35`) — one source of truth (P7), so compile-refuse and report-fail can
+  never drift apart.
+- **Verified:** `check:generation` green (2 new coverage cases refuse; all
+  generous-lot viable briefs + gen-001 + traced unchanged). Live API: 38×38 lot
+  → 422 "covers 54.3% … over the 35% coverage cap"; 40×60 lot → still generates.
+  gates + gates:live green. Throwaway gen-002 deleted; only gen-001 remains.
 - **Commit:** _(pending push)_

@@ -172,6 +172,12 @@ const CASES = [
   // refused with a clear message, NOT silently collapsed to a 3-bedroom plan.
   { name: '4-bed exceeds template ceiling', brief: '4 bed 2 bath gable, 1600 sqft, 80x100 lot, 10 ft setbacks', expectCompileError: /builds at most 3|requested 4 bedrooms/i },
   { name: '5-bed exceeds template ceiling', brief: '5 bed 3 bath gable, 2400 sqft, 80x120 lot, 10 ft setbacks', expectCompileError: /builds at most 3|requested 5 bedrooms/i },
+
+  // Coverage honesty: a footprint that fits the setback envelope but exceeds the
+  // 35% lot-coverage cap must be refused, not shipped as a plan that fails its
+  // own ZON-COVERAGE report. (38x38 lot -> 28x28 fits envelope but 54% coverage.)
+  { name: 'fits envelope but over coverage cap (a-frame)', brief: '2 bed a-frame, 38x38 lot, 5 ft setbacks', expectCompileError: /coverage cap|over the 35% coverage/i },
+  { name: 'fits envelope but over coverage cap (gable)', brief: '2 bed gable, 40x40 lot, 5 ft setbacks', expectCompileError: /coverage cap|over the 35% coverage/i },
 ];
 
 for (const testCase of CASES) {
