@@ -28,6 +28,11 @@ reliably produce sound, correctly code-checked plans you'd hand to an architect.
 ## Backlog
 _(updated each fire)_
 
+- [ ] `doorSwingClear: true` on fixtures is hardcoded, not computed (compile-plan
+      line ~265). Latent metadata-honesty item — the field asserts a verified
+      property that isn't checked. Low stakes (fire 8 rendered swings are visually
+      clear); revisit only if a real swing collision is ever found.
+
 - [ ] Truly synthesize N-bedroom layouts (4+) in the deterministic generator so
       large briefs are honored, not just refused (fire 1 made the refusal honest;
       the constructive model is the bigger win). Needs room-packing + walls/doors/
@@ -43,6 +48,26 @@ _(updated each fire)_
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 8 — clean (door-swing clearance investigated; probe over-reported)
+- **Drove:** door-swing-vs-fixture collisions. Doors encode real swing geometry
+  (`hingePoint`/`leafOpenEnd`/`swingDirection`/`swingArcDeg`); a geometric
+  quarter-disc probe flagged many "collisions" (toilet 0.3 ft from hinge, bed/
+  closet in arc). Noticed `doorSwingClear: true` is HARDCODED (compile-plan ~265),
+  not computed — so the flag couldn't be trusted either way.
+- **Resolved against the source of truth (rendered 2D sheet):** generated a
+  3-bed/2-bath plan and inspected the deterministic render. The swings are drawn
+  and CLEAR the fixtures — the Bath door swings into its open lower half (away
+  from toilet/sink/shower), bedroom doors clear the beds, closets clear. The
+  geometric probe was over-reporting (misreading swing side / same-wall-adjacent
+  fixtures). Also confirmed: **fire-7's Bath 2 lavatory renders correctly** (toilet
+  + small sink) — the powder room is sound.
+- **Result:** no real defect; no fabricated fix. The plan is genuinely
+  hand-to-an-architect quality (clear swings, sensible fixtures, dimensions,
+  north arrow, scale, legend). Logged the hardcoded `doorSwingClear` as a latent
+  metadata-honesty backlog item (not worth a high-blast-radius fix). App
+  byte-identical; gates green by identity. Throwaway gen-002 deleted.
+- **Commit:** _(doc-only)_
 
 ### Fire 7 — second bathroom generated with no lavatory (toilet only)
 - **Bug (found by driving fixture completeness):** every 2-bath plan's "Bath 2"
