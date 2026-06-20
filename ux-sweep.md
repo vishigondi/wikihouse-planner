@@ -854,3 +854,6 @@ new bug restarts the normal find→class→gate→fix cycle.
 ### Fire 62 — clean (modal dismiss tick)
 - gen-001 → Export modal opens → Escape closes; canvas intact; no console errors.
   Converged app; proportionate watch tick.
+
+### Fire 63 — clean (feed smoke)
+- Feed renders (6 cards + brief box); no console errors. Converged app; tick.
