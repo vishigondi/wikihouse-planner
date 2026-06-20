@@ -310,10 +310,14 @@ check('loft window hosts on the loft wall', Boolean(loftWall) && loftWindow?.wal
 const aLoftReport = reportForArtifact(aLoft.artifact);
 check('loft room R305 evaluated', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id) !== 'missing' && statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id) !== 'not-evaluated', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id));
 check('loft room passes R305 from the loft floor', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id) === 'pass', statusOf(aLoftReport, 'IRC-R305.1', loftRoom?.id));
-// Fall protection (IRC R312): the deterministic loft is open to below and does
-// not yet model a guard. That MUST be surfaced as a note, never silently
-// shipped — a loft handed to a builder without a guard callout is a real hazard
-// (input honesty, P5 — same channel as the bath-downgrade note).
+// Fall protection (IRC R312): the loft is open to below along its long edges
+// (~8 ft above the level below). The plan MUST model a guard rail on each open
+// edge — a loft handed to a builder without fall protection is a real hazard.
+const loftGuards = (aLoft.artifact?.interiorWalls ?? []).filter((wall) => (wall.floor ?? wall.levelIndex) === 1 && /guard|rail/i.test(`${wall.wallKind ?? ''} ${wall.kind ?? ''}`));
+check('loft models a guard rail on each open edge (R312)', loftGuards.length >= 2, `${loftGuards.length} guard walls: ${loftGuards.map((w) => w.id).join(', ')}`);
+check('loft guard rails stay inside the footprint', loftGuards.every((w) => w.span.x1 >= -1e-6 && w.span.x2 <= aLoft.artifact.footprint.widthFt + 1e-6 && w.span.z1 >= -1e-6 && w.span.z2 <= aLoft.artifact.footprint.depthFt + 1e-6));
+// The guard is surfaced to the user as a note too (what's modeled vs what still
+// needs shop-drawing detail), never silently shipped (input honesty, P5).
 check('loft surfaces a fall-protection note', (aLoft.notes ?? []).some((note) => /guard|R312|fall protection/i.test(note)), JSON.stringify(aLoft.notes ?? null));
 
 console.log('loft: a steep gable earns a loft too');
@@ -330,6 +334,7 @@ check('stays single level', noLoft.artifact?.footprint?.levels !== 2);
 check('no floor-1 panel', !(noLoft.artifact?.floorPanels ?? []).some((panel) => panel.floor === 1));
 check('no level-1 rooms', !(noLoft.artifact?.rooms ?? []).some((room) => room.levelIndex === 1));
 check('single-level plan has no fall-protection note', !(noLoft.notes ?? []).some((note) => /guard|R312|fall protection/i.test(note)), JSON.stringify(noLoft.notes ?? null));
+check('single-level plan has no loft guard walls', !(noLoft.artifact?.interiorWalls ?? []).some((wall) => /guard|rail/i.test(`${wall.wallKind ?? ''} ${wall.kind ?? ''}`)));
 
 console.log('loft: a roof with no headroom degrades honestly (no loft built)');
 // Direct intent with a near-flat roof: buildLoft must refuse rather than fake

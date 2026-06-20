@@ -33,15 +33,13 @@ _(updated each fire)_
       property that isn't checked. Low stakes (fire 8 rendered swings are visually
       clear); revisit only if a real swing collision is ever found.
 
-- [ ] **DEFECT (deferred, render-heavy): build the loft guard geometry.** Fire 11
-      made the omission honest (R312 note); the loft still ships with no actual
-      guard. Constructive fix: emit guard-rail walls/openings at the loft's open
-      long edges (mirror a-frame-bunk's `lowGuardRail`/`openGuardRailBoundary`),
-      TEACH `drawing-primitives.ts:113` (+ elevations/3D clip) to recognize guard
-      kinds so they tag instead of becoming untagged offenders, and add an
-      engine R312 check (needs an `advisory` status or openings-attributed guard
-      detection). Gate the rendered guard. High-value (fall safety) but touches
-      the source-of-truth render pipeline — do it as a focused fire.
+- [x] **DEFECT: build the loft guard geometry — DONE (fire 12).** The compiler
+      now emits a `lowGuardRail` interior wall (36 in) on each open long edge of
+      the loft; the classifier (drawing-primitives:112) already tags guard kinds
+      as walls, so it renders with 0 offenders. Note reworded to confirm the
+      guard + flag baluster spacing/attachment as shop-drawing scope. (An engine
+      R312 *verdict* — pass/advise on guard presence — remains a possible future
+      add, but the geometry now satisfies the requirement.)
 - [ ] Constructively implement the other roof styles (shed/flat/hip/barn/gambrel)
       end-to-end (planes + elevations + clip + code) so they're built, not just
       refused (fire 10 made the refusal honest; the constructive model is the
@@ -71,6 +69,33 @@ _(updated each fire)_
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 12 — BUILD the loft guard (constructive fix of fire 11's deferred defect)
+- **Closes fire 11's deferred DEFECT.** Fire 11 surfaced the loft fall-protection
+  gap honestly (a note); the root cause — no guard geometry — remained. This fire
+  builds it.
+- **Re-examined the render risk (fire 11 overstated it):** `drawing-primitives.ts`
+  line **112** already classifies `/guard|rail/` wall kinds as `'wall'` (that's
+  how the traced lofts' guards render and pass gates), and compiled artifacts
+  derive primitives directly from their arrays (no `sourceWalls`/`sourceAnchors`
+  needed). So emitting a guard tags cleanly — not an untagged offender.
+- **Class:** constructive completion of a required safety element (IRC R312.1).
+- **Failing test first (red → green):** `check:generation` — a loft plan must
+  model a guard rail on EACH open edge (`≥2 floor-1 interiorWalls` with
+  wallKind `/guard|rail/`), guards stay inside the footprint, single-level plans
+  have none. Was 0 guard walls before the fix.
+- **Root-cause fix (`compile-plan.ts`, one constructive rule):** when a loft is
+  built, emit a `lowGuardRail` interior wall (36 in) on each open long edge of
+  the headroom band (axis-aware: long edges are the open sides; the gable ends
+  are closed by the roof). Reworded the note to state the guard IS provided and
+  flag baluster-spacing/attachment as shop-drawing scope.
+- **Verified the RENDER (offline, faithful):** `extractSourceDrawingPrimitives`
+  on a compiled loft yields both guards as `layer:'wall'`, floor 1, valid
+  `semanticSpan` (line at the loft edge, full depth) — structurally identical to
+  a normal wall — and **0 untagged/offender primitives**. The 2D sheet now draws
+  the rails. Traced plans + single-level plans untouched.
+- **Verified:** full `gates` (all batteries + build) green; `gates:live` green.
+- **Commit:** _(pending push)_
 
 ### Fire 11 — loft is open to below with NO fall protection, shipped silently
 - **Bug (found by driving loft + circulation):** the generated loft (level 1,

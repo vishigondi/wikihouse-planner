@@ -657,16 +657,36 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
         clearance: { frontFt: 3, doorSwingClear: true, note: 'ladder up to loft' },
         sourceAnchorId: 'fx-loft-ladder',
       });
-      // The loft floor sits ~8 ft above the level below and is open to below on
-      // its long edges. IRC R312.1 requires a 36 in guard there — which this
-      // deterministic template does not yet model. Surface that as a note rather
-      // than ship a loft a builder might read as fully detailed (input honesty,
-      // P5 — same channel as the bath-downgrade note). Hand-traced lofts model a
-      // real guard; the constructive guard geometry for compiled lofts is
-      // tracked in gen-sweep.md.
+      // The loft floor sits ~LOFT_BASE_FT ft above the level below and is open to
+      // below along the two long edges of the headroom band (the gable ends are
+      // closed by the roof). IRC R312.1 requires a 36 in guard there, so emit a
+      // low guard rail on each open edge. wallKind 'lowGuardRail' matches the
+      // form the traced lofts use and the drawing classifier tags as a wall, so
+      // it renders and never silently leaves the loft unguarded.
+      const guardHeightFt = 3; // 36 in minimum guard height
+      const guardEdges = ridgeAlongZ
+        ? [
+          { id: 'iw-l1-loft-guard-w', facing: 'W', span: { x1: bounds.x, z1: bounds.z, x2: bounds.x, z2: bounds.z + bounds.d }, bounds: { x: bounds.x - 0.1, z: bounds.z, w: 0.2, d: bounds.d } },
+          { id: 'iw-l1-loft-guard-e', facing: 'E', span: { x1: bounds.x + bounds.w, z1: bounds.z, x2: bounds.x + bounds.w, z2: bounds.z + bounds.d }, bounds: { x: bounds.x + bounds.w - 0.1, z: bounds.z, w: 0.2, d: bounds.d } },
+        ]
+        : [
+          { id: 'iw-l1-loft-guard-n', facing: 'N', span: { x1: bounds.x, z1: bounds.z, x2: bounds.x + bounds.w, z2: bounds.z }, bounds: { x: bounds.x, z: bounds.z - 0.1, w: bounds.w, d: 0.2 } },
+          { id: 'iw-l1-loft-guard-s', facing: 'S', span: { x1: bounds.x, z1: bounds.z + bounds.d, x2: bounds.x + bounds.w, z2: bounds.z + bounds.d }, bounds: { x: bounds.x, z: bounds.z + bounds.d - 0.1, w: bounds.w, d: 0.2 } },
+        ];
+      for (const edge of guardEdges) {
+        (artifact.interiorWalls as unknown[]).push({
+          id: edge.id, levelFrameId: 'floor-1', levelIndex: 1, floor: 1,
+          kind: 'lowGuardRail', wallKind: 'lowGuardRail', guardHeightFt,
+          facing: edge.facing, span: edge.span, bounds: edge.bounds,
+          sourceAnchorId: edge.id,
+        });
+      }
+      // Surface what's modeled vs what still needs detailing — the plan provides
+      // the guard, but baluster spacing/attachment are shop-drawing scope (input
+      // honesty, P5 — same channel as the bath-downgrade note).
       notes.push(
-        `loft is open to below (~${LOFT_BASE_FT} ft above the level below); IRC R312.1 requires a 36 in guard at its open sides `
-        + `— add or verify a guard rail before construction (not modeled in this deterministic plan)`,
+        `loft is open to below (~${LOFT_BASE_FT} ft above the level below); a ${Math.round(guardHeightFt * 12)} in guard rail is provided on its open sides per IRC R312.1 `
+        + `— verify guard height, baluster spacing (≤ 4 in), and attachment in shop drawings`,
       );
     }
   }
