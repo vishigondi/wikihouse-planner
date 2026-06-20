@@ -860,3 +860,6 @@ new bug restarts the normal find→class→gate→fix cycle.
 
 ### Fire 64 — clean (detail smoke)
 - gen-001 detail renders (Export + 3D canvas); no console errors. Converged app; tick.
+
+### Fire 65 — clean (filter interaction tick)
+- Feed 6 → non-matching search → 0 + Clear → restored 6; no console errors. Converged app; tick.
