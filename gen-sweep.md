@@ -44,6 +44,29 @@ _(updated each fire)_
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
 
+### Fire 7 — second bathroom generated with no lavatory (toilet only)
+- **Bug (found by driving fixture completeness):** every 2-bath plan's "Bath 2"
+  (a 4×4 powder room) shipped with ONLY a toilet — no sink/lavatory — across
+  a-frame 3-bed, gable 3-bed, and a-frame 2-bed. A toilet-only room isn't a
+  bathroom (architectural completeness + plumbing-code: every bathroom needs a
+  lavatory). The primary Bath correctly had toilet+vanity+shower.
+- **Class:** _a generated room missing a fixture its type requires._ Root cause:
+  the bath fixture-placement gated the vanity on `room.w >= 6` (else branch) or
+  `w<6 && d>=6` (narrow branch); a 4×4 powder room (w<6 AND d<6) fell through
+  both and got a toilet only.
+- **Failing assertion added (gates assert MORE):** `check:generation` — "bathroom
+  <id> has a lavatory" for EVERY bathroom room (caught room-bath2 toilet-only
+  before the fix).
+- **Root-cause fix (`compile-plan.ts` starterFixtures):** added a compact-bath
+  branch (`w<6 && d<6`) placing a toilet + an unconditional small lavatory
+  (toilet north wall, sink below) — fits a 4×4, in-bounds, no overlap. The vanity
+  is unconditional for a bathroom now, not size-gated away.
+- **Verified:** every bath (incl. Bath 2) has a lavatory across all three 2-bath
+  plans; fixtures in-bounds, no overlaps; single-bath plans + traced + gen-001
+  unchanged (no stored plan has a bath2). gates + gates:live green. Throwaway
+  gen-002 deleted.
+- **Commit:** _(pending push)_
+
 ### Fire 6 — brief parser silently drops orphan setbacks / coverage
 - **Bug (found by driving the parser):** stating setbacks or coverage WITHOUT a
   parseable lot silently drops them — "1 bed a-frame, 5 ft setbacks" → no lot,

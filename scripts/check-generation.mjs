@@ -233,6 +233,12 @@ for (const testCase of CASES) {
   }
   const unhosted = [...artifact.doors, ...artifact.windows, ...artifact.openings].filter((opening) => !opening.wallId);
   check('every door/window/opening sits on a wall', unhosted.length === 0, unhosted.map((o) => o.id).join(', '));
+  // Every bathroom must have a lavatory — a toilet-only room is not a bathroom
+  // (architectural completeness; compact second baths used to ship toilet-only).
+  for (const bathroom of artifact.rooms.filter((room) => room.type === 'bathroom')) {
+    const fxTypes = (artifact.fixtures ?? []).filter((f) => f.roomId === bathroom.id).map((f) => f.type ?? '');
+    check(`bathroom ${bathroom.id} has a lavatory`, fxTypes.some((t) => /sink|vanity/i.test(t)), JSON.stringify(fxTypes));
+  }
   const badCallouts = artifact.rooms.filter((room, index) => room.calloutNumber !== index + 1);
   check('callout numbers are 1..N', badCallouts.length === 0);
 

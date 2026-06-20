@@ -296,6 +296,12 @@ function starterFixtures(intent: GenerationIntent, walls: WallSegment[]): Starte
         if (room.d >= 8) {
           add(`fx-${slug}-shower`, room.id, 'shower', room.x + 0.5, room.z + room.d - 2.9, 2.4, 2.6, 'door clear', { x: room.x, z: room.z + room.d - 1.6 });
         }
+      } else if (room.w < 6) {
+        // Compact powder room (e.g. 4x4 second bath): toilet against the north
+        // wall + a small lavatory below it. Every bathroom requires a sink — a
+        // toilet-only room is not a bathroom — so the vanity is unconditional here.
+        add(`fx-${slug}-toilet`, room.id, 'toilet', room.x + 0.3, room.z + 0.3, 1.9, 1.9, 'front clear', { x: room.x + 1.25, z: room.z });
+        add(`fx-${slug}-vanity`, room.id, 'vanity_sink', room.x + 0.3, room.z + room.d - 1.5, Math.min(1.8, room.w - 0.6), 1.2, 'front clear', { x: room.x, z: room.z + room.d - 0.9 });
       } else {
         add(`fx-${slug}-toilet`, room.id, 'toilet', room.x + 0.5, room.z + 0.3, 2.2, 2.2, 'front clear', { x: room.x + 1.6, z: room.z });
         if (room.w >= 6) {
