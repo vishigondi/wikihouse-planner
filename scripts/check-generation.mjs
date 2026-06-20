@@ -187,9 +187,8 @@ const CASES = [
   { name: 'maxSqft cap below smallest template (a-frame)', brief: '2 bed a-frame, ≤600 sqft', expectCompileError: /exceeds the requested ≤600 sq ft cap/i },
 
   // Roof-style honesty: a recognized style the generator does not BUILD must be
-  // REFUSED, never silently substituted with an a-frame. Flat IS built now (see
-  // the flat-roof block below); shed/hip/gambrel are still refused until built.
-  { name: 'shed roof unsupported -> refused', brief: '2 bed shed roof, 40x60 lot, 5 ft setbacks', expectCompileError: /builds only .*roofs/i },
+  // REFUSED, never silently substituted. Flat + shed ARE built now (blocks
+  // below); hip/gambrel are still refused until built.
   { name: 'hip roof unsupported -> refused', brief: '3 bed hip roof, 80x60 lot, 10 ft setbacks', expectCompileError: /builds only .*roofs/i },
   { name: 'gambrel roof unsupported -> refused', brief: '2 bed gambrel, 60x80 lot, 10 ft setbacks', expectCompileError: /builds only .*roofs/i },
 
@@ -199,6 +198,12 @@ const CASES = [
   { name: '2-bed flat roof', brief: '2 bed flat roof, 40x60 lot, 5 ft setbacks', bedrooms: 2, style: 'flat', hasLot: true, expectWidth: 28 },
   { name: '3-bed flat roof', brief: '3 bed flat roof, 60x80 lot, 10 ft setbacks', bedrooms: 3, style: 'flat', hasLot: true, expectWidth: 36 },
   { name: '1-bed flat roof, no lot', brief: '1 bed flat roof', bedrooms: 1, style: 'flat', hasLot: false, expectWidth: 28 },
+
+  // Shed roof — BUILT (fire 15): single mono-pitch slope. style 'shed', one
+  // sloped plane, R305 passes (the low eave still clears 7 ft).
+  { name: '2-bed shed roof', brief: '2 bed shed roof, 40x60 lot, 5 ft setbacks', bedrooms: 2, style: 'shed', hasLot: true, expectWidth: 28 },
+  { name: '3-bed shed roof', brief: '3 bed shed roof, 60x80 lot, 10 ft setbacks', bedrooms: 3, style: 'shed', hasLot: true, expectWidth: 36 },
+  { name: '1-bed shed roof, no lot', brief: '1 bed shed roof', bedrooms: 1, style: 'shed', hasLot: false, expectWidth: 28 },
 ];
 
 for (const testCase of CASES) {
@@ -362,6 +367,31 @@ for (const bed of flatBeds) {
   check(`flat-roof ${bed.id} R305 passes on the flat ceiling`, statusOf(flatReport, 'IRC-R305.1', bed.id) === 'pass', statusOf(flatReport, 'IRC-R305.1', bed.id));
 }
 check('flat roof has zero constraint-fail findings', flatReport.findings.filter((f) => f.status === 'fail').length === 0, flatReport.findings.filter((f) => f.status === 'fail').map((f) => f.ruleId).join(', '));
+
+// --- Shed roof (fire 15): built, not refused -------------------------------
+// A shed roof is ONE sloped plane (high edge ridge -> low edge eave). Same
+// plane-fit / clip / ceiling-profile machinery; the slope is real (ridge > eave)
+// but both heights clear 7 ft, so R305 passes across the whole floor.
+console.log('shed roof: a shed-roof brief builds a sound single-slope plan');
+const shed = compileIntent(mockIntentFromBrief(parseBrief('2 bed shed roof, 40x60 lot, 5 ft setbacks')), 'battery-shed', 'shed roof');
+check('compiles cleanly', shed.ok, shed.errors.join('; '));
+check('roof style is shed', shed.artifact?.roof?.style === 'shed', shed.artifact?.roof?.style);
+check('shed roof has exactly one roof plane', (shed.artifact?.roof?.planes ?? []).length === 1, `${(shed.artifact?.roof?.planes ?? []).length} planes`);
+check('shed roof actually slopes (ridge > eave)', shed.artifact?.roof?.ridgeHeightFt > shed.artifact?.roof?.eaveHeightFt, `${shed.artifact?.roof?.ridgeHeightFt}/${shed.artifact?.roof?.eaveHeightFt}`);
+const shedPlaneYs = ((shed.artifact?.roof?.planes ?? [])[0]?.points ?? []).map((p) => p.y);
+check('shed plane spans ridge..eave', shedPlaneYs.length > 0 && Math.abs(Math.max(...shedPlaneYs) - shed.artifact.roof.ridgeHeightFt) < 1e-6 && Math.abs(Math.min(...shedPlaneYs) - shed.artifact.roof.eaveHeightFt) < 1e-6);
+check('shed roof stays single level', shed.artifact?.footprint?.levels !== 2);
+check('shed roof elevations are valid outlines (>=3 pts)', (shed.artifact?.elevations ?? []).length === 2 && (shed.artifact?.elevations ?? []).every((e) => (e.outline ?? []).length >= 3));
+// The across-slope (front) elevation must be ASYMMETRIC: one end at ridge, the
+// other at eave — not a centered gable apex.
+const shedFront = (shed.artifact?.elevations ?? []).find((e) => e.view === 'front');
+const frontYs = (shedFront?.outline ?? []).map((p) => p.y);
+check('shed front elevation is mono-pitch (spans ridge..eave)', frontYs.length > 0 && Math.max(...frontYs) >= shed.artifact.roof.ridgeHeightFt - 1e-6 && Math.min(...frontYs) <= shed.artifact.roof.eaveHeightFt + 1e-6);
+const shedReport = reportForArtifact(shed.artifact);
+for (const bed of shed.artifact.rooms.filter((r) => r.type === 'bedroom')) {
+  check(`shed-roof ${bed.id} R305 passes under the slope`, statusOf(shedReport, 'IRC-R305.1', bed.id) === 'pass', statusOf(shedReport, 'IRC-R305.1', bed.id));
+}
+check('shed roof has zero constraint-fail findings', shedReport.findings.filter((f) => f.status === 'fail').length === 0, shedReport.findings.filter((f) => f.status === 'fail').map((f) => f.ruleId).join(', '));
 
 console.log('loft: a roof with no headroom degrades honestly (no loft built)');
 // Direct intent with a near-flat roof: buildLoft must refuse rather than fake

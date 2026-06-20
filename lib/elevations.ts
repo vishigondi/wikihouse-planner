@@ -78,6 +78,12 @@ export interface ElevationModel {
   gableFacing: boolean;
   /** Wall height at the facade when it is NOT a gable face. */
   facadeWallFt: number;
+  /** True for a shed (mono-pitch) roof: the across-slope face is a single slope,
+   * not a centered gable apex. */
+  monoPitch: boolean;
+  /** For a mono-pitch across-slope face: true when the high (ridge) edge is at
+   * the start of the span (left), the low (eave) edge at the end. */
+  monoPitchHighAtStart: boolean;
   openings: ElevationOpening[];
 }
 
@@ -191,6 +197,13 @@ export function buildElevationModel(artifact: ElevationArtifactInput, side: 'fro
     });
   }
 
+  // A shed roof's across-slope face is a single slope, not a centered apex.
+  // Sample the roof at both ends of the span to learn which edge is high.
+  const monoPitch = roof.style === 'shed';
+  const startCeil = facadeCeiling(planes, side, 0.05, eaveFt);
+  const endCeil = facadeCeiling(planes, side, Math.max(0.05, spanFt - 0.05), eaveFt);
+  const monoPitchHighAtStart = startCeil >= endCeil;
+
   openings.sort((lhs, rhs) => lhs.center - rhs.center);
   return {
     planId: artifact.planId ?? 'plan',
@@ -201,6 +214,8 @@ export function buildElevationModel(artifact: ElevationArtifactInput, side: 'fro
     overhangFt: roof.overhangFt ?? 1,
     gableFacing,
     facadeWallFt,
+    monoPitch,
+    monoPitchHighAtStart,
     openings,
   };
 }
@@ -224,7 +239,15 @@ export function elevationSvgString(model: ElevationModel): string {
   parts.push(`<rect x="0" y="0" width="${width}" height="${height}" fill="#fbfaf6"/>`);
   parts.push(`<text x="${pad}" y="16" font-size="11" fill="#8a8178">${model.planId} — ${model.side} elevation — ${model.spanFt}&#39; span — ${Math.round(model.ridgeFt)}&#39; ridge</text>`);
 
-  if (model.gableFacing) {
+  if (model.monoPitch && model.gableFacing) {
+    // Shed (mono-pitch) across-slope face: a single slope from the high (ridge)
+    // edge to the low (eave) edge — no centered apex.
+    const leftY = model.monoPitchHighAtStart ? model.ridgeFt : model.eaveFt;
+    const rightY = model.monoPitchHighAtStart ? model.eaveFt : model.ridgeFt;
+    const slope = (rightY - leftY) / model.spanFt;
+    parts.push(`<polygon points="${X(0)},${Y(0)} ${X(0)},${Y(leftY)} ${X(model.spanFt)},${Y(rightY)} ${X(model.spanFt)},${Y(0)}" fill="#f2eee7" stroke="#3d3933" stroke-width="1.4"/>`);
+    parts.push(`<polyline points="${X(-ov)},${Y(leftY - slope * ov)} ${X(model.spanFt + ov)},${Y(rightY + slope * ov)}" fill="none" stroke="#26231f" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`);
+  } else if (model.gableFacing) {
     // Gable face: wall polygon rises to the ridge; roof edge with overhang.
     const apexX = X(model.spanFt / 2);
     parts.push(`<polygon points="${X(0)},${Y(0)} ${X(model.spanFt)},${Y(0)} ${X(model.spanFt)},${Y(model.eaveFt)} ${apexX},${Y(model.ridgeFt)} ${X(0)},${Y(model.eaveFt)}" fill="#f2eee7" stroke="#3d3933" stroke-width="1.4"/>`);

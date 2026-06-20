@@ -53,7 +53,7 @@ export interface IntentOpening {
 export interface GenerationIntent {
   name: string;
   footprint: { widthFt: number; depthFt: number };
-  roof: { style: 'a-frame' | 'gable' | 'flat'; ridgeAxis: 'x' | 'z'; ridgeHeightFt: number; eaveHeightFt: number };
+  roof: { style: 'a-frame' | 'gable' | 'flat' | 'shed'; ridgeAxis: 'x' | 'z'; ridgeHeightFt: number; eaveHeightFt: number };
   lot?: { widthFt: number; depthFt: number; setbacksFt?: { front?: number; rear?: number; left?: number; right?: number }; maxCoverageRatio?: number } | null;
   /** Brief asked for a loft. A loft level is emitted only if the roof gives headroom. */
   hasLoft?: boolean;
@@ -97,11 +97,17 @@ export const MAX_TEMPLATE_BEDROOMS = 3;
  * elevations, and clipping all implemented). A brief requesting any other
  * recognized style is refused at compile rather than silently substituted with
  * an a-frame that misrepresents the massing. */
-export const BUILDABLE_ROOF_STYLES = ['a-frame', 'gable', 'flat'] as const;
+export const BUILDABLE_ROOF_STYLES = ['a-frame', 'gable', 'flat', 'shed'] as const;
 
 /** Interior ceiling height of a flat roof (constant, no slope). Comfortably
  * clears R305's 7 ft minimum and the walls carry to this height. */
 const FLAT_ROOF_HEIGHT_FT = 9;
+
+/** Shed (mono-pitch) roof: a single plane sloping from a high edge to a low
+ * edge. Both heights clear R305's 7 ft minimum, so the whole floor is habitable
+ * (no headroom-limited footprint needed). */
+const SHED_RIDGE_FT = 12;
+const SHED_EAVE_FT = 8;
 
 function rectsOverlap(a: IntentRoom, b: IntentRoom): boolean {
   return a.x < b.x + b.w - EPS && b.x < a.x + a.w - EPS && a.z < b.z + b.d - EPS && b.z < a.z + a.d - EPS;
@@ -550,24 +556,30 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
   const midX = widthFt / 2;
   const midZ = depthFt / 2;
   const isFlat = roof.style === 'flat';
+  const isShed = roof.style === 'shed';
   // A flat roof is one horizontal plane over the whole footprint (+overhang) at
-  // a constant height — the same plane-fit / clip / ceiling-profile machinery the
-  // sloped roofs use, just with no rise (ridge == eave). The slab thickness gives
-  // the elevation outlines a real (non-degenerate) profile.
+  // a constant height; a shed roof is one plane sloping high edge (x=0, ridge)
+  // -> low edge (x=widthFt, eave). Both feed the same plane-fit / clip /
+  // ceiling-profile machinery the gable/a-frame planes use. The slab thickness
+  // gives the elevation outlines a real (non-degenerate) profile.
   const slabTop = ridge + 0.35;
   const planes = isFlat
     ? [
       { id: 'roof-plane-flat', role: 'roof-plane', points: [{ x: -overhang, y: ridge, z: -overhang }, { x: widthFt + overhang, y: ridge, z: -overhang }, { x: widthFt + overhang, y: ridge, z: depthFt + overhang }, { x: -overhang, y: ridge, z: depthFt + overhang }] },
     ]
-    : ridgeAlongZ
+    : isShed
       ? [
-        { id: 'roof-plane-west-slope', role: 'roof-plane', points: [{ x: -overhang, y: eave, z: -overhang }, { x: midX, y: ridge, z: -overhang }, { x: midX, y: ridge, z: depthFt + overhang }, { x: -overhang, y: eave, z: depthFt + overhang }] },
-        { id: 'roof-plane-east-slope', role: 'roof-plane', points: [{ x: midX, y: ridge, z: -overhang }, { x: widthFt + overhang, y: eave, z: -overhang }, { x: widthFt + overhang, y: eave, z: depthFt + overhang }, { x: midX, y: ridge, z: depthFt + overhang }] },
+        { id: 'roof-plane-shed', role: 'roof-plane', points: [{ x: -overhang, y: ridge, z: -overhang }, { x: widthFt + overhang, y: eave, z: -overhang }, { x: widthFt + overhang, y: eave, z: depthFt + overhang }, { x: -overhang, y: ridge, z: depthFt + overhang }] },
       ]
-      : [
-        { id: 'roof-plane-north-slope', role: 'roof-plane', points: [{ x: -overhang, y: eave, z: -overhang }, { x: widthFt + overhang, y: eave, z: -overhang }, { x: widthFt + overhang, y: ridge, z: midZ }, { x: -overhang, y: ridge, z: midZ }] },
-        { id: 'roof-plane-south-slope', role: 'roof-plane', points: [{ x: -overhang, y: ridge, z: midZ }, { x: widthFt + overhang, y: ridge, z: midZ }, { x: widthFt + overhang, y: eave, z: depthFt + overhang }, { x: -overhang, y: eave, z: depthFt + overhang }] },
-      ];
+      : ridgeAlongZ
+        ? [
+          { id: 'roof-plane-west-slope', role: 'roof-plane', points: [{ x: -overhang, y: eave, z: -overhang }, { x: midX, y: ridge, z: -overhang }, { x: midX, y: ridge, z: depthFt + overhang }, { x: -overhang, y: eave, z: depthFt + overhang }] },
+          { id: 'roof-plane-east-slope', role: 'roof-plane', points: [{ x: midX, y: ridge, z: -overhang }, { x: widthFt + overhang, y: eave, z: -overhang }, { x: widthFt + overhang, y: eave, z: depthFt + overhang }, { x: midX, y: ridge, z: depthFt + overhang }] },
+        ]
+        : [
+          { id: 'roof-plane-north-slope', role: 'roof-plane', points: [{ x: -overhang, y: eave, z: -overhang }, { x: widthFt + overhang, y: eave, z: -overhang }, { x: widthFt + overhang, y: ridge, z: midZ }, { x: -overhang, y: ridge, z: midZ }] },
+          { id: 'roof-plane-south-slope', role: 'roof-plane', points: [{ x: -overhang, y: ridge, z: midZ }, { x: widthFt + overhang, y: ridge, z: midZ }, { x: widthFt + overhang, y: eave, z: depthFt + overhang }, { x: -overhang, y: eave, z: depthFt + overhang }] },
+        ];
   const flatOutline = (spanFt: number) => [
     { x: -overhang, y: ridge }, { x: spanFt + overhang, y: ridge }, { x: spanFt + overhang, y: slabTop }, { x: -overhang, y: slabTop },
   ];
@@ -576,15 +588,23 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
       { id: 'front-flat', view: 'front', outline: flatOutline(widthFt) },
       { id: 'side-flat', view: 'side', outline: flatOutline(depthFt) },
     ]
-    : ridgeAlongZ
+    : isShed
       ? [
-        { id: 'front-gable', view: 'front', outline: [{ x: -overhang, y: eave }, { x: midX, y: ridge }, { x: widthFt + overhang, y: eave }] },
-        { id: 'side-longitudinal', view: 'side', outline: [{ x: -overhang, y: eave }, { x: -overhang, y: ridge }, { x: depthFt + overhang, y: ridge }, { x: depthFt + overhang, y: eave }] },
+        // Front looks across the slope: roofline drops high edge (ridge, x=0) ->
+        // low edge (eave, x=widthFt). Side looks along the slope: the high wall,
+        // a flat band at ridge height.
+        { id: 'front-shed', view: 'front', outline: [{ x: -overhang, y: ridge }, { x: widthFt + overhang, y: eave }, { x: widthFt + overhang, y: eave - 0.35 }, { x: -overhang, y: ridge - 0.35 }] },
+        { id: 'side-shed', view: 'side', outline: [{ x: -overhang, y: ridge }, { x: depthFt + overhang, y: ridge }, { x: depthFt + overhang, y: ridge - 0.35 }, { x: -overhang, y: ridge - 0.35 }] },
       ]
-      : [
-        { id: 'front-longitudinal', view: 'front', outline: [{ x: -overhang, y: eave }, { x: -overhang, y: ridge }, { x: widthFt + overhang, y: ridge }, { x: widthFt + overhang, y: eave }] },
-        { id: 'side-gable', view: 'side', outline: [{ x: -overhang, y: eave }, { x: midZ, y: ridge }, { x: depthFt + overhang, y: eave }] },
-      ];
+      : ridgeAlongZ
+        ? [
+          { id: 'front-gable', view: 'front', outline: [{ x: -overhang, y: eave }, { x: midX, y: ridge }, { x: widthFt + overhang, y: eave }] },
+          { id: 'side-longitudinal', view: 'side', outline: [{ x: -overhang, y: eave }, { x: -overhang, y: ridge }, { x: depthFt + overhang, y: ridge }, { x: depthFt + overhang, y: eave }] },
+        ]
+        : [
+          { id: 'front-longitudinal', view: 'front', outline: [{ x: -overhang, y: eave }, { x: -overhang, y: ridge }, { x: widthFt + overhang, y: ridge }, { x: widthFt + overhang, y: eave }] },
+          { id: 'side-gable', view: 'side', outline: [{ x: -overhang, y: eave }, { x: midZ, y: ridge }, { x: depthFt + overhang, y: eave }] },
+        ];
 
   const artifact: Record<string, unknown> = {
     schemaVersion: 'paired_gpt_floorplan_v1',
@@ -737,7 +757,10 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
  */
 export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; roofStyle?: string; maxSqft?: number; hasLoft?: boolean; lot?: GenerationIntent['lot'] }): GenerationIntent {
   const bedrooms = Math.max(1, Math.min(3, brief.bedrooms ?? 2));
-  const style: 'a-frame' | 'gable' | 'flat' = brief.roofStyle === 'gable' ? 'gable' : brief.roofStyle === 'flat' ? 'flat' : 'a-frame';
+  const style: 'a-frame' | 'gable' | 'flat' | 'shed' = brief.roofStyle === 'gable' ? 'gable'
+    : brief.roofStyle === 'flat' ? 'flat'
+      : brief.roofStyle === 'shed' ? 'shed'
+        : 'a-frame';
   // Second bath is supported on the primary footprints only (2-bed at 28 ft,
   // 3-bed at 36 ft); 1-bed programs stay single-bath.
   const bathsRequested = bedrooms === 1 ? 1 : Math.max(1, Math.min(2, Math.round(brief.baths ?? 1)));
@@ -746,12 +769,18 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
   // Candidate footprints, largest first. Gables offer narrow/shallow variants
   // for small lots; the constraint engine's default 35% coverage cap counts
   // as a fit criterion so generated plans never fail their own report.
-  // A flat roof has uniform full headroom everywhere (no eave slope to limit
-  // the edges), so it reuses the gable footprint set — the most permissive.
-  const CANDIDATE_FOOTPRINTS: Record<number, Record<'a-frame' | 'gable' | 'flat', Array<[number, number]>>> = {
-    1: { 'a-frame': [[28, 28]], gable: [[28, 28], [24, 28], [20, 28], [20, 24]], flat: [[28, 28], [24, 28], [20, 28], [20, 24]] },
-    2: { 'a-frame': [[28, 28]], gable: [[28, 28], [24, 28]], flat: [[28, 28], [24, 28]] },
-    3: { 'a-frame': [[36, 28]], gable: [[36, 28], [28, 28]], flat: [[36, 28], [28, 28]] },
+  // Flat and shed both keep full headroom across the floor (flat is level; shed
+  // slopes 12->8 ft, and even the low eave clears 7 ft), so they reuse the gable
+  // footprint set — the most permissive.
+  const gableFps: Record<number, Array<[number, number]>> = {
+    1: [[28, 28], [24, 28], [20, 28], [20, 24]],
+    2: [[28, 28], [24, 28]],
+    3: [[36, 28], [28, 28]],
+  };
+  const CANDIDATE_FOOTPRINTS: Record<number, Record<'a-frame' | 'gable' | 'flat' | 'shed', Array<[number, number]>>> = {
+    1: { 'a-frame': [[28, 28]], gable: gableFps[1], flat: gableFps[1], shed: gableFps[1] },
+    2: { 'a-frame': [[28, 28]], gable: gableFps[2], flat: gableFps[2], shed: gableFps[2] },
+    3: { 'a-frame': [[36, 28]], gable: gableFps[3], flat: gableFps[3], shed: gableFps[3] },
   };
   const candidates = CANDIDATE_FOOTPRINTS[bedrooms][style];
   const setbacks = brief.lot?.setbacksFt ?? {};
@@ -913,11 +942,14 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
     footprint: { widthFt, depthFt },
     // A gable earns a loft only when it is steep enough to clear loft headroom;
     // a loft request raises the gable ridge so the central band qualifies.
-    // Flat: ridge == eave == a constant ceiling height (no slope). A-frame/gable
-    // keep their sloped ridge/eave (a loft request raises the gable ridge).
+    // Flat: ridge == eave (level). Shed: a single slope, high edge -> low edge.
+    // A-frame/gable keep their sloped ridge/eave (a loft request raises the
+    // gable ridge).
     roof: style === 'flat'
       ? { style, ridgeAxis: 'z' as const, ridgeHeightFt: FLAT_ROOF_HEIGHT_FT, eaveHeightFt: FLAT_ROOF_HEIGHT_FT }
-      : { style, ridgeAxis: 'z' as const, ridgeHeightFt: style === 'a-frame' ? 18 : (brief.hasLoft ? 20 : 14), eaveHeightFt: style === 'a-frame' ? 1 : 8 },
+      : style === 'shed'
+        ? { style, ridgeAxis: 'z' as const, ridgeHeightFt: SHED_RIDGE_FT, eaveHeightFt: SHED_EAVE_FT }
+        : { style, ridgeAxis: 'z' as const, ridgeHeightFt: style === 'a-frame' ? 18 : (brief.hasLoft ? 20 : 14), eaveHeightFt: style === 'a-frame' ? 1 : 8 },
     lot: brief.lot ?? null,
     hasLoft: brief.hasLoft,
     // Carry the RAW request (unclamped) so compile can refuse an unbuildable

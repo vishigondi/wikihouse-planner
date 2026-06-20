@@ -48,22 +48,13 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
       R312 *verdict* — pass/advise on guard presence — remains a possible future
       add, but the geometry now satisfies the requirement.)
 - [ ] _(enhancement)_ Constructively implement the remaining roof styles —
-      **flat DONE (fire 14)**; next: shed → hip → gambrel → barn — end-to-end
-      (planes + elevations + clip + code), built not refused. Each reuses the
-      plane-fit / clip / ceiling-profile / elevation machinery.
-      **SHED build plan (scouted fire 14, next fire):** single sloped plane,
-      high edge (ridge ~12 ft) at x=0, low edge (eave ~8 ft) at x=widthFt,
-      ridgeAxis 'z' (slope along x). Ceiling profile + R305 + opening clamps work
-      free via the existing plane machinery (`limitAtSpan`/`ceilingHeightAt`
-      sample the real plane). THE WORK: `elevations.ts` — the across-slope view
-      (front, gableFacing=true for ridgeAxis z) currently draws a CENTERED GABLE
-      TRIANGLE; shed needs a MONO-PITCH silhouette (wall up to ridge at x=0,
-      sloped top down to eave at x=widthFt). Add a `monoPitch` flag to the model
-      (set when roof.style==='shed') and a mono-pitch branch in
-      `elevationSvgString` — do NOT touch the gable/a-frame/flat paths (traced
-      plans must not regress visually). Add shed cases to check:generation +
-      check:elevations (assert the front silhouette is asymmetric: roofline y at
-      x≈0 ≈ ridge, at x≈span ≈ eave). Confirm 0 render offenders + visual check.
+      **flat DONE (fire 14), shed DONE (fire 15)**; next: hip → gambrel → barn —
+      end-to-end (planes + elevations + clip + code), built not refused.
+      **HIP next:** four planes sloping up to a central ridge (for a rectangular
+      footprint, the ridge is a line, not a point) — all four faces are hips. The
+      elevation model already handles gable (apex) and longitudinal (facade);
+      hip needs both faces to show a trapezoid (hipped ends). More elevation work
+      than shed; reuse the plane machinery for ceiling/R305/clip as usual.
 - [ ] _(enhancement)_ Truly synthesize N-bedroom layouts (4+) in the deterministic
       generator so large briefs are honored, not just refused (fire 1 made the
       refusal honest). Needs room-packing + walls/doors/windows/dims/code-check
@@ -90,6 +81,40 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 15 — BUILD the shed roof (mono-pitch, second roof style)
+- **Capability:** the generator REFUSED `shed` roofs; now it BUILDS them.
+  `"2 bed shed roof, 40x60 lot"` → a sound, code-checked single-slope plan.
+- **One constructive model:** a shed is ONE sloped plane, high edge (ridge 12 ft,
+  x=0) → low edge (eave 8 ft, x=widthFt), ridgeAxis 'z'. The geometry comes free
+  through the SAME plane machinery — `ceilingProfileForRect`/R305 and the opening
+  head-clamp (`limitAtSpan`/`ceilingHeightAt`) sample the real sloped plane, so
+  the ceiling slopes 12→8 (both ≥ 7 ft → R305 100% across the floor) and openings
+  clamp under the slope automatically. Reuses the gable footprints + the whole
+  room/fixture/egress layout (all prior fixes carry over).
+- **The real work — the elevation silhouette:** the across-slope (front) face
+  defaults to a CENTERED GABLE TRIANGLE; a shed needs a MONO-PITCH line (high
+  edge → low edge). Added `monoPitch` + `monoPitchHighAtStart` to the elevation
+  model (derived by sampling the plane at both span ends — no per-style geometry
+  guess) and a mono-pitch branch in `elevationSvgString`. The gable/a-frame/flat
+  paths are untouched → traced plans don't regress.
+- **Failing assertions FIRST (gates assert MORE):**
+  - `check:generation` — converted the fire-10 "shed → refused" case into 3
+    positive cases + a structural block: style shed, one plane that actually
+    slopes (ridge>eave) spanning ridge..eave, single level, valid outlines, the
+    FRONT elevation is mono-pitch (spans ridge..eave, not a centered apex), R305
+    passes under the slope for every bedroom, zero constraint fails.
+  - `check:elevations` — shed front+side models build, `monoPitch` true on the
+    across-slope face, openings clamp under the sloped roofline, silhouette is
+    asymmetric (ridge end ≠ eave end).
+- **Plumbing:** `'shed'` added to the union + `BUILDABLE_ROOF_STYLES`;
+  `SHED_RIDGE_FT`/`SHED_EAVE_FT` (12/8); `mockIntentFromBrief` selects shed +
+  reuses gable footprints; `compileIntent` emits the single sloped plane +
+  `front-shed` (sloped) / `side-shed` (high-wall) outlines.
+- **Verified:** offline R305 + structural + elevation batteries green; live
+  `POST /api/generate-plan` builds the shed (was 422); render primitives = 0
+  offenders; full `gates` + `gates:live` green. Throwaway gen-002 deleted.
+- **Commit:** _(pending push)_
 
 ### Fire 14 — BUILD the flat roof (first constructive-frontier capability)
 - **Capability:** the generator REFUSED `flat` roofs (fire 10 made the refusal

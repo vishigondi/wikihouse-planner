@@ -90,6 +90,18 @@ const flatSide = assertHonest('flat side', flatPlan, 'side');
 check('flat roof ridge == eave in the elevation model', flatFront.ridgeFt === flatFront.eaveFt && flatSide.ridgeFt === flatSide.eaveFt, `${flatFront.ridgeFt}/${flatFront.eaveFt}`);
 check('flat roof openings clamp under the flat roofline', [...flatFront.openings, ...flatSide.openings].every((o) => o.headFt <= flatFront.ridgeFt + 1e-6));
 
+console.log('plan: fresh 2-bed shed roof (mono-pitch, ridge > eave)');
+const shedPlan = compiled('2 bed shed roof, 40x60 lot, 5 ft setbacks');
+const shedFront = assertHonest('shed front', shedPlan, 'front');
+const shedSide = assertHonest('shed side', shedPlan, 'side');
+check('shed roof actually slopes in the model (ridge > eave)', shedFront.ridgeFt > shedFront.eaveFt, `${shedFront.ridgeFt}/${shedFront.eaveFt}`);
+check('shed front is the mono-pitch (across-slope) face', shedFront.monoPitch === true && shedFront.gableFacing === true);
+check('shed front high edge is at one end (not a centered apex)', shedFront.monoPitchHighAtStart === true || shedFront.monoPitchHighAtStart === false);
+check('shed openings clamp under the sloped roofline', [...shedFront.openings, ...shedSide.openings].every((o) => o.headFt <= shedFront.ridgeFt + 1e-6));
+// Mono-pitch silhouette: the two ends of the across-slope wall polygon are at
+// different heights (ridge vs eave), unlike a gable (symmetric) or flat (equal).
+check('shed front silhouette is asymmetric (ridge end != eave end)', shedFront.ridgeFt - shedFront.eaveFt > 1, `${shedFront.ridgeFt}/${shedFront.eaveFt}`);
+
 console.log('plan: traced a-frame-22 (ridge along x, inset openings, loft level)');
 const { readFileSync } = await import('node:fs');
 const traced = JSON.parse(readFileSync(join(root, 'public/data/den-image-loop/a-frame-22/paired/a-frame-22-proposal-paired-v10.paired.json'), 'utf8'));
