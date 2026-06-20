@@ -84,6 +84,11 @@ export interface ElevationModel {
   /** For a mono-pitch across-slope face: true when the high (ridge) edge is at
    * the start of the span (left), the low (eave) edge at the end. */
   monoPitchHighAtStart: boolean;
+  /** For a hip roof's long-side face: the ridge runs from ridgeStartFt to
+   * ridgeEndFt along the span (eave-to-ridge-to-eave trapezoid). Null otherwise.
+   * On a square footprint start == end -> the trapezoid collapses to a triangle
+   * (pyramid). */
+  hipTrapezoid: { ridgeStartFt: number; ridgeEndFt: number } | null;
   openings: ElevationOpening[];
 }
 
@@ -204,6 +209,16 @@ export function buildElevationModel(artifact: ElevationArtifactInput, side: 'fro
   const endCeil = facadeCeiling(planes, side, Math.max(0.05, spanFt - 0.05), eaveFt);
   const monoPitchHighAtStart = startCeil >= endCeil;
 
+  // A hip roof's long-side face is a trapezoid: the ridge runs only between the
+  // inset points (half the shorter dimension from each end), sloping down to the
+  // eave at both ends. The hip-END face stays a centered triangle (the existing
+  // gable render). On a square footprint the inset == half-span -> the ridge is a
+  // point (pyramid) and both faces are triangles.
+  const hipInset = Math.min(widthFt, depthFt) / 2;
+  const hipTrapezoid = roof.style === 'hip' && !gableFacing
+    ? { ridgeStartFt: hipInset, ridgeEndFt: Math.max(hipInset, spanFt - hipInset) }
+    : null;
+
   openings.sort((lhs, rhs) => lhs.center - rhs.center);
   return {
     planId: artifact.planId ?? 'plan',
@@ -216,6 +231,7 @@ export function buildElevationModel(artifact: ElevationArtifactInput, side: 'fro
     facadeWallFt,
     monoPitch,
     monoPitchHighAtStart,
+    hipTrapezoid,
     openings,
   };
 }
@@ -247,6 +263,14 @@ export function elevationSvgString(model: ElevationModel): string {
     const slope = (rightY - leftY) / model.spanFt;
     parts.push(`<polygon points="${X(0)},${Y(0)} ${X(0)},${Y(leftY)} ${X(model.spanFt)},${Y(rightY)} ${X(model.spanFt)},${Y(0)}" fill="#f2eee7" stroke="#3d3933" stroke-width="1.4"/>`);
     parts.push(`<polyline points="${X(-ov)},${Y(leftY - slope * ov)} ${X(model.spanFt + ov)},${Y(rightY + slope * ov)}" fill="none" stroke="#26231f" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`);
+  } else if (model.hipTrapezoid) {
+    // Hip long side: walls to the eave all across, then the roofline rises from
+    // the eave at each end to the inset ridge and runs flat between the inset
+    // points. A square footprint makes start == end -> a centered apex (pyramid).
+    const rs = model.hipTrapezoid.ridgeStartFt;
+    const re = model.hipTrapezoid.ridgeEndFt;
+    parts.push(`<polygon points="${X(0)},${Y(0)} ${X(model.spanFt)},${Y(0)} ${X(model.spanFt)},${Y(model.eaveFt)} ${X(re)},${Y(model.ridgeFt)} ${X(rs)},${Y(model.ridgeFt)} ${X(0)},${Y(model.eaveFt)}" fill="#f2eee7" stroke="#3d3933" stroke-width="1.4"/>`);
+    parts.push(`<polyline points="${X(-ov)},${Y(model.eaveFt)} ${X(rs)},${Y(model.ridgeFt)} ${X(re)},${Y(model.ridgeFt)} ${X(model.spanFt + ov)},${Y(model.eaveFt)}" fill="none" stroke="#26231f" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`);
   } else if (model.gableFacing) {
     // Gable face: wall polygon rises to the ridge; roof edge with overhang.
     const apexX = X(model.spanFt / 2);

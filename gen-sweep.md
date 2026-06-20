@@ -48,8 +48,14 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
       R312 *verdict* — pass/advise on guard presence — remains a possible future
       add, but the geometry now satisfies the requirement.)
 - [ ] _(enhancement)_ Constructively implement the remaining roof styles —
-      **flat DONE (fire 14), shed DONE (fire 15)**; next: hip → gambrel → barn —
-      end-to-end (planes + elevations + clip + code), built not refused.
+      **flat DONE (fire 14), shed DONE (fire 15), hip DONE (fire 16)**; next:
+      gambrel → barn — end-to-end (planes + elevations + clip + code), built not
+      refused. **GAMBREL next:** a two-pitch gable (steep lower slope, shallow
+      upper slope, like a barn roof but only on two sides) → 4 planes (2 per
+      side) meeting at a ridge; the gable-end elevation is a 5-sided polygon
+      (eave → knuckle → ridge → knuckle → eave). **BARN** = gambrel on all four
+      sides (gambrel : gable :: hip : ... ) — reuse the gambrel plane builder +
+      hip-style end treatment. Both reuse the ceiling/R305/clip machinery.
       **HIP build plan (scouted fire 15, next fire) — ONE model, degenerates:**
       ridge line along the LONGER axis, inset from each end by (shorter_dim / 2)
       (standard 45°-in-plan hip), at the footprint center, height ridgeH. FOUR
@@ -96,6 +102,42 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 16 — BUILD the hip roof (four planes; pyramid on a square footprint)
+- **Capability:** the generator REFUSED `hip` roofs; now it BUILDS them, for both
+  a SQUARE footprint (1/2-bed 28×28 → pyramid, ridge = point) and a RECTANGLE
+  (3-bed 36×28 → ridge line). `"2 bed hip roof, 40x60 lot"` → a sound plan.
+- **One constructive model, degenerating:** ridge line along the LONGER axis,
+  inset from each end by half the shorter dimension (45° hip in plan); four
+  planes — two long trapezoids + two triangular hip ends — with the eave running
+  around the WHOLE perimeter at 8 ft. When square, the inset == half-span so the
+  ridge collapses to a point and all four planes become triangles to one apex (a
+  pyramid). ONE formula, no per-aspect special case. R305 comes free: the
+  perimeter eave is 8 ft so the ceiling is ≥ 8 everywhere (100% pass), via the
+  same `ceilingProfileForRect` (min over the four planes' bboxes).
+- **The elevation work (the real effort):** the hip END face is a centered
+  triangle → the existing gable render already serves it. The long-SIDE face is a
+  TRAPEZOID (eave → inset ridge → flat → eave) that the facade path drew as a
+  full-width ridge (would read as a gable). Added `hipTrapezoid {ridgeStart,
+  ridgeEnd}` to the elevation model and a trapezoid render branch in
+  `elevationSvgString` — it collapses to the pyramid triangle when start==end.
+  gable/a-frame/flat/shed paths untouched → traced plans don't regress.
+- **Failing assertions FIRST (gates assert MORE):**
+  - `check:generation` — converted the fire-10 "hip → refused" case into 3
+    positive cases + a structural block (square + rect): style hip, FOUR planes,
+    ridge along the longer axis, every plane reaches the perimeter eave, single
+    level, valid outlines, R305 passes for every bedroom, zero constraint fails.
+  - `check:elevations` — hip front+side models build (square + rect), eave <
+    ridge on both faces, openings clamp under the hipped roofline, the long side
+    is a TRAPEZOID with the ridge inset from both ends (not a full-width ridge).
+- **Plumbing:** `'hip'` added to the union + `BUILDABLE_ROOF_STYLES`;
+  `HIP_RIDGE_FT`/`HIP_EAVE_FT` (14/8); `mockIntentFromBrief` selects hip, reuses
+  gable footprints, sets ridgeAxis to the longer axis; `compileIntent` emits the
+  four hip planes (both axis orientations) + trapezoid/triangle outlines.
+- **Verified:** offline batteries green; live `POST /api/generate-plan` builds
+  both hip variants (was 422); render primitives = 0 offenders; full `gates` +
+  `gates:live` green. Throwaway gen-002 deleted.
+- **Commit:** _(pending push)_
 
 ### Fire 15 — BUILD the shed roof (mono-pitch, second roof style)
 - **Capability:** the generator REFUSED `shed` roofs; now it BUILDS them.

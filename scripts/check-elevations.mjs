@@ -102,6 +102,20 @@ check('shed openings clamp under the sloped roofline', [...shedFront.openings, .
 // different heights (ridge vs eave), unlike a gable (symmetric) or flat (equal).
 check('shed front silhouette is asymmetric (ridge end != eave end)', shedFront.ridgeFt - shedFront.eaveFt > 1, `${shedFront.ridgeFt}/${shedFront.eaveFt}`);
 
+console.log('plan: fresh 3-bed hip roof (ridge line along x) + 2-bed hip (pyramid)');
+const hipRect = compiled('3 bed hip roof, 60x80 lot, 10 ft setbacks');
+const hipRectFront = assertHonest('hip-rect front', hipRect, 'front');
+const hipRectSide = assertHonest('hip-rect side', hipRect, 'side');
+check('hip roof eave runs around the perimeter (eave < ridge both faces)', hipRectFront.eaveFt < hipRectFront.ridgeFt && hipRectSide.eaveFt < hipRectSide.ridgeFt, `${hipRectFront.eaveFt}/${hipRectFront.ridgeFt}`);
+check('hip openings clamp under the hipped roofline', [...hipRectFront.openings, ...hipRectSide.openings].every((o) => o.headFt <= hipRectFront.ridgeFt + 1e-6));
+// The long side must render the hipped-end TRAPEZOID (ridge inset from both
+// ends), not a full-width gable ridge.
+check('hip long side is a trapezoid (ridge inset from both ends)', Boolean(hipRectFront.hipTrapezoid) && hipRectFront.hipTrapezoid.ridgeStartFt > 0.5 && hipRectFront.hipTrapezoid.ridgeEndFt < hipRectFront.spanFt - 0.5, JSON.stringify(hipRectFront.hipTrapezoid));
+check('hip long-side svg draws the inset ridge (not a full-width ridge)', elevationSvgString(hipRectFront).includes('polyline'));
+const hipSq = compiled('2 bed hip roof, 40x60 lot, 5 ft setbacks');
+const hipSqFront = assertHonest('hip-square front', hipSq, 'front');
+check('hip square footprint still renders an honest elevation', hipSqFront.eaveFt < hipSqFront.ridgeFt);
+
 console.log('plan: traced a-frame-22 (ridge along x, inset openings, loft level)');
 const { readFileSync } = await import('node:fs');
 const traced = JSON.parse(readFileSync(join(root, 'public/data/den-image-loop/a-frame-22/paired/a-frame-22-proposal-paired-v10.paired.json'), 'utf8'));

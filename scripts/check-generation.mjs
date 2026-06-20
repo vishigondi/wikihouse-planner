@@ -187,10 +187,17 @@ const CASES = [
   { name: 'maxSqft cap below smallest template (a-frame)', brief: '2 bed a-frame, ≤600 sqft', expectCompileError: /exceeds the requested ≤600 sq ft cap/i },
 
   // Roof-style honesty: a recognized style the generator does not BUILD must be
-  // REFUSED, never silently substituted. Flat + shed ARE built now (blocks
-  // below); hip/gambrel are still refused until built.
-  { name: 'hip roof unsupported -> refused', brief: '3 bed hip roof, 80x60 lot, 10 ft setbacks', expectCompileError: /builds only .*roofs/i },
+  // REFUSED, never silently substituted. Flat + shed + hip ARE built now (blocks
+  // below); gambrel/barn are still refused until built.
   { name: 'gambrel roof unsupported -> refused', brief: '2 bed gambrel, 60x80 lot, 10 ft setbacks', expectCompileError: /builds only .*roofs/i },
+  { name: 'barn roof unsupported -> refused', brief: '2 bed barn roof, 60x80 lot, 10 ft setbacks', expectCompileError: /builds only .*roofs/i },
+
+  // Hip roof — BUILT (fire 16): four planes to a central ridge (a pyramid on a
+  // square footprint). style 'hip'; R305 passes (eave runs around the whole
+  // perimeter ≥ 7 ft).
+  { name: '2-bed hip roof (square -> pyramid)', brief: '2 bed hip roof, 40x60 lot, 5 ft setbacks', bedrooms: 2, style: 'hip', hasLot: true, expectWidth: 28 },
+  { name: '3-bed hip roof (rect -> ridge line)', brief: '3 bed hip roof, 60x80 lot, 10 ft setbacks', bedrooms: 3, style: 'hip', hasLot: true, expectWidth: 36 },
+  { name: '1-bed hip roof, no lot', brief: '1 bed hip roof', bedrooms: 1, style: 'hip', hasLot: false, expectWidth: 28 },
 
   // Flat roof — BUILT (fire 14): a flat-roof brief produces a sound plan, not a
   // refusal. style 'flat', single horizontal plane, R305 passes on the flat
@@ -392,6 +399,30 @@ for (const bed of shed.artifact.rooms.filter((r) => r.type === 'bedroom')) {
   check(`shed-roof ${bed.id} R305 passes under the slope`, statusOf(shedReport, 'IRC-R305.1', bed.id) === 'pass', statusOf(shedReport, 'IRC-R305.1', bed.id));
 }
 check('shed roof has zero constraint-fail findings', shedReport.findings.filter((f) => f.status === 'fail').length === 0, shedReport.findings.filter((f) => f.status === 'fail').map((f) => f.ruleId).join(', '));
+
+// --- Hip roof (fire 16): built, not refused --------------------------------
+// A hip is FOUR planes rising to a central ridge (a pyramid on a square
+// footprint). The eave runs around the whole perimeter at 8 ft, so the ceiling
+// is >= 8 everywhere -> R305 passes across the floor. Same plane machinery.
+console.log('hip roof: square footprint -> pyramid; rectangle -> ridge line');
+for (const [label, brief, expectSquare] of [['2-bed hip (square)', '2 bed hip roof, 40x60 lot, 5 ft setbacks', true], ['3-bed hip (rect)', '3 bed hip roof, 60x80 lot, 10 ft setbacks', false]]) {
+  const hip = compileIntent(mockIntentFromBrief(parseBrief(brief)), 'battery-hip', brief);
+  check(`${label}: compiles cleanly`, hip.ok, hip.errors.join('; '));
+  if (!hip.ok) continue;
+  check(`${label}: roof style is hip`, hip.artifact.roof.style === 'hip', hip.artifact.roof.style);
+  check(`${label}: hip has four roof planes`, (hip.artifact.roof.planes ?? []).length === 4, `${(hip.artifact.roof.planes ?? []).length} planes`);
+  check(`${label}: ridge along the longer axis`, hip.artifact.roof.ridgeAxis === (hip.artifact.footprint.widthFt >= hip.artifact.footprint.depthFt ? 'x' : 'z'));
+  // Eave around the whole perimeter: every plane reaches the eave height.
+  const reachesEave = (hip.artifact.roof.planes ?? []).every((p) => (p.points ?? []).some((pt) => Math.abs(pt.y - hip.artifact.roof.eaveHeightFt) < 1e-6));
+  check(`${label}: every hip plane reaches the eave (perimeter eave)`, reachesEave);
+  check(`${label}: stays single level`, hip.artifact.footprint.levels !== 2);
+  check(`${label}: elevations are valid outlines (>=3 pts)`, (hip.artifact.elevations ?? []).every((e) => (e.outline ?? []).length >= 3));
+  const hipReport = reportForArtifact(hip.artifact);
+  for (const bed of hip.artifact.rooms.filter((r) => r.type === 'bedroom')) {
+    check(`${label}: ${bed.id} R305 passes (perimeter eave >= 7 ft)`, statusOf(hipReport, 'IRC-R305.1', bed.id) === 'pass', statusOf(hipReport, 'IRC-R305.1', bed.id));
+  }
+  check(`${label}: zero constraint-fail findings`, hipReport.findings.filter((f) => f.status === 'fail').length === 0, hipReport.findings.filter((f) => f.status === 'fail').map((f) => f.ruleId).join(', '));
+}
 
 console.log('loft: a roof with no headroom degrades honestly (no loft built)');
 // Direct intent with a near-flat roof: buildLoft must refuse rather than fake
