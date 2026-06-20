@@ -32,9 +32,9 @@ _(updated each fire)_
       large briefs are honored, not just refused (fire 1 made the refusal honest;
       the constructive model is the bigger win). Needs room-packing + walls/doors/
       windows/dims/code-check for arbitrary N — substantial, gate carefully.
-- [ ] Inspect requested-sqft fidelity: footprint caps at 36×28 (~1008 sqft); a
-      2400-sqft request silently shrank (now moot for >3-bed since it errors, but
-      a 3-bed "1400 sqft" still yields 1008 — is that surfaced honestly?).
+- [x] Requested-sqft fidelity — fire 4: a ≤sqft cap below the smallest template
+      was silently exceeded; now refused with a clear message. (A ≤cap ABOVE the
+      build, e.g. ≤1400 → 1008, is correct: ≤ is an upper bound, honored.)
 - [x] Drive baths/loft/roof program fidelity — fire 3: baths silently downgraded
       (fixed via reconciliation notes); loft + roof are honest. Class closed for
       these dimensions.
@@ -123,4 +123,26 @@ _(bug → class → test → root-cause fix → commit)_
 - **Verified:** `check:generation` green; live API 2-bath→ returns
   `notes:["requested 2 baths; built 1 …"]`; 1-bath/2-bath-that-fit unchanged;
   gen-001 + traced untouched. gates + gates:live green. Throwaway gen-002 deleted.
+- **Commit:** `2435078`
+
+### Fire 4 — maxSqft cap silently exceeded (same class, found by class scan)
+- **Bug (found by driving extremes + class scan):** a `≤sqft` cap no template can
+  meet is silently exceeded — "2 bed gable, ≤500 sqft" → 672 (172 over); "2 bed
+  a-frame, ≤600" → 784 (184 over); "3 bed, ≤700" → 784; even "≤50 sqft" → 784
+  (15×). `fits()` prefers a footprint within the cap, but the fallback ships the
+  smallest template anyway and `compileIntent` never enforced maxSqft — the same
+  filter-then-ignore pattern as bedrooms (fire 1) and coverage (fire 2).
+- **Class:** _silent program mismatch — generator delivers a footprint larger
+  than the user's explicit ≤sqft cap with no error (input honesty, P5)._
+- **Failing assertion added (gates assert MORE):** `check:generation` "maxSqft
+  cap below smallest template (gable / a-frame)" — must refuse with a clear
+  message (shipped before → fails the gate; refuses after).
+- **Root-cause fix:** thread `GenerationIntent.requestedMaxSqft` (raw cap) and
+  refuse at `compileIntent` when the chosen footprint area exceeds it — beside
+  the bedroom/envelope/coverage refusals. Impossible cap → refuse (consistent
+  with bedrooms over-cap), not a silent oversize plan.
+- **Verified:** `check:generation` green (≤500/≤600 refuse; ≤700→672 and ≤800/
+  ≤1200 viable briefs + gen-001 + traced unchanged). Live API: ≤500 → 422
+  "672 sq ft exceeds the requested ≤500 sq ft cap"; ≤800 → still generates.
+  gates + gates:live green. Throwaway gen-002 deleted.
 - **Commit:** _(pending push)_

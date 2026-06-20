@@ -178,6 +178,12 @@ const CASES = [
   // own ZON-COVERAGE report. (38x38 lot -> 28x28 fits envelope but 54% coverage.)
   { name: 'fits envelope but over coverage cap (a-frame)', brief: '2 bed a-frame, 38x38 lot, 5 ft setbacks', expectCompileError: /coverage cap|over the 35% coverage/i },
   { name: 'fits envelope but over coverage cap (gable)', brief: '2 bed gable, 40x40 lot, 5 ft setbacks', expectCompileError: /coverage cap|over the 35% coverage/i },
+
+  // Sqft-cap honesty: a ≤sqft cap no template can meet must be refused, not
+  // silently exceeded by shipping a larger footprint (smallest 2-bed gable is
+  // 672 sqft; ≤500 is unbuildable). ≤700 (which 672 satisfies) still compiles.
+  { name: 'maxSqft cap below smallest template (gable)', brief: '2 bed gable, ≤500 sqft', expectCompileError: /exceeds the requested ≤500 sq ft cap/i },
+  { name: 'maxSqft cap below smallest template (a-frame)', brief: '2 bed a-frame, ≤600 sqft', expectCompileError: /exceeds the requested ≤600 sq ft cap/i },
 ];
 
 for (const testCase of CASES) {

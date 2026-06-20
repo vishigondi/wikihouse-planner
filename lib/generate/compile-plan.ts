@@ -63,6 +63,9 @@ export interface GenerationIntent {
   /** Baths the brief asked for, BEFORE any fit downgrade — so the compiler can
    * SURFACE (rather than silently drop) a 2nd bath that didn't fit the size/lot. */
   requestedBaths?: number;
+  /** The ≤ sqft cap the brief asked for — so the compiler can refuse (rather than
+   * silently exceed) a cap no template is small enough to meet. */
+  requestedMaxSqft?: number;
   rooms: IntentRoom[];
   doors: IntentDoor[];
   windows: IntentWindow[];
@@ -337,6 +340,18 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
     errors.push(
       `requested ${intent.requestedBedrooms} bedrooms; the deterministic generator builds at most ${MAX_TEMPLATE_BEDROOMS} `
       + `— reduce the bedroom count or supply an OPENAI_API_KEY for full generation`,
+    );
+  }
+
+  // A ≤ sqft cap no template can meet is an unbuildable program: refuse rather
+  // than silently ship a footprint larger than the user allowed (same input-
+  // honesty class — fits() prefers a footprint within the cap; this catches the
+  // case where even the smallest exceeds it).
+  if (typeof intent.requestedMaxSqft === 'number' && widthFt > 0 && depthFt > 0
+    && widthFt * depthFt > intent.requestedMaxSqft + EPS) {
+    errors.push(
+      `footprint ${widthFt}x${depthFt} ft (${widthFt * depthFt} sq ft) exceeds the requested ≤${intent.requestedMaxSqft} sq ft cap `
+      + `— the smallest template for this program is larger; raise the cap or reduce the program`,
     );
   }
 
@@ -814,6 +829,9 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
     // Carry the intended bath count so compile can SURFACE a downgrade (e.g. a
     // 2nd bath that the size/lot-constrained footprint couldn't host).
     requestedBaths: bathsRequested,
+    // Carry the ≤ sqft cap so compile can refuse a cap no template can meet,
+    // instead of silently shipping a footprint larger than the user allowed.
+    requestedMaxSqft: brief.maxSqft,
     rooms,
     doors,
     windows,
