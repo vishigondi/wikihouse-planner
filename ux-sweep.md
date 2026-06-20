@@ -863,3 +863,6 @@ new bug restarts the normal find→class→gate→fix cycle.
 
 ### Fire 65 — clean (filter interaction tick)
 - Feed 6 → non-matching search → 0 + Clear → restored 6; no console errors. Converged app; tick.
+
+### Fire 66 — clean (plan-nav tick)
+- gen-001 → Next → loft-showcase; canvas intact; no console errors. Converged app; tick.
