@@ -89,10 +89,23 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
       - GATES: convert the check:generation "hip → refused" case to positive +
         structural (4 planes, eave around perimeter, R305 passes, trapezoid/centered
         silhouette); add a hip case to check:elevations. Confirm 0 render offenders.
-- [ ] _(enhancement)_ Truly synthesize N-bedroom layouts (4+) in the deterministic
-      generator so large briefs are honored, not just refused (fire 1 made the
-      refusal honest). Needs room-packing + walls/doors/windows/dims/code-check
-      for arbitrary N — substantial, gate carefully.
+- [ ] _(enhancement)_ Synthesize 4+ bedroom layouts (fire 1 made the refusal
+      honest; now BUILD it). **4-BED build plan (scouted fire 18) — de-risked:**
+      `starterFixtures` already iterates rooms generically (bed→bed+wardrobe,
+      bath→toilet+vanity+shower, kitchen, living), the interior-wall builder
+      derives walls from room rects, and R305/egress/area checks all generalize —
+      so a 4-bed template needs ONLY room rectangles + doors + windows authored.
+      Concrete fully-tiling **48×28** layout (no gaps/overlaps):
+      • front z0–12: living x0–24, kitchen x24–48.
+      • hall z12–16: full width 48.
+      • back z16–28: bed1 x0–11, bed2 x11–22, bath x22–30 (w8), bed3 x30–39,
+        bed4 x39–48 (all d12; beds ≥ 9×12 = 108 sqft ✓).
+      • egress windows: bed1 W(x0), bed2 S(z28), bed3 S(z28), bed4 E(x48) — all 4
+        operable. Doors from hall to each bed + bath; entry→living; living↔kitchen
+        open. Raise MAX_TEMPLATE_BEDROOMS 3→4; add 48×28 footprint for n=4.
+      Build steps: failing check:generation case (4-bed compiles, 4 bedrooms,
+      each egress, R305 pass, zero fails, no overlap) → author the block → gates.
+      5/6-bed stay honestly refused (a future general packer). Gate carefully.
 - [x] Requested-sqft fidelity — fire 4: a ≤sqft cap below the smallest template
       was silently exceeded; now refused with a clear message. (A ≤cap ABOVE the
       build, e.g. ≤1400 → 1008, is correct: ≤ is an upper bound, honored.)
