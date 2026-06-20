@@ -742,3 +742,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   overflow, canvas present). Both hold; no console errors. With fires 43–46 this
   completes a live re-verification of all the shipped browser/keyboard/a11y fixes.
 - **Result:** no regression. No app-code change; gates green by identity.
+
+### Fire 48 — clean (Repair Rollback/Clear)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** the one
+  directly-untested control — the Repair modal's "Rollback/Clear". Filled the
+  patch textarea (27 chars) → clicked Rollback/Clear → field cleared (0), modal
+  stays open, no console errors.
+- **Result:** no bug — Rollback/Clear behaves. With this, every interactive
+  control in the app has been driven directly. No app-code change; gates green by
+  identity.
