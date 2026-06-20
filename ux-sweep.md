@@ -846,3 +846,7 @@ new bug restarts the normal find→class→gate→fix cycle.
   every plan/modal + brochure QA + batteries + build).
 - **Result:** fire-60 milestone — the entire hardened envelope confirmed. 35
   consecutive clean sweeps; app byte-identical since fire 25.
+
+### Fire 61 — clean (steady-state smoke)
+- Feed (6 cards) + plan detail (Export + 3D canvas) render; no console errors.
+  App converged (full regression green at fire 60); proportionate watch tick.
