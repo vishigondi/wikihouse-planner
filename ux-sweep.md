@@ -751,3 +751,11 @@ new bug restarts the normal find→class→gate→fix cycle.
 - **Result:** no bug — Rollback/Clear behaves. With this, every interactive
   control in the app has been driven directly. No app-code change; gates green by
   identity.
+
+### Fire 49 — clean (core create-flow smoke)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** the
+  central value prop — typed a brief → Generate → landed on the new plan's detail
+  (gen-002, "13 GATES PASS", Export + 3D canvas), no console errors. Throwaway
+  gen-002 deleted (only gen-001 remains).
+- **Result:** no bug — brief→code-checked-plan works end-to-end. No app-code
+  change; gates green by identity.
