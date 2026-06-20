@@ -887,3 +887,6 @@ new bug restarts the normal find→class→gate→fix cycle.
 
 ### Fire 73 — clean (detail smoke)
 - gen-001 detail (Export + canvas); no console errors. Converged app; tick.
+
+### Fire 74 — clean (feed smoke)
+- Feed 6 cards; no console errors. Converged app; tick.
