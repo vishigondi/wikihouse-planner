@@ -726,3 +726,11 @@ new bug restarts the normal find→class→gate→fix cycle.
   restored). Both hold; no console errors.
 - **Result:** no regression — deep-link surfacing + Back/Forward still behave
   live. No app-code change; gates green by identity.
+
+### Fire 46 — clean (live spot-check: a11y names/labels + tab title)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** rotated
+  the live regression to the a11y fixes — fire 8 (0 nameless controls on home +
+  detail), fire 10 (0 unlabeled form fields), fire 20 (feed title base, detail
+  "gen-001 - Floorplan Studio"). All hold; no console errors.
+- **Result:** no regression — names/labels/title still behave live. No app-code
+  change; gates green by identity.
