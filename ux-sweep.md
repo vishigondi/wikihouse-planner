@@ -812,3 +812,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   engagement bar (6/6/6/6). No console errors.
 - **Result:** no regression — the feed-card consistency invariants hold. No
   app-code change; gates green by identity.
+
+### Fire 57 — clean (Look Render consistency lane)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  guardrail-aligned tick — Look Render shows the deterministic reference
+  elevations (front + side) and the "not to scale" illustrative label alongside
+  the copy control. No console errors.
+- **Result:** no regression — the look-render consistency lane (deterministic
+  references + not-to-scale labeling) holds. No app-code change; gates green by
+  identity.
