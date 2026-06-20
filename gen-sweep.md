@@ -35,8 +35,11 @@ _(updated each fire)_
 - [ ] Inspect requested-sqft fidelity: footprint caps at 36×28 (~1008 sqft); a
       2400-sqft request silently shrank (now moot for >3-bed since it errors, but
       a 3-bed "1400 sqft" still yields 1008 — is that surfaced honestly?).
-- [ ] Drive baths/loft/roof program fidelity the same way (does requested output
-      match, or silently downgrade without surfacing?).
+- [x] Drive baths/loft/roof program fidelity — fire 3: baths silently downgraded
+      (fixed via reconciliation notes); loft + roof are honest. Class closed for
+      these dimensions.
+- [ ] UX-loop follow-up: render `compiled.notes` (program reconciliations) on the
+      plan-detail page so the downgrade is visible in the UI, not just the API.
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
@@ -92,4 +95,32 @@ _(bug → class → test → root-cause fix → commit)_
   generous-lot viable briefs + gen-001 + traced unchanged). Live API: 38×38 lot
   → 422 "covers 54.3% … over the 35% coverage cap"; 40×60 lot → still generates.
   gates + gates:live green. Throwaway gen-002 deleted; only gen-001 remains.
+- **Commit:** `c204a45`
+
+### Fire 3 — silent 2-bath→1-bath downgrade (SAME class as fire 1, broadened)
+- **Bug (found by driving + class scan):** a "2 bath" brief whose footprint only
+  fits one bath silently produced a 1-bath plan — no error, no note, API returned
+  plain `{planId,…}`. This is the **same class as fire 1's bedroom drop: silent
+  program mismatch**. Per the instruction to fix the whole class, I scanned every
+  program dimension: **baths** silently downgrade (defect); **loft** is granted
+  or cleanly refused (honest); **roof style** always honored (honest). Baths was
+  the one remaining silent instance.
+- **Class:** _the generator delivers a program that differs from the brief
+  without surfacing it (input honesty, P5)._ Two honest responses: impossible
+  programs REFUSE (bedrooms, fire 1); accommodated downgrades must be SURFACED
+  (baths).
+- **Failing assertion added (gates assert MORE):** `check:generation` "bath
+  downgrade surfaced as a note (not silent)" — the downgrade case must carry a
+  bath reconciliation note (was silent → gate fails; surfaced → passes).
+- **Root-cause fix (one mechanism for the class):** added program reconciliation
+  to the compile contract — `GenerationIntent.requestedBaths` (raw request),
+  `CompileResult.notes[]`, and a `compileIntent` step that compares built vs
+  requested baths and surfaces a clear note (ok stays true — a 1-bath home is
+  valid). The API now returns `notes` on success, so generation is honest:
+  accommodated, never silently honored. Artifact stays byte-identical (no
+  geometry change). UI rendering of `notes` on the detail is a UX-loop follow-up
+  (logged) — out of this loop's compiler/engine scope.
+- **Verified:** `check:generation` green; live API 2-bath→ returns
+  `notes:["requested 2 baths; built 1 …"]`; 1-bath/2-bath-that-fit unchanged;
+  gen-001 + traced untouched. gates + gates:live green. Throwaway gen-002 deleted.
 - **Commit:** _(pending push)_

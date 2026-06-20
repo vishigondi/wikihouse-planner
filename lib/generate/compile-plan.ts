@@ -60,6 +60,9 @@ export interface GenerationIntent {
   /** Bedrooms the brief asked for, BEFORE any template clamp — so the compiler can
    * refuse (rather than silently misrepresent) a program it can't build. */
   requestedBedrooms?: number;
+  /** Baths the brief asked for, BEFORE any fit downgrade — so the compiler can
+   * SURFACE (rather than silently drop) a 2nd bath that didn't fit the size/lot. */
+  requestedBaths?: number;
   rooms: IntentRoom[];
   doors: IntentDoor[];
   windows: IntentWindow[];
@@ -69,6 +72,10 @@ export interface GenerationIntent {
 export interface CompileResult {
   ok: boolean;
   errors: string[];
+  /** Non-fatal program reconciliations the user must be told about — e.g. a
+   * requested 2nd bath that the fitting footprint couldn't host. Honest output:
+   * an accommodation is surfaced here, never silently applied. */
+  notes?: string[];
   artifact?: Record<string, unknown>;
 }
 
@@ -316,6 +323,7 @@ function starterFixtures(intent: GenerationIntent, walls: WallSegment[]): Starte
 
 export function compileIntent(intent: GenerationIntent, planId: string, brief: string): CompileResult {
   const errors: string[] = [];
+  const notes: string[] = [];
   const { widthFt, depthFt } = intent.footprint ?? { widthFt: 0, depthFt: 0 };
   if (!(widthFt > 0 && depthFt > 0)) errors.push('footprint must have positive widthFt/depthFt');
   const rooms = intent.rooms ?? [];
@@ -357,6 +365,19 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
         `footprint ${widthFt}x${depthFt} ft covers ${(coverage * 100).toFixed(1)}% of the `
         + `${lot.widthFt}x${lot.depthFt} ft lot, over the ${(maxRatio * 100).toFixed(0)}% coverage cap `
         + `— enlarge the lot or lower the program`,
+      );
+    }
+  }
+
+  // Program reconciliation (no silent mismatch): a bath count the fitting
+  // footprint couldn't host is a valid plan, but the dropped bath MUST be
+  // surfaced — never silently delivered as if the brief were honored.
+  if (typeof intent.requestedBaths === 'number') {
+    const builtBaths = rooms.filter((room) => room.type === 'bathroom').length;
+    if (builtBaths < intent.requestedBaths) {
+      notes.push(
+        `requested ${intent.requestedBaths} baths; built ${builtBaths} — only a single-bath footprint `
+        + `fits this size/lot. Enlarge the footprint for a second bath.`,
       );
     }
   }
@@ -589,7 +610,7 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
     }
   }
 
-  return { ok: true, errors: [], artifact };
+  return { ok: true, errors: [], notes: notes.length ? notes : undefined, artifact };
 }
 
 /**
@@ -790,6 +811,9 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
     // Carry the RAW request (unclamped) so compile can refuse an unbuildable
     // bedroom count instead of silently shipping the clamped 3-bed layout.
     requestedBedrooms: brief.bedrooms,
+    // Carry the intended bath count so compile can SURFACE a downgrade (e.g. a
+    // 2nd bath that the size/lot-constrained footprint couldn't host).
+    requestedBaths: bathsRequested,
     rooms,
     doors,
     windows,

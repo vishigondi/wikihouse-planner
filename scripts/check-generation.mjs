@@ -166,7 +166,7 @@ const CASES = [
   // when only a narrow single-bath variant fits the size limit.
   { name: '2-bed 2-bath a-frame ensuite', brief: '2 bed 2 bath a-frame, 40x60 lot, 5 ft side setbacks', bedrooms: 2, style: 'a-frame', hasLot: true, expectWidth: 28, expectBaths: 2 },
   { name: '3-bed 2-bath a-frame', brief: '3 bed 2 bath a-frame ≤1200 sqft, 80x60 lot, 10 ft setbacks', bedrooms: 3, style: 'a-frame', hasLot: true, expectWidth: 36, expectBaths: 2 },
-  { name: '2-bath downgrades when only narrow fits', brief: '2 bed 2 bath gable, ≤700 sqft', bedrooms: 2, style: 'gable', hasLot: false, expectWidth: 24, expectBaths: 1 },
+  { name: '2-bath downgrades when only narrow fits', brief: '2 bed 2 bath gable, ≤700 sqft', bedrooms: 2, style: 'gable', hasLot: false, expectWidth: 24, expectBaths: 1, expectBathNote: true },
 
   // Program honesty: a bedroom count beyond the template ceiling (3) must be
   // refused with a clear message, NOT silently collapsed to a 3-bedroom plan.
@@ -213,6 +213,13 @@ for (const testCase of CASES) {
   if (testCase.expectBaths) {
     const bathsInPlan = artifact.rooms.filter((room) => room.type === 'bathroom').length;
     check(`bath count ${testCase.expectBaths}`, bathsInPlan === testCase.expectBaths, `got ${bathsInPlan}`);
+  }
+  if (testCase.expectBathNote) {
+    // A dropped 2nd bath must be SURFACED (no silent program mismatch) — same
+    // input-honesty class as the bedroom over-cap refusal.
+    check('bath downgrade surfaced as a note (not silent)',
+      (compiled.notes || []).some((note) => /bath/i.test(note)),
+      JSON.stringify(compiled.notes) || 'no notes');
   }
   if (Number.isFinite(parsed.maxSqft)) {
     const area = artifact.footprint.widthFt * artifact.footprint.depthFt;

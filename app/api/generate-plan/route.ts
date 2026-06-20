@@ -242,5 +242,12 @@ export async function POST(request: Request) {
     // Render backfill can be run manually via npm run render:paired.
   }
 
-  return NextResponse.json({ planId, mode: useMock ? 'mock' : 'live', url: `/?home=${planId}` });
+  // Surface any program reconciliation (e.g. a requested 2nd bath that didn't
+  // fit) so success is honest — the brief was accommodated, not silently honored.
+  return NextResponse.json({
+    planId,
+    mode: useMock ? 'mock' : 'live',
+    url: `/?home=${planId}`,
+    ...(compiled.notes?.length ? { notes: compiled.notes } : {}),
+  });
 }
