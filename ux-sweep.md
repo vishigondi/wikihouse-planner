@@ -759,3 +759,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   gen-002 deleted (only gen-001 remains).
 - **Result:** no bug — brief→code-checked-plan works end-to-end. No app-code
   change; gates green by identity.
+
+### Fire 50 — clean (milestone: full-ladder regression)
+- **Ran the entire gate suite** (`npm run gates` + `npm run gates:live`) — the
+  periodic full regression (last at fire 40). All batteries + build + live
+  brochure QA + the full interactive sweep: 27 class/edge gate assertions passing,
+  **0 failures, all live gates green.**
+- **Result:** fire-50 milestone — the entire hardened envelope (all 17 fixed
+  classes + responsive 320→1440 + every plan/modal) confirmed green. 25
+  consecutive clean sweeps; app byte-identical since fire 25.
