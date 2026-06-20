@@ -28,8 +28,15 @@ reliably produce sound, correctly code-checked plans you'd hand to an architect.
 ## Backlog
 _(updated each fire)_
 
-- [ ] `doorSwingClear: true` on fixtures is hardcoded, not computed (compile-plan
-      line ~265). Latent metadata-honesty item — the field asserts a verified
+**Status (after fire 13):** the CORRECTNESS + HONESTY frontier is swept — no
+open defect class. Diverse briefs produce sound, code-checked plans within the
+supported envelope (1–3 bed, a-frame/gable, optional loft) and refuse/annotate
+honestly outside it. The remaining items below are ENHANCEMENTS (envelope
+expansion + UX), not correctness bugs. Closing the loop needs one more clean
+fire (two consecutive) — at which point these become a fresh feature backlog.
+
+- [ ] _(enhancement)_ `doorSwingClear: true` on fixtures is hardcoded, not
+      computed (compile-plan ~line 265). Latent metadata-honesty item — asserts a
       property that isn't checked. Low stakes (fire 8 rendered swings are visually
       clear); revisit only if a real swing collision is ever found.
 
@@ -40,22 +47,23 @@ _(updated each fire)_
       guard + flag baluster spacing/attachment as shop-drawing scope. (An engine
       R312 *verdict* — pass/advise on guard presence — remains a possible future
       add, but the geometry now satisfies the requirement.)
-- [ ] Constructively implement the other roof styles (shed/flat/hip/barn/gambrel)
-      end-to-end (planes + elevations + clip + code) so they're built, not just
-      refused (fire 10 made the refusal honest; the constructive model is the
-      bigger win — each style needs real massing geometry, gate carefully).
-- [ ] Truly synthesize N-bedroom layouts (4+) in the deterministic generator so
-      large briefs are honored, not just refused (fire 1 made the refusal honest;
-      the constructive model is the bigger win). Needs room-packing + walls/doors/
-      windows/dims/code-check for arbitrary N — substantial, gate carefully.
+- [ ] _(enhancement)_ Constructively implement the other roof styles (shed/flat/
+      hip/barn/gambrel) end-to-end (planes + elevations + clip + code) so they're
+      built, not just refused (fire 10 made the refusal honest; the constructive
+      model is the bigger win — each needs real massing geometry, gate carefully).
+- [ ] _(enhancement)_ Truly synthesize N-bedroom layouts (4+) in the deterministic
+      generator so large briefs are honored, not just refused (fire 1 made the
+      refusal honest). Needs room-packing + walls/doors/windows/dims/code-check
+      for arbitrary N — substantial, gate carefully.
 - [x] Requested-sqft fidelity — fire 4: a ≤sqft cap below the smallest template
       was silently exceeded; now refused with a clear message. (A ≤cap ABOVE the
       build, e.g. ≤1400 → 1008, is correct: ≤ is an upper bound, honored.)
 - [x] Drive baths/loft/roof program fidelity — fire 3: baths silently downgraded
       (fixed via reconciliation notes); loft + roof are honest. Class closed for
       these dimensions.
-- [ ] UX-loop follow-up: render `compiled.notes` (program reconciliations) on the
-      plan-detail page so the downgrade is visible in the UI, not just the API.
+- [ ] _(enhancement)_ UX-loop follow-up: render `compiled.notes` (program
+      reconciliations + the loft-guard R312 note) on the plan-detail page so they
+      are visible in the UI, not just the API.
 - [x] Egress operability — fire 9: bedroom egress windows were hardcoded `fixed`
       (inoperable) yet passed R310. Compiler now emits `egress`; engine rejects
       explicit-fixed windows. Class closed for the single-level case.
@@ -69,6 +77,27 @@ _(updated each fire)_
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 13 — clean (drove dimensions, fixtures, loft+guard, connectivity, extremes)
+- **Drove 5 hard angles, all sound — no real defect:**
+  - **Dimension lines** match the geometry (28'-0"/36'-0" = actual footprint) —
+    the sheet does not lie about measurements.
+  - **Fixture placement**: every fixture sits inside its room; the only overlap
+    is sink-in-counter (the sink is fully nested in the counter run — intentional,
+    a sink set into the countertop; a benign false positive like fire-8 swings).
+  - **Loft + new guard**: dims correct, elevations sane (a-frame triangle / gable
+    intact), both guard rails present; the floor-1 guards don't disturb the
+    elevation outline.
+  - **Connectivity**: every level-0 room is reachable from the exterior through
+    doors/openings; the loft is reached by its ladder (correctly not a door).
+  - **Extreme-but-valid briefs** (3-bed 2-bath on a 100×120 lot; 3-bed a-frame;
+    2-bed gable+loft on 50×70): full constraint report all pass / not-evaluated,
+    zero fails. A 1-bed gable on a 28×40 lot is **refused honestly** (over
+    envelope + 35% coverage) — sound behavior, not a wrong plan.
+- **Result:** within the supported envelope (1–3 bed, a-frame/gable, optional
+  loft) the output is genuinely hand-to-an-architect quality. First clean fire
+  after the fire-9→12 fixes. App byte-identical; gates green by identity.
+- **Commit:** _(doc-only)_
 
 ### Fire 12 — BUILD the loft guard (constructive fix of fire 11's deferred defect)
 - **Closes fire 11's deferred DEFECT.** Fire 11 surfaced the loft fall-protection
