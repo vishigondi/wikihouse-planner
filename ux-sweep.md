@@ -805,3 +805,10 @@ new bug restarts the normal find→class→gate→fix cycle.
   plans (gen-001, loft-showcase, outpost-medium, a-frame-22, a-frame-bunk,
   brief-aframe-2br) over recent fires.
 - **Result:** no bug. No app-code change; gates green by identity.
+
+### Fire 56 — clean (feed-card invariants)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  guardrail-aligned tick — all 6 feed cards carry plan sheet + render + caption +
+  engagement bar (6/6/6/6). No console errors.
+- **Result:** no regression — the feed-card consistency invariants hold. No
+  app-code change; gates green by identity.
