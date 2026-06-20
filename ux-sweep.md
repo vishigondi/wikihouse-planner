@@ -829,3 +829,12 @@ new bug restarts the normal find→class→gate→fix cycle.
   (6 SVGs). No console errors.
 - **Result:** no regression — the deterministic sheet (source of truth) is
   intact. No app-code change; gates green by identity.
+
+### Fire 59 — clean (data-* QA hooks present)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  guardrail tick ("keep every data-* hook") — feed: data-plan-feed, 6
+  data-feed-card, data-home-brief-input, data-filter-search, 18 data-feed-action;
+  detail: data-delete-plan, data-workflow-modal, data-modal-backdrop. No console
+  errors.
+- **Result:** no regression — the QA hooks the gates read are intact. No app-code
+  change; gates green by identity.
