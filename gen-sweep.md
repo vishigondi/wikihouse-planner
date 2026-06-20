@@ -44,6 +44,27 @@ _(updated each fire)_
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
 
+### Fire 5 — clean (constraint-engine completeness/honesty, no defect)
+- **Drove:** the question "is the constraint engine honest AND complete for
+  generated plans, or does a life-safety rule silently go not-evaluated?" Ran the
+  full code report (via the battery's loft-aware ceiling derivation) on a-frame,
+  gable, loft, 1/2/3-bed plans and categorized EVERY verdict.
+- **Result — engine is trustworthy and already well-gated:**
+  - R310 egress evaluates to `pass` per bedroom (generated windows carry
+    `roomIds`); the compiler also refuses a bedroom with no egress opening.
+  - R304 habitable minimums (≥70 sqft, ≥7 ft) met on the smallest footprints.
+  - R305 evaluates for every habitable room INCLUDING the loft, measured from the
+    loft floor (`pass`); battery already asserts loft R305 `pass` + "evaluated"
+    (not not-evaluated) + a global "R305 evaluated for every ceiling-ruled room".
+  - Grid, ZON-SETBACK, ZON-COVERAGE all evaluate and pass as expected.
+  - Also re-verified this fire (all sound): dimension-line accuracy, fixture-in-
+    room bounds, room connectivity (loft via `loft_access_ladder`), windows on the
+    exterior perimeter.
+- **No defect; no fabricated fix.** Investigated a hypothesised "loft R305 only
+  covered by zero-fails" gap — turned out the battery already asserts it
+  explicitly. App code byte-identical; gates green by identity.
+- **Commit:** _(doc-only)_
+
 ### Fire 1 — requested bedroom count silently clamped (plan misrepresents brief)
 - **Bug (found by driving):** a "5 bed 3 bath gable, 2400 sqft, 80×120 lot"
   brief — large lot, ample sqft — generated a **3-bedroom** plan; "4 bed …" also
