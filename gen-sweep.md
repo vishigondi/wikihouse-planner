@@ -45,9 +45,62 @@ _(updated each fire)_
       these dimensions.
 - [ ] UX-loop follow-up: render `compiled.notes` (program reconciliations) on the
       plan-detail page so the downgrade is visible in the UI, not just the API.
+- [x] Egress operability — fire 9: bedroom egress windows were hardcoded `fixed`
+      (inoperable) yet passed R310. Compiler now emits `egress`; engine rejects
+      explicit-fixed windows. Class closed for the single-level case.
+- [ ] Sleeping-loft egress: a "sleeping loft" brief yields a room typed `loft`
+      (label "Loft") that neither the compiler sleeping-set nor the engine
+      `SLEEPING_PATTERN` treats as a sleeping room — so it gets no egress
+      requirement and a fixed window. If a loft is used for sleeping it should
+      require an operable egress opening (and a fixed loft window should fail).
+      Separate class (loft-as-sleeping-room semantics); needs care re: R305 loft
+      gates. Not chased in fire 9 (one class per fire).
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 9 — every bedroom egress window is FIXED (inoperable) yet R310 passes
+- **Bug (found by driving egress *dimensional/operability adequacy*):** every
+  generated bedroom's emergency-escape window is `windowKind: 'fixed'` (compiler
+  hardcoded `'fixed'` for ALL windows, compile-plan line 491/618). A fixed window
+  cannot open, so it is NOT an IRC R310.1 emergency escape opening — yet both the
+  compiler's egress pre-check AND `codeAdvisoryReport` passed R310.1 on mere
+  *presence* of a window. The rule citation even spells out the dimensional
+  minimums ("5.7 sq ft… 24 in height, 20 in width; sill ≤ 44 in") that the engine
+  never checked. A dishonest "pass that should fail," and an architecturally
+  non-compliant plan (sleeping rooms with no legal egress).
+- **Class:** _egress verdicts that ignore whether the opening can actually
+  function as egress_ (operability). Confirmed the intended kind is operable: the
+  stored `brief-aframe-2br` fixture already carries `windowKind: 'egress'` on its
+  bedroom windows — proof the compiler regressed to blanket `'fixed'`.
+- **Failing assertions added (gates assert MORE):**
+  - `check:code` (code-advisory) — a sleeping room whose only opening is a
+    `windowKind:'fixed'` window must FAIL R310 (caught the dishonest pass); an
+    operable `egress` window passes; an *unspecified* windowKind stays a candidate
+    (so traced/image-extracted plans without windowKind never regress).
+  - `check:generation` — "egress window operable (not fixed) for `<bedroom>`" for
+    every bedroom in every driven brief.
+- **Root-cause fix (one constructive rule, not a special case):**
+  - Compiler (`compile-plan.ts`): `windowKindFor(roomId)` → `'egress'` when the
+    window serves a sleeping room, else `'fixed'`. Applied at both window sites
+    (main map + loft window). One rule, no per-room branching.
+  - Engine (`code-advisory.ts`): `isEgressCandidate` rejects a window whose
+    `windowKind` is explicitly `'fixed'`; only an *explicit* fixed disqualifies.
+    R310 fail now names the precise failure ("only escape opening(s) are
+    fixed/inoperable"). Pass detail is honest about what's modeled (presence +
+    operability) vs. flagged for shop drawings (net clear area + sill).
+  - Adapters (`floorplan-standards.ts`, check-generation `reportForArtifact`):
+    thread `windowKind` from artifact windows into `CodeAdvisoryOpening`.
+- **Blast radius verified — no regression:** a-frame-22 / outpost-medium windows
+  carry no windowKind → still candidates → pass; a-frame-bunk loft window is
+  `lowGuardGlazedOrOpenRail` (≠fixed) → pass; brief-aframe-2br is `egress` → pass;
+  gen-001 has fixed bedroom windows but R310 is asserted on it nowhere (its frozen
+  JSON is untouched). Loft (type `loft`, not a sleeping room per engine
+  `SLEEPING_PATTERN`) keeps a fixed window with R310 not evaluated — unchanged.
+- **Verified live:** drove `POST /api/generate-plan` (3-bed gable) on :3002 — the
+  live artifact's three bedroom windows are now `egress`; kitchen/living stay
+  `fixed`. Throwaway gen-002 + manifest entry deleted. Full `gates` green.
+- **Commit:** _(pending push)_
 
 ### Fire 8 — clean (door-swing clearance investigated; probe over-reported)
 - **Drove:** door-swing-vs-fixture collisions. Doors encode real swing geometry

@@ -483,12 +483,19 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
     };
   });
 
+  // A sleeping room's exterior window is its emergency escape opening (IRC
+  // R310.1), so it must be operable; all other glazing is fixed. One rule, no
+  // per-room special cases — and the engine fails any bedroom left with only a
+  // fixed window, so this can't silently regress.
+  const sleepingRoomIds = new Set(sleeping.map((room) => room.id));
+  const windowKindFor = (roomId: string | undefined) =>
+    roomId && sleepingRoomIds.has(roomId) ? 'egress' : 'fixed';
   const windows = (intent.windows ?? []).map((window) => ({
     id: window.id,
     levelFrameId: 'floor-0',
     levelIndex: 0,
     wallId: wallFor(window.span)?.id,
-    windowKind: 'fixed',
+    windowKind: windowKindFor(window.roomId),
     facing: wallFor(window.span)?.facing,
     roomIds: [window.roomId, 'exterior'],
     span: window.span,
@@ -615,7 +622,7 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
       const loftCtr = ridgeAlongZ ? bounds.x + bounds.w / 2 : bounds.z + bounds.d / 2;
       (artifact.windows as unknown[]).push({
         id: 'win-l1-loft', levelFrameId: 'floor-1', levelIndex: 1, floor: 1,
-        wallId: 'ext-l1-front', windowKind: 'fixed', facing: ridgeAlongZ ? 'N' : 'W',
+        wallId: 'ext-l1-front', windowKind: windowKindFor('room-loft'), facing: ridgeAlongZ ? 'N' : 'W',
         roomIds: ['room-loft', 'exterior'],
         span: ridgeAlongZ
           ? { x1: loftCtr - 2, z1: 0, x2: loftCtr + 2, z2: 0 }

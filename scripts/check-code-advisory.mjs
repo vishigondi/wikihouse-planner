@@ -103,6 +103,31 @@ const unattributed = codeAdvisoryReport({
 });
 check('R310.1 not-evaluated when windows lack room refs', statusOf(unattributed, 'IRC-R310.1', 'bed-x'), 'not-evaluated');
 
+// --- Part 1d: window operability decides egress (R310.1) ---------------------
+// A fixed window does not open, so it is NOT an emergency escape opening. A
+// sleeping room whose only escape opening is a fixed window must FAIL. An
+// explicit operable kind (egress/casement/etc.) passes; an unspecified
+// windowKind stays a candidate — we can prove a fixed window fails, not an
+// unmarked one (so traced/image-extracted plans without windowKind never
+// regress).
+console.log('fixture: window operability decides egress');
+const operability = codeAdvisoryReport({
+  planId: 'fixture-operability',
+  rooms: [
+    { id: 'bed-fixed', label: 'Fixed-Window Bedroom', type: 'bedroom', widthFt: 12, depthFt: 10 },
+    { id: 'bed-egress', label: 'Egress-Window Bedroom', type: 'bedroom', widthFt: 12, depthFt: 10 },
+    { id: 'bed-unmarked', label: 'Unmarked-Window Bedroom', type: 'bedroom', widthFt: 12, depthFt: 10 },
+  ],
+  openings: [
+    { id: 'win-fixed', kind: 'window', windowKind: 'fixed', roomIds: ['bed-fixed', 'exterior'] },
+    { id: 'win-egress', kind: 'window', windowKind: 'egress', roomIds: ['bed-egress', 'exterior'] },
+    { id: 'win-unmarked', kind: 'window', roomIds: ['bed-unmarked', 'exterior'] },
+  ],
+});
+check('R310.1 fixed-only bedroom fails (inoperable)', statusOf(operability, 'IRC-R310.1', 'bed-fixed'), 'fail');
+check('R310.1 operable egress window passes', statusOf(operability, 'IRC-R310.1', 'bed-egress'), 'pass');
+check('R310.1 unmarked window stays a candidate', statusOf(operability, 'IRC-R310.1', 'bed-unmarked'), 'pass');
+
 // --- Part 1d: no lot specified ----------------------------------------------
 console.log('fixture: no lot');
 const noLot = codeAdvisoryReport({ planId: 'fixture-no-lot', footprintWidthFt: 24, footprintDepthFt: 32, rooms: [], openings: [] });

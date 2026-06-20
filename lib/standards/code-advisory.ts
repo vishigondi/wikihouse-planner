@@ -180,6 +180,9 @@ export interface CodeAdvisoryOpening {
   id?: string;
   kind?: string;
   openingType?: string;
+  /** Window operability (e.g. 'fixed', 'egress', 'casement'). A 'fixed' window
+   * cannot open and so cannot serve as an emergency escape opening (R310.1). */
+  windowKind?: string;
   roomIds?: Array<string | null | undefined>;
   fromRoomId?: string | null;
   toRoomId?: string | null;
@@ -294,7 +297,13 @@ function referencesRoom(opening: CodeAdvisoryOpening, roomId: string): boolean {
 function isEgressCandidate(opening: CodeAdvisoryOpening): boolean {
   const kind = opening.kind ?? '';
   const openingType = opening.openingType ?? '';
-  if (/window/i.test(kind) || /window/i.test(openingType)) return true;
+  if (/window/i.test(kind) || /window/i.test(openingType)) {
+    // A fixed (inoperable) window cannot open and so cannot serve as an
+    // emergency escape opening. Only an explicit 'fixed' disqualifies — an
+    // unspecified windowKind stays a candidate (we can prove a fixed window
+    // fails, not an unmarked one).
+    return !/fixed/i.test(opening.windowKind ?? '');
+  }
   if (/exteriorDoor|slidingDoor/i.test(openingType)) return true;
   if (/door/i.test(kind)) {
     const sides = [opening.fromRoomId, opening.toRoomId, ...(opening.roomIds ?? [])];
@@ -426,13 +435,25 @@ export function codeAdvisoryReport(input: CodeAdvisoryInput): CodeAdvisoryReport
     const egress = referencing.filter(isEgressCandidate);
     if (egress.length) {
       const ids = egress.map((opening) => opening.id ?? opening.kind ?? 'opening').slice(0, 3).join(', ');
-      findings.push(finding('IRC-R310.1', 'pass', `Sleeping room has ${egress.length} egress candidate(s): ${ids}.`, subject(room)));
+      // Presence + operability are modeled and verified here; net clear area
+      // and sill height are not modeled in the semantic JSON, so they are
+      // flagged for shop-drawing confirmation rather than silently claimed.
+      findings.push(finding('IRC-R310.1', 'pass', `Sleeping room has ${egress.length} operable egress opening(s): ${ids}. Confirm net clear opening ≥ 5.7 sq ft (5.0 at grade) and sill ≤ 44 in on shop drawings.`, subject(room)));
     } else if (unattributedEgress.length) {
       // Windows/exterior doors exist but carry no room references, so the
       // rule cannot be decided honestly. Repairing attribution unlocks it.
       findings.push(finding('IRC-R310.1', 'not-evaluated', `${unattributedEgress.length} egress candidate(s) carry no room references in the semantic JSON; attribute windows/exterior doors to rooms to evaluate this rule.`, subject(room)));
     } else {
-      findings.push(finding('IRC-R310.1', 'fail', 'Sleeping room has no egress window or exterior door in the semantic JSON.', subject(room)));
+      // A sleeping room with only fixed (inoperable) windows is a distinct,
+      // worse failure than a windowless room: the drawing looks egress-served
+      // but the opening cannot function. Name it precisely.
+      const inoperable = referencing.filter(
+        (opening) => (/window/i.test(opening.kind ?? '') || /window/i.test(opening.openingType ?? '')) && /fixed/i.test(opening.windowKind ?? ''),
+      );
+      const detail = inoperable.length
+        ? `Sleeping room's only escape opening(s) are fixed/inoperable: ${inoperable.map((opening) => opening.id ?? 'window').slice(0, 3).join(', ')}. An emergency escape opening must be operable.`
+        : 'Sleeping room has no egress window or exterior door in the semantic JSON.';
+      findings.push(finding('IRC-R310.1', 'fail', detail, subject(room)));
     }
   }
 

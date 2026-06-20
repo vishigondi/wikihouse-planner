@@ -123,6 +123,7 @@ function reportForArtifact(artifact) {
     id: opening.id,
     kind: opening.kind ?? opening.type ?? defaultKind,
     openingType: opening.openingType,
+    windowKind: opening.windowKind,
     roomIds: opening.roomIds,
     fromRoomId: opening.fromRoomId,
     toRoomId: opening.toRoomId,
@@ -252,6 +253,14 @@ for (const testCase of CASES) {
   );
   for (const bedroom of bedroomsInPlan) {
     check(`egress proves for ${bedroom.id}`, statusOf(report, 'IRC-R310.1', bedroom.id) === 'pass');
+    // A sleeping room's egress window must be operable — a fixed window cannot
+    // open and so cannot serve as an emergency escape opening (IRC R310.1).
+    const bedWindows = (artifact.windows ?? []).filter((win) => (win.roomIds ?? [win.roomId]).includes(bedroom.id));
+    check(
+      `egress window operable (not fixed) for ${bedroom.id}`,
+      bedWindows.length > 0 && bedWindows.every((win) => win.windowKind && win.windowKind !== 'fixed'),
+      bedWindows.map((win) => `${win.id}:${win.windowKind}`).join(', '),
+    );
   }
   check('4 ft grid passes', statusOf(report, 'WH-GRID-4FT') === 'pass');
   const lotExpectation = testCase.hasLot ? 'pass' : 'not-evaluated';
