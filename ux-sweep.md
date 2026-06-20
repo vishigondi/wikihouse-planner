@@ -718,3 +718,11 @@ new bug restarts the normal find→class→gate→fix cycle.
   `copied`). Both hold; no console errors.
 - **Result:** no regression — shipped feedback/share fixes still behave live. No
   app-code change; gates green by identity.
+
+### Fire 45 — clean (live spot-check: deep-link not-found + Back/Forward)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** rotated
+  the live regression to the browser-level fixes — fire 6 (bogus `?home=` → not-found
+  banner + feed, no detail) and fire 19 (open a plan → browser Back → feed
+  restored). Both hold; no console errors.
+- **Result:** no regression — deep-link surfacing + Back/Forward still behave
+  live. No app-code change; gates green by identity.
