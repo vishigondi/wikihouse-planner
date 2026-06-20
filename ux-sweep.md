@@ -789,3 +789,11 @@ new bug restarts the normal find→class→gate→fix cycle.
   title "a-frame-22 - Floorplan Studio". No console errors.
 - **Result:** no regression — traced plan intact. No app-code change; gates green
   by identity.
+
+### Fire 54 — clean (feed-side New Plan modal)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** the
+  feed header "New Plan" entry (modals are usually opened from the detail) →
+  new-plan modal opens, focus moves into it, Escape closes, feed intact (6 cards).
+  No console errors.
+- **Result:** no bug — feed-side modal entry + focus + dismiss all behave. No
+  app-code change; gates green by identity.
