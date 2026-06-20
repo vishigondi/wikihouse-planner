@@ -734,3 +734,11 @@ new bug restarts the normal find→class→gate→fix cycle.
   "gen-001 - Floorplan Studio"). All hold; no console errors.
 - **Result:** no regression — names/labels/title still behave live. No app-code
   change; gates green by identity.
+
+### Fire 47 — clean (live spot-check: arrow-key scoping + 320px)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):** rotated
+  the live regression to fire 21 (arrows while typing in the Import textarea don't
+  navigate; modal stays open) and fire 25 (plan detail at 320px → 0 horizontal
+  overflow, canvas present). Both hold; no console errors. With fires 43–46 this
+  completes a live re-verification of all the shipped browser/keyboard/a11y fixes.
+- **Result:** no regression. No app-code change; gates green by identity.
