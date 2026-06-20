@@ -48,13 +48,24 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
       R312 *verdict* — pass/advise on guard presence — remains a possible future
       add, but the geometry now satisfies the requirement.)
 - [ ] _(enhancement)_ Constructively implement the remaining roof styles —
-      **flat (14), shed (15), hip (16), gambrel (17) DONE**; LAST: barn —
-      end-to-end. **BARN** = a gambrel hipped on all four sides (gambrel : gable
-      :: barn : hip): the two long sides are gambrel two-pitch planes; the two
-      ends are also two-pitch but hipped inward to the ridge. Reuse the gambrel
-      knuckle geometry + the hip ridge-inset; elevation: long side = 5-sided
-      gambrel end silhouette, end = a hipped two-pitch. Most complex; once done,
-      ALL 7 parser roof styles build → that part of the backlog is empty.
+      **flat (14), shed (15), hip (16), gambrel (17) DONE**; LAST: barn.
+      **BARN build plan (scouted fire 17) — TWO STACKED HIPS (ONE model, reuse
+      hip twice):** a barn-hip is a gambrel hipped on all four sides = a steep
+      LOWER hip (eave perimeter 8 ft → a knuckle "ring" rectangle inset by the
+      lower run, ~13 ft) stacked under a shallow UPPER hip (knuckle ring → ridge,
+      inset further, ~16 ft). 8 planes (4 lower + 4 upper); on a square footprint
+      the ridge collapses to a point (stacked pyramids). Reuse the hip ridge-inset
+      formula at TWO levels — no new plane math, just applied twice.
+      - R305 free: eave 8 around the perimeter → ceiling ≥ 8 everywhere (100%).
+      - ELEVATION: both faces show a two-pitch HIPPED silhouette — eave → (steep)
+        knuckle-inset → (shallow) ridge-inset → flat ridge → mirror. Combine the
+        gambrel knuckle with the hip trapezoid: a 6-pt outline (eave, knuckleL,
+        ridgeStart, ridgeEnd, knuckleR, eave). Add a `barnHip` model field +
+        render branch; leave gambrel/hip/others untouched (no traced regression).
+      - GATES: convert check:generation "barn → refused" → positive + structural
+        (8 planes, lower steeper than upper, perimeter eave, R305, two-pitch
+        hipped silhouette); add check:elevations barn case. Confirm 0 offenders.
+      Once done, ALL 7 parser roof styles build → roof part of the backlog empty.
       **HIP build plan (scouted fire 15, next fire) — ONE model, degenerates:**
       ridge line along the LONGER axis, inset from each end by (shorter_dim / 2)
       (standard 45°-in-plan hip), at the footprint center, height ridgeH. FOUR
