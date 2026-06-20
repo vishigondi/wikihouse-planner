@@ -866,3 +866,6 @@ new bug restarts the normal find→class→gate→fix cycle.
 
 ### Fire 66 — clean (plan-nav tick)
 - gen-001 → Next → loft-showcase; canvas intact; no console errors. Converged app; tick.
+
+### Fire 67 — clean (feed smoke)
+- Feed 6 cards; no console errors. Converged app; tick.
