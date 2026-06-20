@@ -893,3 +893,6 @@ new bug restarts the normal find→class→gate→fix cycle.
 
 ### Fire 75 — clean (detail smoke)
 - gen-001 detail (Export + canvas); no console errors. Converged app; tick.
+
+### Fire 76 — clean (steady-state smoke; cron backlog drained)
+- A large batch of cron iterations stacked while the session was logged out; ran ONE proportionate fire, not the whole queue. Feed (6 cards) + detail (Export + canvas) render; no console errors. Converged app; tick.
