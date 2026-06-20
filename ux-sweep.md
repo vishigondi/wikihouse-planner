@@ -797,3 +797,11 @@ new bug restarts the normal find→class→gate→fix cycle.
   No console errors.
 - **Result:** no bug — feed-side modal entry + focus + dismiss all behave. No
   app-code change; gates green by identity.
+
+### Fire 55 — clean (brief-aframe-2br detail tick)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  brief-aframe-2br detail renders (canvas + sheet), Plan Top view activates,
+  correct title. No console errors. Completes individual ticks of all 6 visible
+  plans (gen-001, loft-showcase, outpost-medium, a-frame-22, a-frame-bunk,
+  brief-aframe-2br) over recent fires.
+- **Result:** no bug. No app-code change; gates green by identity.
