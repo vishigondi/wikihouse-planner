@@ -89,6 +89,18 @@ check('lot dims', [footy.lot?.widthFt, footy.lot?.depthFt], [60, 90]);
 check('foot setbacks parse uniformly', footy.lot?.setbacksFt, { front: 10, rear: 10, left: 10, right: 10 });
 check('dropped phrase surfaces', footy.unparsed.includes('farmhouse'), true);
 
+// --- Lot modifiers without a lot must surface, never silently drop (P5) -------
+console.log('brief: setbacks/coverage with no lot are surfaced, not silently dropped');
+const setbackNoLot = parseBrief('1 bed a-frame, 5 ft setbacks');
+check('no lot from setbacks alone', setbackNoLot.lot, undefined);
+check('orphan setbacks surfaced as unparsed', setbackNoLot.unparsed.some((part) => /setback/i.test(part)), true);
+const coverageNoLot = parseBrief('1 bed a-frame, 35% coverage');
+check('orphan coverage surfaced as unparsed', coverageNoLot.unparsed.some((part) => /coverage/i.test(part)), true);
+// With a lot, the same modifiers APPLY (and do not surface) — no regression.
+const withLot = parseBrief('1 bed a-frame, 40x50 lot, 5 ft setbacks');
+check('setbacks apply when a lot is present', withLot.lot?.setbacksFt, { front: 5, rear: 5, left: 5, right: 5 });
+check('applied setbacks do not surface', withLot.unparsed.some((part) => /setback/i.test(part)), false);
+
 // --- Prompt field rendering ---------------------------------------------------
 console.log('briefToPromptFields: canonical');
 const fields = briefToPromptFields(canonical);

@@ -148,13 +148,23 @@ export function parseBrief(text: string): ParsedBrief {
       setbacks.right = value;
     }
   }
-  if (Object.keys(setbacks).length && result.lot) result.lot.setbacksFt = setbacks;
+  // Setbacks/coverage are lot modifiers: apply them to a lot, or — if the brief
+  // gave no parseable lot — surface them as ignored. They were take()-consumed
+  // (so they won't fall through to the segment scan below), so without this the
+  // user's stated setbacks/coverage would vanish with no trace (input honesty, P5).
+  if (Object.keys(setbacks).length) {
+    if (result.lot) result.lot.setbacksFt = setbacks;
+    else result.unparsed.push('setbacks (no lot specified — add a lot to apply them)');
+  }
 
   // "35% max coverage", "max lot coverage 35%"
   const coverage = take(lower.match(/(\d{1,2})\s*%\s*(?:max(?:imum)?\s*)?(?:lot\s*)?coverage/) ?? lower.match(/coverage\s*(?:of\s*)?(\d{1,2})\s*%/));
-  if (coverage && result.lot) {
+  if (coverage) {
     const pct = num(coverage[1]);
-    if (pct !== undefined && pct > 0 && pct <= 100) result.lot.maxCoverageRatio = pct / 100;
+    if (pct !== undefined && pct > 0 && pct <= 100) {
+      if (result.lot) result.lot.maxCoverageRatio = pct / 100;
+      else result.unparsed.push('coverage (no lot specified — add a lot to apply it)');
+    }
   }
 
   // Anything not consumed is surfaced word-by-word (minus connective filler

@@ -44,6 +44,28 @@ _(updated each fire)_
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
 
+### Fire 6 — brief parser silently drops orphan setbacks / coverage
+- **Bug (found by driving the parser):** stating setbacks or coverage WITHOUT a
+  parseable lot silently drops them — "1 bed a-frame, 5 ft setbacks" → no lot,
+  and "5 ft setbacks" is neither applied NOR surfaced in `unparsed` (it was
+  take()-consumed). Same for "35% coverage". The user's stated value vanishes with
+  no trace — the upstream sibling of the compiler silent-mismatch class.
+- **Class:** _a parsed-and-consumed lot modifier with no lot to attach to is
+  silently dropped (input honesty, P5: anything the parser ignores is surfaced)._
+  Two instances: setbacks AND coverage (both `&& result.lot`-gated).
+- **Failing assertion added (gates assert MORE):** `check:brief` — "orphan
+  setbacks/coverage surfaced as unparsed" (no lot), plus "setbacks apply when a
+  lot is present / applied setbacks do not surface" (no regression). Pre-fix the
+  orphan checks fail (unparsed was empty).
+- **Root-cause fix (`lib/brief.ts`):** when setbacks/coverage are parsed but
+  `result.lot` is absent, push a clear note to `result.unparsed` ("setbacks (no
+  lot specified — add a lot to apply them)" / coverage equiv) instead of
+  discarding. With a lot they still apply unchanged.
+- **Verified:** `check:brief` green; orphan setbacks/coverage now surface;
+  lot-attached modifiers still apply (canonical + multi-modifier briefs
+  unchanged). gates + gates:live green. No throwaway plans (parser-only).
+- **Commit:** _(pending push)_
+
 ### Fire 5 — clean (constraint-engine completeness/honesty, no defect)
 - **Drove:** the question "is the constraint engine honest AND complete for
   generated plans, or does a life-safety rule silently go not-evaluated?" Ran the
