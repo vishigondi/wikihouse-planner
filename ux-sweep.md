@@ -850,3 +850,7 @@ new bug restarts the normal find→class→gate→fix cycle.
 ### Fire 61 — clean (steady-state smoke)
 - Feed (6 cards) + plan detail (Export + 3D canvas) render; no console errors.
   App converged (full regression green at fire 60); proportionate watch tick.
+
+### Fire 62 — clean (modal dismiss tick)
+- gen-001 → Export modal opens → Escape closes; canvas intact; no console errors.
+  Converged app; proportionate watch tick.
