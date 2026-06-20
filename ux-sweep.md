@@ -821,3 +821,11 @@ new bug restarts the normal find→class→gate→fix cycle.
 - **Result:** no regression — the look-render consistency lane (deterministic
   references + not-to-scale labeling) holds. No app-code change; gates green by
   identity.
+
+### Fire 58 — clean (deterministic plan-sheet annotations)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  guardrail-aligned tick — gen-001's deterministic plan sheet renders its
+  annotations: dimensions, north arrow, room labels, front/side elevation labels
+  (6 SVGs). No console errors.
+- **Result:** no regression — the deterministic sheet (source of truth) is
+  intact. No app-code change; gates green by identity.
