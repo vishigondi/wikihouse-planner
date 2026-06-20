@@ -50,8 +50,20 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
 - [ ] _(enhancement)_ Constructively implement the remaining roof styles —
       **flat DONE (fire 14)**; next: shed → hip → gambrel → barn — end-to-end
       (planes + elevations + clip + code), built not refused. Each reuses the
-      plane-fit / clip / ceiling-profile / elevation machinery; shed is the next
-      simplest (single slope: ridge on one edge, eave on the other).
+      plane-fit / clip / ceiling-profile / elevation machinery.
+      **SHED build plan (scouted fire 14, next fire):** single sloped plane,
+      high edge (ridge ~12 ft) at x=0, low edge (eave ~8 ft) at x=widthFt,
+      ridgeAxis 'z' (slope along x). Ceiling profile + R305 + opening clamps work
+      free via the existing plane machinery (`limitAtSpan`/`ceilingHeightAt`
+      sample the real plane). THE WORK: `elevations.ts` — the across-slope view
+      (front, gableFacing=true for ridgeAxis z) currently draws a CENTERED GABLE
+      TRIANGLE; shed needs a MONO-PITCH silhouette (wall up to ridge at x=0,
+      sloped top down to eave at x=widthFt). Add a `monoPitch` flag to the model
+      (set when roof.style==='shed') and a mono-pitch branch in
+      `elevationSvgString` — do NOT touch the gable/a-frame/flat paths (traced
+      plans must not regress visually). Add shed cases to check:generation +
+      check:elevations (assert the front silhouette is asymmetric: roofline y at
+      x≈0 ≈ ridge, at x≈span ≈ eave). Confirm 0 render offenders + visual check.
 - [ ] _(enhancement)_ Truly synthesize N-bedroom layouts (4+) in the deterministic
       generator so large briefs are honored, not just refused (fire 1 made the
       refusal honest). Needs room-packing + walls/doors/windows/dims/code-check
