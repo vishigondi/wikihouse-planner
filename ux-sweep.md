@@ -878,3 +878,6 @@ new bug restarts the normal find→class→gate→fix cycle.
 
 ### Fire 70 — clean (milestone: full-ladder regression)
 - Full suite (gates + gates:live): 150 passing assertions, 0 failures, all live gates green (cadence 40/50/60/70). Entire hardened envelope confirmed; 45 consecutive clean sweeps; app byte-identical since fire 25.
+
+### Fire 71 — clean (detail smoke)
+- gen-001 detail (Export + canvas); no console errors. Converged app; tick.
