@@ -66,6 +66,10 @@ export interface GenerationIntent {
   /** The ≤ sqft cap the brief asked for — so the compiler can refuse (rather than
    * silently exceed) a cap no template is small enough to meet. */
   requestedMaxSqft?: number;
+  /** The roof style the brief asked for, BEFORE any flatten to a buildable
+   * template — so the compiler can refuse (rather than silently substitute an
+   * a-frame for) a style it does not implement. */
+  requestedRoofStyle?: string;
   rooms: IntentRoom[];
   doors: IntentDoor[];
   windows: IntentWindow[];
@@ -88,6 +92,12 @@ const EPS = 1e-6;
  * only. A brief asking for more is refused at compile with a clear message
  * rather than silently collapsed to a 3-bedroom plan that misrepresents it. */
 export const MAX_TEMPLATE_BEDROOMS = 3;
+
+/** Roof styles the deterministic generator actually builds (geometry, planes,
+ * elevations, and clipping all implemented). A brief requesting any other
+ * recognized style is refused at compile rather than silently substituted with
+ * an a-frame that misrepresents the massing. */
+export const BUILDABLE_ROOF_STYLES = ['a-frame', 'gable'] as const;
 
 function rectsOverlap(a: IntentRoom, b: IntentRoom): boolean {
   return a.x < b.x + b.w - EPS && b.x < a.x + a.w - EPS && a.z < b.z + b.d - EPS && b.z < a.z + a.d - EPS;
@@ -346,6 +356,18 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
     errors.push(
       `requested ${intent.requestedBedrooms} bedrooms; the deterministic generator builds at most ${MAX_TEMPLATE_BEDROOMS} `
       + `— reduce the bedroom count or supply an OPENAI_API_KEY for full generation`,
+    );
+  }
+
+  // A recognized roof style the generator does not implement (hip/flat/shed/
+  // barn/gambrel) is a program it cannot honestly build: refuse rather than
+  // silently substitute an a-frame whose 18 ft ridge misrepresents the brief
+  // (input honesty, P5 — same class as the bedroom/sqft refusals above).
+  if (intent.requestedRoofStyle
+    && !(BUILDABLE_ROOF_STYLES as readonly string[]).includes(intent.requestedRoofStyle)) {
+    errors.push(
+      `requested a ${intent.requestedRoofStyle} roof; the deterministic generator builds only `
+      + `${BUILDABLE_ROOF_STYLES.join(' and ')} roofs — choose one of those, or supply an OPENAI_API_KEY for full generation`,
     );
   }
 
@@ -845,6 +867,9 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
     // Carry the ≤ sqft cap so compile can refuse a cap no template can meet,
     // instead of silently shipping a footprint larger than the user allowed.
     requestedMaxSqft: brief.maxSqft,
+    // Carry the RAW requested roof style so compile can refuse an unimplemented
+    // style instead of silently substituting the a-frame flattened above.
+    requestedRoofStyle: brief.roofStyle,
     rooms,
     doors,
     windows,

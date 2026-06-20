@@ -185,6 +185,15 @@ const CASES = [
   // 672 sqft; ≤500 is unbuildable). ≤700 (which 672 satisfies) still compiles.
   { name: 'maxSqft cap below smallest template (gable)', brief: '2 bed gable, ≤500 sqft', expectCompileError: /exceeds the requested ≤500 sq ft cap/i },
   { name: 'maxSqft cap below smallest template (a-frame)', brief: '2 bed a-frame, ≤600 sqft', expectCompileError: /exceeds the requested ≤600 sq ft cap/i },
+
+  // Roof-style honesty: the deterministic generator builds only a-frame and
+  // gable. A brief requesting any other recognized style (hip/flat/shed/barn/
+  // gambrel) must be REFUSED, never silently substituted with an a-frame — the
+  // user asked for a flat roof and would otherwise receive an 18 ft ridge.
+  { name: 'shed roof unsupported -> refused', brief: '2 bed shed roof, 40x60 lot, 5 ft setbacks', expectCompileError: /builds only a-frame and gable/i },
+  { name: 'flat roof unsupported -> refused', brief: '2 bed flat roof, 60x80 lot, 10 ft setbacks', expectCompileError: /builds only a-frame and gable/i },
+  { name: 'hip roof unsupported -> refused', brief: '3 bed hip roof, 80x60 lot, 10 ft setbacks', expectCompileError: /builds only a-frame and gable/i },
+  { name: 'gambrel roof unsupported -> refused', brief: '2 bed gambrel, 60x80 lot, 10 ft setbacks', expectCompileError: /builds only a-frame and gable/i },
 ];
 
 for (const testCase of CASES) {

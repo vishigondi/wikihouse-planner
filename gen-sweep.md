@@ -33,6 +33,10 @@ _(updated each fire)_
       property that isn't checked. Low stakes (fire 8 rendered swings are visually
       clear); revisit only if a real swing collision is ever found.
 
+- [ ] Constructively implement the other roof styles (shed/flat/hip/barn/gambrel)
+      end-to-end (planes + elevations + clip + code) so they're built, not just
+      refused (fire 10 made the refusal honest; the constructive model is the
+      bigger win — each style needs real massing geometry, gate carefully).
 - [ ] Truly synthesize N-bedroom layouts (4+) in the deterministic generator so
       large briefs are honored, not just refused (fire 1 made the refusal honest;
       the constructive model is the bigger win). Needs room-packing + walls/doors/
@@ -58,6 +62,34 @@ _(updated each fire)_
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 10 — requested roof style silently substituted with an a-frame
+- **Bug (found by driving all 7 parser-recognized roof styles):** the parser
+  accepts `a-frame, gable, hip, flat, shed, barn, gambrel`, but the compiler
+  implements only a-frame + gable. Driving "2 bed <style> roof" showed
+  `hip/flat/shed/barn/gambrel` ALL silently built an **a-frame** (18 ft ridge,
+  1 ft eave) — a "flat roof" request produces a steep a-frame and never tells the
+  user. Root cause: `mockIntentFromBrief` line 662 `brief.roofStyle === 'gable' ?
+  'gable' : 'a-frame'` flattens every non-gable style to a-frame.
+- **Class:** _silent program mismatch_ (same family as fires 1/3/4 — bedrooms,
+  baths, sqft) extended to roof style. The brief is captured correctly by the
+  parser, then silently misrepresented by the compiler.
+- **Failing assertions added (gates assert MORE):** `check:generation` — four
+  `expectCompileError` cases (shed/flat/hip/gambrel) asserting the brief is
+  REFUSED with `/builds only a-frame and gable/i` (were silently compiling).
+- **Root-cause fix (`compile-plan.ts`, established refusal pattern):**
+  - `BUILDABLE_ROOF_STYLES = ['a-frame','gable']` (exported, single source).
+  - Thread `requestedRoofStyle` (the RAW brief style) onto `GenerationIntent`,
+    set in `mockIntentFromBrief` — mirrors `requestedBedrooms/Baths/MaxSqft`.
+  - `compileIntent` refuses when `requestedRoofStyle` is set and not buildable,
+    with a clear message — never silently substitutes. (Live/GPT path leaves it
+    unset, so full generation can still handle other styles — consistent with the
+    other deterministic-template refusals.)
+- **Verified:** a-frame/gable still compile (battery roof-style assertions green);
+  live `POST /api/generate-plan` → shed roof returns **HTTP 422** with the
+  refusal message, gable returns success. Throwaway gen-002 + failure artifacts
+  deleted. Full `gates` + `gates:live` green.
+- **Commit:** _(pending push)_
 
 ### Fire 9 — every bedroom egress window is FIXED (inoperable) yet R310 passes
 - **Bug (found by driving egress *dimensional/operability adequacy*):** every
