@@ -838,3 +838,11 @@ new bug restarts the normal find→class→gate→fix cycle.
   errors.
 - **Result:** no regression — the QA hooks the gates read are intact. No app-code
   change; gates green by identity.
+
+### Fire 60 — clean (milestone: full-ladder regression)
+- **Ran the entire gate suite** (`npm run gates` + `npm run gates:live`) — periodic
+  full regression (cadence: fires 40, 50, 60). **150 passing assertions, 0
+  failures, all live gates green** (all 17 class-gates + responsive 320→1440 +
+  every plan/modal + brochure QA + batteries + build).
+- **Result:** fire-60 milestone — the entire hardened envelope confirmed. 35
+  consecutive clean sweeps; app byte-identical since fire 25.
