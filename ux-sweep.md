@@ -781,3 +781,11 @@ new bug restarts the normal find→class→gate→fix cycle.
   the plan under test to outpost-medium — detail renders (canvas + sheet), Front
   view activates, Export modal opens + Escape closes. No console errors.
 - **Result:** no bug. No app-code change; gates green by identity.
+
+### Fire 53 — clean (traced plan a-frame-22 renders)
+- **Drove (Playwright, live :3002 — claude-in-chrome still unreachable):**
+  guardrail-relevant tick — the traced reference plan a-frame-22 (must not
+  regress): detail renders (canvas + sheet + elevations), Side view activates,
+  title "a-frame-22 - Floorplan Studio". No console errors.
+- **Result:** no regression — traced plan intact. No app-code change; gates green
+  by identity.
