@@ -93,6 +93,10 @@ export interface ElevationModel {
    * knuckle (knuckleHeightFt) located knuckleStartFt / knuckleEndFt along the
    * span; the ridge is at the center. Null otherwise. */
   gambrel: { knuckleStartFt: number; knuckleEndFt: number; knuckleHeightFt: number } | null;
+  /** For a barn (gambrel-hip) — BOTH faces: a two-pitch HIPPED silhouette. The
+   * knuckle sits knuckleInsetFt from each end at knuckleHeightFt; the ridge runs
+   * from ridgeStartFt to ridgeEndFt (a peak when start == end). Null otherwise. */
+  barnHip: { knuckleInsetFt: number; knuckleHeightFt: number; ridgeStartFt: number; ridgeEndFt: number } | null;
   openings: ElevationOpening[];
 }
 
@@ -227,6 +231,18 @@ export function buildElevationModel(artifact: ElevationArtifactInput, side: 'fro
   const gambrel = roof.style === 'gambrel' && gableFacing
     ? { knuckleStartFt: spanFt / 4, knuckleEndFt: (spanFt * 3) / 4, knuckleHeightFt: eaveFt + (ridgeFt - eaveFt) * 0.75 }
     : null;
+  // A barn (gambrel hip) is two stacked hips, so BOTH faces show a two-pitch
+  // hipped silhouette: the ridge is inset by half the shorter dimension, the
+  // knuckle by 40% of that. Matches the compiler's barn plane geometry.
+  const barnRidgeInset = Math.min(widthFt, depthFt) / 2;
+  const barnHip = roof.style === 'barn'
+    ? {
+      knuckleInsetFt: barnRidgeInset * 0.4,
+      knuckleHeightFt: eaveFt + (ridgeFt - eaveFt) * 0.65,
+      ridgeStartFt: barnRidgeInset,
+      ridgeEndFt: Math.max(barnRidgeInset, spanFt - barnRidgeInset),
+    }
+    : null;
 
   openings.sort((lhs, rhs) => lhs.center - rhs.center);
   return {
@@ -242,6 +258,7 @@ export function buildElevationModel(artifact: ElevationArtifactInput, side: 'fro
     monoPitchHighAtStart,
     hipTrapezoid,
     gambrel,
+    barnHip,
     openings,
   };
 }
@@ -281,6 +298,16 @@ export function elevationSvgString(model: ElevationModel): string {
     const re = model.hipTrapezoid.ridgeEndFt;
     parts.push(`<polygon points="${X(0)},${Y(0)} ${X(model.spanFt)},${Y(0)} ${X(model.spanFt)},${Y(model.eaveFt)} ${X(re)},${Y(model.ridgeFt)} ${X(rs)},${Y(model.ridgeFt)} ${X(0)},${Y(model.eaveFt)}" fill="#f2eee7" stroke="#3d3933" stroke-width="1.4"/>`);
     parts.push(`<polyline points="${X(-ov)},${Y(model.eaveFt)} ${X(rs)},${Y(model.ridgeFt)} ${X(re)},${Y(model.ridgeFt)} ${X(model.spanFt + ov)},${Y(model.eaveFt)}" fill="none" stroke="#26231f" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`);
+  } else if (model.barnHip) {
+    // Barn (gambrel hip): two-pitch HIPPED silhouette — eave -> steep to the
+    // inset knuckle -> shallow to the inset ridge -> flat ridge -> mirror.
+    const ki = model.barnHip.knuckleInsetFt;
+    const kh = model.barnHip.knuckleHeightFt;
+    const rs = model.barnHip.ridgeStartFt;
+    const re = model.barnHip.ridgeEndFt;
+    const sp = model.spanFt;
+    parts.push(`<polygon points="${X(0)},${Y(0)} ${X(sp)},${Y(0)} ${X(sp)},${Y(model.eaveFt)} ${X(sp - ki)},${Y(kh)} ${X(re)},${Y(model.ridgeFt)} ${X(rs)},${Y(model.ridgeFt)} ${X(ki)},${Y(kh)} ${X(0)},${Y(model.eaveFt)}" fill="#f2eee7" stroke="#3d3933" stroke-width="1.4"/>`);
+    parts.push(`<polyline points="${X(-ov)},${Y(model.eaveFt)} ${X(ki)},${Y(kh)} ${X(rs)},${Y(model.ridgeFt)} ${X(re)},${Y(model.ridgeFt)} ${X(sp - ki)},${Y(kh)} ${X(sp + ov)},${Y(model.eaveFt)}" fill="none" stroke="#26231f" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`);
   } else if (model.gambrel) {
     // Gambrel gable end: two-pitch silhouette — eave -> knuckle -> ridge ->
     // knuckle -> eave (steep lower slope, shallow upper slope).

@@ -53,7 +53,7 @@ export interface IntentOpening {
 export interface GenerationIntent {
   name: string;
   footprint: { widthFt: number; depthFt: number };
-  roof: { style: 'a-frame' | 'gable' | 'flat' | 'shed' | 'hip' | 'gambrel'; ridgeAxis: 'x' | 'z'; ridgeHeightFt: number; eaveHeightFt: number };
+  roof: { style: 'a-frame' | 'gable' | 'flat' | 'shed' | 'hip' | 'gambrel' | 'barn'; ridgeAxis: 'x' | 'z'; ridgeHeightFt: number; eaveHeightFt: number };
   lot?: { widthFt: number; depthFt: number; setbacksFt?: { front?: number; rear?: number; left?: number; right?: number }; maxCoverageRatio?: number } | null;
   /** Brief asked for a loft. A loft level is emitted only if the roof gives headroom. */
   hasLoft?: boolean;
@@ -97,7 +97,7 @@ export const MAX_TEMPLATE_BEDROOMS = 3;
  * elevations, and clipping all implemented). A brief requesting any other
  * recognized style is refused at compile rather than silently substituted with
  * an a-frame that misrepresents the massing. */
-export const BUILDABLE_ROOF_STYLES = ['a-frame', 'gable', 'flat', 'shed', 'hip', 'gambrel'] as const;
+export const BUILDABLE_ROOF_STYLES = ['a-frame', 'gable', 'flat', 'shed', 'hip', 'gambrel', 'barn'] as const;
 
 /** Interior ceiling height of a flat roof (constant, no slope). Comfortably
  * clears R305's 7 ft minimum and the walls carry to this height. */
@@ -121,6 +121,13 @@ const HIP_EAVE_FT = 8;
 const GAMBREL_EAVE_FT = 8;
 const GAMBREL_KNUCKLE_FT = 14;
 const GAMBREL_RIDGE_FT = 16;
+
+/** Barn (gambrel hip): a gambrel hipped on all four sides — a steep lower hip
+ * (eave perimeter → knuckle ring) stacked under a shallow upper hip (knuckle
+ * ring → ridge). Eave 8 ft so R305 passes. Same heights as the gambrel. */
+const BARN_EAVE_FT = 8;
+const BARN_KNUCKLE_FT = 14;
+const BARN_RIDGE_FT = 16;
 
 function rectsOverlap(a: IntentRoom, b: IntentRoom): boolean {
   return a.x < b.x + b.w - EPS && b.x < a.x + a.w - EPS && a.z < b.z + b.d - EPS && b.z < a.z + a.d - EPS;
@@ -572,6 +579,7 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
   const isShed = roof.style === 'shed';
   const isHip = roof.style === 'hip';
   const isGambrel = roof.style === 'gambrel';
+  const isBarn = roof.style === 'barn';
   // Hip: ridge line along the longer axis, inset from each end by half the
   // shorter dimension (45° hip in plan). On a square footprint the inset == the
   // half-span, so the ridge collapses to a point -> a pyramid. ONE formula.
@@ -582,6 +590,27 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
   const knuckleY = eave + (ridge - eave) * 0.75;
   const kxL = widthFt / 4;
   const kxR = (widthFt * 3) / 4;
+  // Barn (gambrel hip) = two stacked hips. A uniformly-inset rectangle at each
+  // level: eave (inset 0, +overhang) -> knuckle ring (inset barnKnuckleInset) ->
+  // ridge (inset half the shorter dim -> a line on a rectangle, a point on a
+  // square). hipBand() builds the 4 frustum planes between two such rectangles;
+  // the inset math handles every aspect ratio with no orientation branch.
+  const barnRidgeInset = Math.min(widthFt, depthFt) / 2;
+  const barnKnuckleInset = barnRidgeInset * 0.4;
+  const barnKnuckleY = eave + (ridge - eave) * 0.65;
+  const insetRect = (ins: number) => ins <= 0
+    ? { x0: -overhang, x1: widthFt + overhang, z0: -overhang, z1: depthFt + overhang }
+    : { x0: ins, x1: widthFt - ins, z0: ins, z1: depthFt - ins };
+  const hipBand = (idPrefix: string, bInset: number, yB: number, tInset: number, yT: number) => {
+    const b = insetRect(bInset);
+    const t = insetRect(tInset);
+    return [
+      { id: `${idPrefix}-n`, role: 'roof-plane', points: [{ x: b.x0, y: yB, z: b.z0 }, { x: b.x1, y: yB, z: b.z0 }, { x: t.x1, y: yT, z: t.z0 }, { x: t.x0, y: yT, z: t.z0 }] },
+      { id: `${idPrefix}-s`, role: 'roof-plane', points: [{ x: b.x0, y: yB, z: b.z1 }, { x: b.x1, y: yB, z: b.z1 }, { x: t.x1, y: yT, z: t.z1 }, { x: t.x0, y: yT, z: t.z1 }] },
+      { id: `${idPrefix}-w`, role: 'roof-plane', points: [{ x: b.x0, y: yB, z: b.z0 }, { x: b.x0, y: yB, z: b.z1 }, { x: t.x0, y: yT, z: t.z1 }, { x: t.x0, y: yT, z: t.z0 }] },
+      { id: `${idPrefix}-e`, role: 'roof-plane', points: [{ x: b.x1, y: yB, z: b.z0 }, { x: b.x1, y: yB, z: b.z1 }, { x: t.x1, y: yT, z: t.z1 }, { x: t.x1, y: yT, z: t.z0 }] },
+    ];
+  };
   // A flat roof is one horizontal plane over the whole footprint (+overhang) at
   // a constant height; a shed roof is one plane sloping high edge (x=0, ridge)
   // -> low edge (x=widthFt, eave); a hip is four planes rising to the ridge.
@@ -589,14 +618,22 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
   // a-frame planes use. The slab thickness gives flat/shed outlines a real
   // (non-degenerate) profile.
   const slabTop = ridge + 0.35;
-  const planes = isFlat
+  const planes = isBarn
     ? [
-      { id: 'roof-plane-flat', role: 'roof-plane', points: [{ x: -overhang, y: ridge, z: -overhang }, { x: widthFt + overhang, y: ridge, z: -overhang }, { x: widthFt + overhang, y: ridge, z: depthFt + overhang }, { x: -overhang, y: ridge, z: depthFt + overhang }] },
+      // Two stacked hips: steep lower band (eave -> knuckle ring) + shallow upper
+      // band (knuckle ring -> ridge). Eight planes; the inset rectangles collapse
+      // the ridge to a line (rectangle) or a point (square) automatically.
+      ...hipBand('roof-plane-barn-lower', 0, eave, barnKnuckleInset, barnKnuckleY),
+      ...hipBand('roof-plane-barn-upper', barnKnuckleInset, barnKnuckleY, barnRidgeInset, ridge),
     ]
-    : isShed
+    : isFlat
       ? [
-        { id: 'roof-plane-shed', role: 'roof-plane', points: [{ x: -overhang, y: ridge, z: -overhang }, { x: widthFt + overhang, y: eave, z: -overhang }, { x: widthFt + overhang, y: eave, z: depthFt + overhang }, { x: -overhang, y: ridge, z: depthFt + overhang }] },
+        { id: 'roof-plane-flat', role: 'roof-plane', points: [{ x: -overhang, y: ridge, z: -overhang }, { x: widthFt + overhang, y: ridge, z: -overhang }, { x: widthFt + overhang, y: ridge, z: depthFt + overhang }, { x: -overhang, y: ridge, z: depthFt + overhang }] },
       ]
+      : isShed
+        ? [
+          { id: 'roof-plane-shed', role: 'roof-plane', points: [{ x: -overhang, y: ridge, z: -overhang }, { x: widthFt + overhang, y: eave, z: -overhang }, { x: widthFt + overhang, y: eave, z: depthFt + overhang }, { x: -overhang, y: ridge, z: depthFt + overhang }] },
+        ]
       : isHip
         ? (ridgeAlongZ
           // Ridge along z (depth is the longer axis): two long side planes (E/W)
@@ -636,12 +673,24 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
   const flatOutline = (spanFt: number) => [
     { x: -overhang, y: ridge }, { x: spanFt + overhang, y: ridge }, { x: spanFt + overhang, y: slabTop }, { x: -overhang, y: slabTop },
   ];
-  const elevations = isFlat
+  // Barn: both faces are a two-pitch HIPPED silhouette — eave -> (steep) knuckle
+  // inset -> (shallow) ridge inset -> flat ridge -> mirror. The ridge segment
+  // collapses to a peak on a square footprint.
+  const barnOutline = (spanFt: number) => [
+    { x: -overhang, y: eave }, { x: barnKnuckleInset, y: barnKnuckleY }, { x: barnRidgeInset, y: ridge },
+    { x: spanFt - barnRidgeInset, y: ridge }, { x: spanFt - barnKnuckleInset, y: barnKnuckleY }, { x: spanFt + overhang, y: eave },
+  ];
+  const elevations = isBarn
     ? [
-      { id: 'front-flat', view: 'front', outline: flatOutline(widthFt) },
-      { id: 'side-flat', view: 'side', outline: flatOutline(depthFt) },
+      { id: 'front-barn', view: 'front', outline: barnOutline(widthFt) },
+      { id: 'side-barn', view: 'side', outline: barnOutline(depthFt) },
     ]
-    : isShed
+    : isFlat
+      ? [
+        { id: 'front-flat', view: 'front', outline: flatOutline(widthFt) },
+        { id: 'side-flat', view: 'side', outline: flatOutline(depthFt) },
+      ]
+      : isShed
       ? [
         // Front looks across the slope: roofline drops high edge (ridge, x=0) ->
         // low edge (eave, x=widthFt). Side looks along the slope: the high wall,
@@ -833,12 +882,13 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
  */
 export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; roofStyle?: string; maxSqft?: number; hasLoft?: boolean; lot?: GenerationIntent['lot'] }): GenerationIntent {
   const bedrooms = Math.max(1, Math.min(3, brief.bedrooms ?? 2));
-  const style: 'a-frame' | 'gable' | 'flat' | 'shed' | 'hip' | 'gambrel' = brief.roofStyle === 'gable' ? 'gable'
+  const style: 'a-frame' | 'gable' | 'flat' | 'shed' | 'hip' | 'gambrel' | 'barn' = brief.roofStyle === 'gable' ? 'gable'
     : brief.roofStyle === 'flat' ? 'flat'
       : brief.roofStyle === 'shed' ? 'shed'
         : brief.roofStyle === 'hip' ? 'hip'
           : brief.roofStyle === 'gambrel' ? 'gambrel'
-            : 'a-frame';
+            : brief.roofStyle === 'barn' ? 'barn'
+              : 'a-frame';
   // Second bath is supported on the primary footprints only (2-bed at 28 ft,
   // 3-bed at 36 ft); 1-bed programs stay single-bath.
   const bathsRequested = bedrooms === 1 ? 1 : Math.max(1, Math.min(2, Math.round(brief.baths ?? 1)));
@@ -855,11 +905,11 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
     2: [[28, 28], [24, 28]],
     3: [[36, 28], [28, 28]],
   };
-  const fp = (n: number): Record<'a-frame' | 'gable' | 'flat' | 'shed' | 'hip' | 'gambrel', Array<[number, number]>> => {
+  const fp = (n: number): Record<'a-frame' | 'gable' | 'flat' | 'shed' | 'hip' | 'gambrel' | 'barn', Array<[number, number]>> => {
     const aframe: Array<[number, number]> = n === 3 ? [[36, 28]] : [[28, 28]];
-    return { 'a-frame': aframe, gable: gableFps[n], flat: gableFps[n], shed: gableFps[n], hip: gableFps[n], gambrel: gableFps[n] };
+    return { 'a-frame': aframe, gable: gableFps[n], flat: gableFps[n], shed: gableFps[n], hip: gableFps[n], gambrel: gableFps[n], barn: gableFps[n] };
   };
-  const CANDIDATE_FOOTPRINTS: Record<number, Record<'a-frame' | 'gable' | 'flat' | 'shed' | 'hip' | 'gambrel', Array<[number, number]>>> = {
+  const CANDIDATE_FOOTPRINTS: Record<number, Record<'a-frame' | 'gable' | 'flat' | 'shed' | 'hip' | 'gambrel' | 'barn', Array<[number, number]>>> = {
     1: fp(1), 2: fp(2), 3: fp(3),
   };
   const candidates = CANDIDATE_FOOTPRINTS[bedrooms][style];
@@ -1034,7 +1084,9 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
           ? { style, ridgeAxis: (widthFt >= depthFt ? 'x' : 'z') as 'x' | 'z', ridgeHeightFt: HIP_RIDGE_FT, eaveHeightFt: HIP_EAVE_FT }
           : style === 'gambrel'
             ? { style, ridgeAxis: 'z' as const, ridgeHeightFt: GAMBREL_RIDGE_FT, eaveHeightFt: GAMBREL_EAVE_FT }
-            : { style, ridgeAxis: 'z' as const, ridgeHeightFt: style === 'a-frame' ? 18 : (brief.hasLoft ? 20 : 14), eaveHeightFt: style === 'a-frame' ? 1 : 8 },
+            : style === 'barn'
+              ? { style, ridgeAxis: (widthFt >= depthFt ? 'x' : 'z') as 'x' | 'z', ridgeHeightFt: BARN_RIDGE_FT, eaveHeightFt: BARN_EAVE_FT }
+              : { style, ridgeAxis: 'z' as const, ridgeHeightFt: style === 'a-frame' ? 18 : (brief.hasLoft ? 20 : 14), eaveHeightFt: style === 'a-frame' ? 1 : 8 },
     lot: brief.lot ?? null,
     hasLoft: brief.hasLoft,
     // Carry the RAW request (unclamped) so compile can refuse an unbuildable

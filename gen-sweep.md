@@ -47,8 +47,11 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
       guard + flag baluster spacing/attachment as shop-drawing scope. (An engine
       R312 *verdict* — pass/advise on guard presence — remains a possible future
       add, but the geometry now satisfies the requirement.)
-- [ ] _(enhancement)_ Constructively implement the remaining roof styles —
-      **flat (14), shed (15), hip (16), gambrel (17) DONE**; LAST: barn.
+- [x] _(enhancement)_ Constructively implement ALL roof styles — **flat (14),
+      shed (15), hip (16), gambrel (17), barn (18) DONE**. All 7 parser-recognized
+      roof styles (a-frame, gable, flat, shed, hip, gambrel, barn) now build, each
+      with R305-checked geometry, honest elevations, and 0 render offenders. The
+      roof-style frontier is COMPLETE. Remaining enhancement: 4+ bedroom synthesis.
       **BARN build plan (scouted fire 17) — TWO STACKED HIPS (ONE model, reuse
       hip twice):** a barn-hip is a gambrel hipped on all four sides = a steep
       LOWER hip (eave perimeter 8 ft → a knuckle "ring" rectangle inset by the
@@ -112,6 +115,38 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 18 — BUILD the barn roof (gambrel hip) → ALL 7 roof styles now build
+- **Capability:** the generator REFUSED `barn` roofs; now it BUILDS them — the
+  LAST refused roof style. `"2 bed barn roof, 40x60 lot"` → a sound plan.
+- **One constructive model — two stacked hips:** a barn (gambrel hipped on all
+  four sides) is a steep LOWER hip (eave perimeter 8 ft → a knuckle ring) stacked
+  under a shallow UPPER hip (knuckle ring → ridge). A single `hipBand(bInset, yB,
+  tInset, yT)` helper builds the 4 frustum planes between two uniformly-inset
+  rectangles; barn = `hipBand(eave→knuckle)` + `hipBand(knuckle→ridge)` = 8
+  planes. The uniform-inset math means the ridge becomes a LINE on a rectangle
+  and a POINT on a square (stacked pyramids) with NO orientation branch — the
+  cleanest model of all the roofs. R305 free (perimeter eave 8 → ceiling ≥ 8).
+- **Elevation:** BOTH faces are a two-pitch HIPPED silhouette (eave → steep to
+  inset knuckle → shallow to inset ridge → flat ridge → mirror). Added `barnHip`
+  to the elevation model + a render branch (6-pt outline). Other roof paths
+  untouched → traced plans don't regress.
+- **Failing assertions FIRST (gates assert MORE):**
+  - `check:generation` — fire-10 "barn → refused" case became 3 positive cases +
+    a structural block (square + rect): style barn, EIGHT planes, four lower
+    planes reach the perimeter eave, single level, 6-pt two-pitch-hipped front,
+    R305 passes for every bedroom, zero constraint fails.
+  - `check:elevations` — barn front+side both two-pitch hipped (`barnHip` set),
+    knuckle between eave and ridge and inset (hipped, not a gable end), openings
+    clamp under the ridge.
+- **Plumbing:** `'barn'` added to the union + `BUILDABLE_ROOF_STYLES` (now all 7
+  parser styles); `BARN_EAVE/KNUCKLE/RIDGE_FT`; `mockIntentFromBrief` selects
+  barn + reuses gable footprints + ridgeAxis = longer; `compileIntent` emits the
+  8 barn planes (via hipBand) + 6-pt outline.
+- **Verified — ALL 7 styles build with 0 render offenders** (a-frame, gable,
+  flat, shed, hip, gambrel, barn); live `POST /api/generate-plan` builds the barn
+  (was 422); full `gates` + `gates:live` green. Throwaway gen-002 deleted.
+- **Commit:** _(pending push)_
 
 ### Fire 17 — BUILD the gambrel roof (two-pitch gable)
 - **Capability:** the generator REFUSED `gambrel` roofs; now it BUILDS them.

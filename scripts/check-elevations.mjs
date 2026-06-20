@@ -124,6 +124,15 @@ check('gambrel front face is the two-pitch gable end', Boolean(gambrelFront.gamb
 check('gambrel knuckle sits inset from both ends', gambrelFront.gambrel.knuckleStartFt > 0.5 && gambrelFront.gambrel.knuckleEndFt < gambrelFront.spanFt - 0.5);
 check('gambrel openings clamp under the ridge', gambrelFront.openings.every((o) => o.headFt <= gambrelFront.ridgeFt + 1e-6));
 
+console.log('plan: fresh 3-bed barn (gambrel hip, two stacked hips)');
+const barnPlan = compiled('3 bed barn roof, 60x80 lot, 10 ft setbacks');
+const barnFront = assertHonest('barn front', barnPlan, 'front');
+const barnSide = assertHonest('barn side', barnPlan, 'side');
+check('barn both faces are two-pitch hipped', Boolean(barnFront.barnHip) && Boolean(barnSide.barnHip));
+check('barn knuckle is between eave and ridge', barnFront.barnHip.knuckleHeightFt > barnFront.eaveFt && barnFront.barnHip.knuckleHeightFt < barnFront.ridgeFt, JSON.stringify(barnFront.barnHip));
+check('barn knuckle is inset (hipped, not a gable end)', barnFront.barnHip.knuckleInsetFt > 0.5 && barnFront.barnHip.ridgeStartFt > barnFront.barnHip.knuckleInsetFt);
+check('barn openings clamp under the ridge', [...barnFront.openings, ...barnSide.openings].every((o) => o.headFt <= barnFront.ridgeFt + 1e-6));
+
 console.log('plan: traced a-frame-22 (ridge along x, inset openings, loft level)');
 const { readFileSync } = await import('node:fs');
 const traced = JSON.parse(readFileSync(join(root, 'public/data/den-image-loop/a-frame-22/paired/a-frame-22-proposal-paired-v10.paired.json'), 'utf8'));

@@ -186,10 +186,16 @@ const CASES = [
   { name: 'maxSqft cap below smallest template (gable)', brief: '2 bed gable, ≤500 sqft', expectCompileError: /exceeds the requested ≤500 sq ft cap/i },
   { name: 'maxSqft cap below smallest template (a-frame)', brief: '2 bed a-frame, ≤600 sqft', expectCompileError: /exceeds the requested ≤600 sq ft cap/i },
 
-  // Roof-style honesty: a recognized style the generator does not BUILD must be
-  // REFUSED, never silently substituted. Flat + shed + hip + gambrel ARE built
-  // now (blocks below); barn is still refused until built.
-  { name: 'barn roof unsupported -> refused', brief: '2 bed barn roof, 60x80 lot, 10 ft setbacks', expectCompileError: /builds only .*roofs/i },
+  // Roof-style honesty: ALL recognized styles now BUILD (a-frame, gable, flat,
+  // shed, hip, gambrel, barn). An UNKNOWN style still surfaces honestly via the
+  // parser's unparsed channel (no roofStyle set -> defaults a-frame), so there is
+  // no roof-style refusal left to assert here.
+
+  // Barn roof — BUILT (fire 18): a gambrel hipped on all four sides (two stacked
+  // hips). style 'barn'; R305 passes (perimeter eave >= 7 ft).
+  { name: '2-bed barn roof (square)', brief: '2 bed barn roof, 40x60 lot, 5 ft setbacks', bedrooms: 2, style: 'barn', hasLot: true, expectWidth: 28 },
+  { name: '3-bed barn roof (rect)', brief: '3 bed barn roof, 60x80 lot, 10 ft setbacks', bedrooms: 3, style: 'barn', hasLot: true, expectWidth: 36 },
+  { name: '1-bed barn roof, no lot', brief: '1 bed barn roof', bedrooms: 1, style: 'barn', hasLot: false, expectWidth: 28 },
 
   // Gambrel roof — BUILT (fire 17): two-pitch gable (steep lower, shallow upper),
   // four planes meeting at a ridge. style 'gambrel'; R305 passes (eave ≥ 7 ft).
@@ -450,6 +456,31 @@ for (const bed of gambrel.artifact.rooms.filter((r) => r.type === 'bedroom')) {
   check(`gambrel ${bed.id} R305 passes`, statusOf(gReport, 'IRC-R305.1', bed.id) === 'pass', statusOf(gReport, 'IRC-R305.1', bed.id));
 }
 check('gambrel has zero constraint-fail findings', gReport.findings.filter((f) => f.status === 'fail').length === 0, gReport.findings.filter((f) => f.status === 'fail').map((f) => f.ruleId).join(', '));
+
+// --- Barn roof (fire 18): built, not refused --------------------------------
+// A barn is a gambrel hipped on all four sides = TWO STACKED HIPS (steep lower
+// band eave -> knuckle ring, shallow upper band knuckle ring -> ridge) = eight
+// planes. Eave 8 ft so R305 passes; both elevations are two-pitch hipped.
+console.log('barn roof: gambrel hipped on all four sides (two stacked hips)');
+for (const [label, brief] of [['2-bed barn (square)', '2 bed barn roof, 40x60 lot, 5 ft setbacks'], ['3-bed barn (rect)', '3 bed barn roof, 60x80 lot, 10 ft setbacks']]) {
+  const barn = compileIntent(mockIntentFromBrief(parseBrief(brief)), 'battery-barn', brief);
+  check(`${label}: compiles cleanly`, barn.ok, barn.errors.join('; '));
+  if (!barn.ok) continue;
+  check(`${label}: roof style is barn`, barn.artifact.roof.style === 'barn', barn.artifact.roof.style);
+  check(`${label}: barn has eight roof planes (two stacked hips)`, (barn.artifact.roof.planes ?? []).length === 8, `${(barn.artifact.roof.planes ?? []).length} planes`);
+  // Every plane reaches either the eave (lower band) or is above it (upper band);
+  // at least the four lower planes touch the perimeter eave.
+  const touchesEave = (barn.artifact.roof.planes ?? []).filter((p) => (p.points ?? []).some((pt) => Math.abs(pt.y - barn.artifact.roof.eaveHeightFt) < 1e-6));
+  check(`${label}: four lower planes reach the perimeter eave`, touchesEave.length === 4, `${touchesEave.length}`);
+  check(`${label}: stays single level`, barn.artifact.footprint.levels !== 2);
+  const bFront = (barn.artifact.elevations ?? []).find((e) => e.view === 'front');
+  check(`${label}: front elevation is a two-pitch hipped silhouette (6 pts)`, (bFront?.outline ?? []).length === 6, `${(bFront?.outline ?? []).length} pts`);
+  const bReport = reportForArtifact(barn.artifact);
+  for (const bed of barn.artifact.rooms.filter((r) => r.type === 'bedroom')) {
+    check(`${label}: ${bed.id} R305 passes`, statusOf(bReport, 'IRC-R305.1', bed.id) === 'pass', statusOf(bReport, 'IRC-R305.1', bed.id));
+  }
+  check(`${label}: zero constraint-fail findings`, bReport.findings.filter((f) => f.status === 'fail').length === 0, bReport.findings.filter((f) => f.status === 'fail').map((f) => f.ruleId).join(', '));
+}
 
 console.log('loft: a roof with no headroom degrades honestly (no loft built)');
 // Direct intent with a near-flat roof: buildLoft must refuse rather than fake
