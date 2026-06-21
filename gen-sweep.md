@@ -136,6 +136,25 @@ would be the FIRST of the two consecutive clean fires.
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
 
+### Fire 20 — clean (full matrix verification; backlog empty) — 1st consecutive clean
+- **Drove the entire support matrix, no defect:**
+  - **7 roof styles × 1–4 bedrooms** (27 buildable combos): every plan has ZERO
+    constraint-fail findings and ZERO render offenders. a-frame 4-bed refused
+    honestly (eave headroom).
+  - **Loft × every roof style:** built where headroom genuinely clears (gable,
+    gambrel, barn — R305-verified against the REAL planes, with the fire-12 guard
+    rails, 0 render offenders), honestly degraded to single level where it can't
+    (flat, shed, hip). Zero fails everywhere.
+  - **Extreme briefs:** tiny lot (4-bed barn on 30×40) and sub-cap sqft (≤400)
+    refuse honestly; 3-bed hip 2-bath and 1-bed shed on a big lot build soundly.
+  - **Refusals honest:** a-frame 4-bed, 5+ bedrooms, unbuildable lots/caps,
+    unsupported roof styles (none left) — all surface a clear reason.
+- **Result:** every supported brief produces a sound, code-checked, honestly-
+  drawn plan, and everything outside the envelope refuses honestly. This is
+  hand-to-an-architect quality across the whole matrix. First clean fire after
+  the fire-14→19 constructive streak. App byte-identical; gates green by identity.
+- **Commit:** _(doc-only)_
+
 ### Fire 19 — BUILD 4-bedroom synthesis → enhancement backlog EMPTY
 - **Capability:** the generator REFUSED 4+ bedrooms (capped at 3 since fire 1);
   now it BUILDS 4-bed. `"4 bed gable, 80x100 lot"` → a sound, code-checked plan.
