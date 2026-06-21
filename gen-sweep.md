@@ -28,12 +28,16 @@ reliably produce sound, correctly code-checked plans you'd hand to an architect.
 ## Backlog
 _(updated each fire)_
 
-**Status (after fire 13):** the CORRECTNESS + HONESTY frontier is swept — no
-open defect class. Diverse briefs produce sound, code-checked plans within the
-supported envelope (1–3 bed, a-frame/gable, optional loft) and refuse/annotate
-honestly outside it. The remaining items below are ENHANCEMENTS (envelope
-expansion + UX), not correctness bugs. Closing the loop needs one more clean
-fire (two consecutive) — at which point these become a fresh feature backlog.
+**Status (after fire 19):** the CORRECTNESS + HONESTY frontier is swept (no open
+defect class) AND the CONSTRUCTIVE frontier is complete — all 7 roof styles
+(a-frame, gable, flat, shed, hip, gambrel, barn) build, and 1–4 bedrooms
+synthesize, each with R305-checked geometry, honest elevations, operable egress,
+and 0 render offenders. Outside the envelope (5+ bedrooms, 4-bed a-frame) the
+generator refuses honestly. **The enhancement backlog is now EMPTY** (remaining
+items below are all checked or are minor/optional polish). Close condition: full
+ladder green on two consecutive fires → then update PROJECT_STATUS + playbook,
+push, notify, CronDelete. Fire 19 is a gated fix (4-bed); fire 20, if clean,
+would be the FIRST of the two consecutive clean fires.
 
 - [ ] _(enhancement)_ `doorSwingClear: true` on fixtures is hardcoded, not
       computed (compile-plan ~line 265). Latent metadata-honesty item — asserts a
@@ -89,8 +93,11 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
       - GATES: convert the check:generation "hip → refused" case to positive +
         structural (4 planes, eave around perimeter, R305 passes, trapezoid/centered
         silhouette); add a hip case to check:elevations. Confirm 0 render offenders.
-- [ ] _(enhancement)_ Synthesize 4+ bedroom layouts (fire 1 made the refusal
-      honest; now BUILD it). **4-BED build plan (scouted fire 18) — de-risked:**
+- [x] _(enhancement)_ Synthesize 4-bedroom layouts — **DONE (fire 19)**: a 48×28
+      grid-aligned plan with 4 bedrooms + central bath builds for all eave-≥7 roof
+      styles, each bedroom R305 + operable egress; a-frame 4-bed and 5+ bedrooms
+      refused honestly. (Original scout notes below.)
+      **4-BED build plan (scouted fire 18) — de-risked:**
       `starterFixtures` already iterates rooms generically (bed→bed+wardrobe,
       bath→toilet+vanity+shower, kitchen, living), the interior-wall builder
       derives walls from room rects, and R305/egress/area checks all generalize —
@@ -128,6 +135,35 @@ fire (two consecutive) — at which point these become a fresh feature backlog.
 
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
+
+### Fire 19 — BUILD 4-bedroom synthesis → enhancement backlog EMPTY
+- **Capability:** the generator REFUSED 4+ bedrooms (capped at 3 since fire 1);
+  now it BUILDS 4-bed. `"4 bed gable, 80x100 lot"` → a sound, code-checked plan.
+- **De-risked model:** `starterFixtures`, the interior-wall builder, and the
+  R305/egress/area/grid checks all generalize from the room rectangles — so the
+  4-bed needed ONLY new room rects + doors + windows. A 48×28 plan tiles four
+  bedrooms + a central bath across the rear band (boundaries 0/12/24/32/40/48 all
+  on the 4 ft grid); bed1/bed4 take the side walls and bed2/bed3 the rear wall
+  for operable egress. Raised `MAX_TEMPLATE_BEDROOMS` 3→4 + clamp; added the
+  48×28 footprint for n=4. Fixtures/walls came free.
+- **DEFECT caught mid-build (gate did its job):** first pass used 11/9 ft bedroom
+  widths → WH-GRID-4FT failed (off the 4 ft panel grid). Fixed to grid-aligned
+  12/12/8/8 + 8 bath. (Defect discipline outranks features — fixed before moving
+  on.)
+- **a-frame 4-bed refused honestly:** an a-frame's 1 ft eave leaves the two
+  width-edge bedrooms of a 48-wide plan below R305 headroom (~23% at 7 ft), so it
+  is refused with a clear message rather than shipping a plan that fails its own
+  ceiling check. 5+ bedrooms still refused (template ceiling). The eave-≥7 styles
+  (gable/flat/shed/hip/gambrel/barn) all host 4 beds.
+- **Failing assertions FIRST (gates assert MORE):** `check:generation` — fire-1's
+  "4-bed → refused" became a positive 4-bed case + a structural block: exactly
+  four bedrooms, 48×28, a bath present, EACH bedroom proves egress + R305 + an
+  operable window, grid passes, zero fails, builds for all 6 eave-≥7 styles,
+  a-frame refused.
+- **Verified:** offline batteries green; live `POST /api/generate-plan` builds the
+  4-bed (was 422); render primitives = 0 offenders; full `gates` + `gates:live`
+  green. Throwaway gen-002 deleted.
+- **Commit:** _(pending push)_
 
 ### Fire 18 — BUILD the barn roof (gambrel hip) → ALL 7 roof styles now build
 - **Capability:** the generator REFUSED `barn` roofs; now it BUILDS them — the

@@ -91,7 +91,7 @@ const EPS = 1e-6;
 /** The deterministic (no-API) generator hand-authors layouts for 1–3 bedrooms
  * only. A brief asking for more is refused at compile with a clear message
  * rather than silently collapsed to a 3-bedroom plan that misrepresents it. */
-export const MAX_TEMPLATE_BEDROOMS = 3;
+export const MAX_TEMPLATE_BEDROOMS = 4;
 
 /** Roof styles the deterministic generator actually builds (geometry, planes,
  * elevations, and clipping all implemented). A brief requesting any other
@@ -386,6 +386,17 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
     errors.push(
       `requested ${intent.requestedBedrooms} bedrooms; the deterministic generator builds at most ${MAX_TEMPLATE_BEDROOMS} `
       + `— reduce the bedroom count or supply an OPENAI_API_KEY for full generation`,
+    );
+  }
+
+  // A 4-bedroom plan packs four bedrooms across a 48 ft width; an a-frame's 1 ft
+  // eave leaves the two width-edge bedrooms below R305 headroom, so refuse it
+  // rather than ship a plan that fails its own ceiling check (input honesty, P5).
+  // The eave-≥7 ft styles (gable/flat/shed/hip/gambrel/barn) host 4 beds fine.
+  if (typeof intent.requestedBedrooms === 'number' && intent.requestedBedrooms >= 4 && intent.roof?.style === 'a-frame') {
+    errors.push(
+      `requested ${intent.requestedBedrooms} bedrooms with an a-frame roof; the a-frame's low eave cannot give the `
+      + `width-edge bedrooms the required ceiling height — choose gable, hip, flat, shed, gambrel, or barn for 4 bedrooms`,
     );
   }
 
@@ -881,7 +892,7 @@ export function compileIntent(intent: GenerationIntent, planId: string, brief: s
  * compileIntent reports the honest envelope failure.
  */
 export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; roofStyle?: string; maxSqft?: number; hasLoft?: boolean; lot?: GenerationIntent['lot'] }): GenerationIntent {
-  const bedrooms = Math.max(1, Math.min(3, brief.bedrooms ?? 2));
+  const bedrooms = Math.max(1, Math.min(4, brief.bedrooms ?? 2));
   const style: 'a-frame' | 'gable' | 'flat' | 'shed' | 'hip' | 'gambrel' | 'barn' = brief.roofStyle === 'gable' ? 'gable'
     : brief.roofStyle === 'flat' ? 'flat'
       : brief.roofStyle === 'shed' ? 'shed'
@@ -904,13 +915,16 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
     1: [[28, 28], [24, 28], [20, 28], [20, 24]],
     2: [[28, 28], [24, 28]],
     3: [[36, 28], [28, 28]],
+    4: [[48, 28]],
   };
   const fp = (n: number): Record<'a-frame' | 'gable' | 'flat' | 'shed' | 'hip' | 'gambrel' | 'barn', Array<[number, number]>> => {
-    const aframe: Array<[number, number]> = n === 3 ? [[36, 28]] : [[28, 28]];
+    // a-frame's low eave can't host 3-across (36) beyond 3 beds; for n=4 it is
+    // refused at compile, so its footprint here is only a placeholder.
+    const aframe: Array<[number, number]> = n >= 3 ? [[36, 28]] : [[28, 28]];
     return { 'a-frame': aframe, gable: gableFps[n], flat: gableFps[n], shed: gableFps[n], hip: gableFps[n], gambrel: gableFps[n], barn: gableFps[n] };
   };
   const CANDIDATE_FOOTPRINTS: Record<number, Record<'a-frame' | 'gable' | 'flat' | 'shed' | 'hip' | 'gambrel' | 'barn', Array<[number, number]>>> = {
-    1: fp(1), 2: fp(2), 3: fp(3),
+    1: fp(1), 2: fp(2), 3: fp(3), 4: fp(4),
   };
   const candidates = CANDIDATE_FOOTPRINTS[bedrooms][style];
   const setbacks = brief.lot?.setbacksFt ?? {};
@@ -1032,7 +1046,7 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
       { id: 'win-bed1-w', roomId: 'room-bed1', span: { x1: 0, z1: 20, x2: 0, z2: 24 } },
       { id: 'win-bed2-e', roomId: 'room-bed2', span: { x1: widthFt, z1: 20, x2: widthFt, z2: 24 } },
     );
-  } else {
+  } else if (bedrooms === 3) {
     // With a second bath (36 ft only), Bedroom 2 narrows to 8 ft and the
     // freed 4 ft column hosts Bath 2 (toward the ridge) plus a walk-in
     // closet for Bedroom 3.
@@ -1064,6 +1078,32 @@ export function mockIntentFromBrief(brief: { bedrooms?: number; baths?: number; 
       { id: 'win-bed1-w', roomId: 'room-bed1', span: { x1: 0, z1: 20, x2: 0, z2: 24 } },
       { id: 'win-bed2-s', roomId: 'room-bed2', span: { x1: bed2Mid - 2, z1: depthFt, x2: bed2Mid + 2, z2: depthFt } },
       { id: 'win-bed3-e', roomId: 'room-bed3', span: { x1: widthFt, z1: 20, x2: widthFt, z2: 24 } },
+    );
+  } else {
+    // 4 bedrooms: a 48 ft rear band holds four bedrooms with a central full bath,
+    // tiling z16-28 with no gap. All boundaries (0/12/24/32/40/48) sit on the 4 ft
+    // structural grid. Bed1/Bed4 take the side walls for egress; Bed2/Bed3 take
+    // the rear (south) wall. Walls + fixtures + R305/egress checks all generalize
+    // from these rectangles (no per-room special casing).
+    rooms.push(
+      { id: 'room-bed1', label: 'Bedroom 1', type: 'bedroom', x: 0, z: 16, w: 12, d: 12 },
+      { id: 'room-bed2', label: 'Bedroom 2', type: 'bedroom', x: 12, z: 16, w: 12, d: 12 },
+      { id: 'room-bath', label: 'Bath', type: 'bathroom', x: 24, z: 16, w: 8, d: 12 },
+      { id: 'room-bed3', label: 'Bedroom 3', type: 'bedroom', x: 32, z: 16, w: 8, d: 12 },
+      { id: 'room-bed4', label: 'Bedroom 4', type: 'bedroom', x: 40, z: 16, w: 8, d: 12 },
+    );
+    doors.push(
+      { id: 'door-bed1', fromRoomId: 'room-hall', toRoomId: 'room-bed1', openingType: 'interiorDoor', span: { x1: 4.75, z1: 16, x2: 7.25, z2: 16 } },
+      { id: 'door-bed2', fromRoomId: 'room-hall', toRoomId: 'room-bed2', openingType: 'interiorDoor', span: { x1: 16.75, z1: 16, x2: 19.25, z2: 16 } },
+      { id: 'door-bath', fromRoomId: 'room-hall', toRoomId: 'room-bath', openingType: 'interiorDoor', span: { x1: 26.75, z1: 16, x2: 29.25, z2: 16 } },
+      { id: 'door-bed3', fromRoomId: 'room-hall', toRoomId: 'room-bed3', openingType: 'interiorDoor', span: { x1: 34.75, z1: 16, x2: 37.25, z2: 16 } },
+      { id: 'door-bed4', fromRoomId: 'room-hall', toRoomId: 'room-bed4', openingType: 'interiorDoor', span: { x1: 42.75, z1: 16, x2: 45.25, z2: 16 } },
+    );
+    windows.push(
+      { id: 'win-bed1-w', roomId: 'room-bed1', span: { x1: 0, z1: 20, x2: 0, z2: 24 } },
+      { id: 'win-bed2-s', roomId: 'room-bed2', span: { x1: 16, z1: depthFt, x2: 20, z2: depthFt } },
+      { id: 'win-bed3-s', roomId: 'room-bed3', span: { x1: 34, z1: depthFt, x2: 38, z2: depthFt } },
+      { id: 'win-bed4-e', roomId: 'room-bed4', span: { x1: widthFt, z1: 20, x2: widthFt, z2: 24 } },
     );
   }
 

@@ -171,8 +171,12 @@ const CASES = [
 
   // Program honesty: a bedroom count beyond the template ceiling (3) must be
   // refused with a clear message, NOT silently collapsed to a 3-bedroom plan.
-  { name: '4-bed exceeds template ceiling', brief: '4 bed 2 bath gable, 1600 sqft, 80x100 lot, 10 ft setbacks', expectCompileError: /builds at most 3|requested 4 bedrooms/i },
-  { name: '5-bed exceeds template ceiling', brief: '5 bed 3 bath gable, 2400 sqft, 80x120 lot, 10 ft setbacks', expectCompileError: /builds at most 3|requested 5 bedrooms/i },
+  // 4-bed is BUILT now (fire 19) for eave-≥7 styles; 5+ still exceeds the
+  // template ceiling, and 4-bed a-frame is refused (its 1 ft eave can't give the
+  // width-edge bedrooms R305 headroom).
+  { name: '4-bed gable', brief: '4 bed gable, 80x100 lot, 10 ft setbacks', bedrooms: 4, style: 'gable', hasLot: true, expectWidth: 48 },
+  { name: '4-bed a-frame refused (eave too low for 4 across)', brief: '4 bed a-frame, 80x100 lot, 10 ft setbacks', expectCompileError: /a-frame.*4|4 .*a-frame|headroom|builds at most/i },
+  { name: '5-bed exceeds template ceiling', brief: '5 bed 3 bath gable, 2400 sqft, 80x120 lot, 10 ft setbacks', expectCompileError: /builds at most 4|requested 5 bedrooms/i },
 
   // Coverage honesty: a footprint that fits the setback envelope but exceeds the
   // 35% lot-coverage cap must be refused, not shipped as a plan that fails its
@@ -481,6 +485,35 @@ for (const [label, brief] of [['2-bed barn (square)', '2 bed barn roof, 40x60 lo
   }
   check(`${label}: zero constraint-fail findings`, bReport.findings.filter((f) => f.status === 'fail').length === 0, bReport.findings.filter((f) => f.status === 'fail').map((f) => f.ruleId).join(', '));
 }
+
+// --- 4-bedroom synthesis (fire 19) ------------------------------------------
+// The generator now builds 4 bedrooms (was capped at 3). A 48x28 plan tiles
+// four bedrooms + a central bath across the rear band; every bedroom gets an
+// operable egress window and passes R305. a-frame is refused (low eave), 5+ is
+// refused (template ceiling).
+console.log('4-bed: four bedrooms synthesize on a 48x28 plan');
+const fourBed = compileIntent(mockIntentFromBrief(parseBrief('4 bed gable, 80x100 lot, 10 ft setbacks')), 'battery-4bed', '4 bed gable');
+check('compiles cleanly', fourBed.ok, fourBed.errors.join('; '));
+const fourBeds = (fourBed.artifact?.rooms ?? []).filter((r) => r.type === 'bedroom');
+check('exactly four bedrooms', fourBeds.length === 4, `${fourBeds.length}`);
+check('footprint is 48x28', fourBed.artifact?.footprint?.widthFt === 48 && fourBed.artifact?.footprint?.depthFt === 28);
+check('a bathroom is present', (fourBed.artifact?.rooms ?? []).some((r) => r.type === 'bathroom'));
+// No overlaps + all rooms inside the footprint (the validator would have caught
+// these as compile errors, but assert structurally too).
+const fourReport = reportForArtifact(fourBed.artifact);
+for (const bed of fourBeds) {
+  check(`4-bed ${bed.id} proves egress`, statusOf(fourReport, 'IRC-R310.1', bed.id) === 'pass', statusOf(fourReport, 'IRC-R310.1', bed.id));
+  check(`4-bed ${bed.id} R305 passes`, statusOf(fourReport, 'IRC-R305.1', bed.id) === 'pass', statusOf(fourReport, 'IRC-R305.1', bed.id));
+  const win = (fourBed.artifact.windows ?? []).filter((w) => (w.roomIds ?? [w.roomId]).includes(bed.id));
+  check(`4-bed ${bed.id} egress window operable`, win.length > 0 && win.every((w) => w.windowKind && w.windowKind !== 'fixed'));
+}
+check('4-bed grid passes', statusOf(fourReport, 'WH-GRID-4FT') === 'pass', statusOf(fourReport, 'WH-GRID-4FT'));
+check('4-bed has zero constraint-fail findings', fourReport.findings.filter((f) => f.status === 'fail').length === 0, fourReport.findings.filter((f) => f.status === 'fail').map((f) => f.ruleId).join(', '));
+// 4-bed builds for every eave->=7 roof style; a-frame is refused.
+for (const s of ['gable', 'flat', 'shed', 'hip', 'gambrel', 'barn']) {
+  check(`4-bed ${s} compiles`, compileIntent(mockIntentFromBrief(parseBrief(`4 bed ${s} roof, 80x100 lot, 10 ft setbacks`)), 'b', 'x').ok);
+}
+check('4-bed a-frame refused', !compileIntent(mockIntentFromBrief(parseBrief('4 bed a-frame, 80x100 lot, 10 ft setbacks')), 'b', 'x').ok);
 
 console.log('loft: a roof with no headroom degrades honestly (no loft built)');
 // Direct intent with a near-flat roof: buildLoft must refuse rather than fake
