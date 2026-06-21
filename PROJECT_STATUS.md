@@ -1,6 +1,44 @@
 # Project Status
 
-Last updated: 2026-06-19 (UX sweep — 12 usability classes fixed by driving the live app, two consecutive clean verification fires)
+Last updated: 2026-06-20 (Generation-quality sweep — defect/honesty frontier swept + full constructive frontier built; two consecutive clean fires, full ladder green)
+
+## 2026-06-20 Generation-Quality Sweep — Shipped
+
+Turned the hardening discipline on the **brief → plan → code-check generation
+pipeline**: drive diverse briefs through `/api/generate-plan`, INSPECT the
+output, gate MORE, fix the root cause with one constructive model. Two phases,
+each closed by two consecutive clean fires with `npm run gates` AND
+`npm run gates:live` green. Living log: `gen-sweep.md`; methodology: playbook §12.
+
+**Phase A — defect/honesty (fires 1–13).** Closed the *silent program mismatch*
+class (input honesty, P5) end-to-end — the generator must never misrepresent the
+brief: bedrooms over-cap (refuse), baths that don't fit (surface a note), sqft
+cap (refuse), orphan setbacks/coverage (parser surfaces), roof style (refuse, not
+substitute). Plus **egress operability** (a `fixed` window isn't R310 egress →
+bedrooms get operable `egress` windows; the engine rejects fixed), **bathroom
+lavatory completeness**, and **loft fall protection** (R312 guard rails). Then a
+clean fire (13).
+
+**Phase B — constructive frontier (fires 14–19).** Built every capability the
+generator used to refuse, one per fire, each with a failing test first and a
+constructive model that reuses the shared geometry machinery:
+
+- **All 7 roof styles** now build: a-frame, gable, **flat, shed, hip, gambrel,
+  barn** (the last five new) — each R305-checked, with honest elevations and 0
+  render offenders. The barn is the cleanest model: a "gambrel hip" = one
+  `hipBand` helper applied twice (8 planes), ridge degenerating to a point on a
+  square footprint with no orientation branch.
+- **4-bedroom synthesis** (was capped at 3): a 48×28 grid-aligned plan, each
+  bedroom with operable egress + R305; a-frame 4-bed and 5+ refuse honestly.
+
+**Verification (fires 20–21).** Drove the full matrix — 7 roof styles × 1–4
+bedrooms (+ loft × every style, extreme lots, odd baths): every supported brief
+produces a sound, code-checked, honestly-drawn plan; everything outside the
+envelope refuses with a specific reason. Zero constraint fails, zero render
+offenders across the matrix. Two consecutive clean fires → loop closed.
+
+Net: a one-line brief compiles to a hand-to-an-architect plan across 7 roof
+styles × 1–4 bedrooms (optional loft where headroom clears), or refuses honestly.
 
 ## 2026-06-19 UX Sweep — Shipped
 

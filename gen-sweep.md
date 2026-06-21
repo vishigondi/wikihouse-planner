@@ -136,6 +136,24 @@ would be the FIRST of the two consecutive clean fires.
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
 
+### Fire 21 — clean (fresh angles) — 2nd consecutive clean → LOOP CLOSED
+- **Drove fresh angles the gates don't fully cover, no defect:**
+  - **4-bed connectivity:** all rooms reachable from the exterior.
+  - **4-bed fixtures:** every bedroom has a bed; the bath has a lavatory
+    (toilet+vanity+shower). The 8 ft bed3/bed4 lack a wardrobe — but that is the
+    EXISTING width-gated behavior (`w≥9 && d≥9`); the 2-bed 24 ft gable's 8 ft
+    bedrooms behave identically, and closets aren't IRC-required. Not a
+    regression, not a code defect.
+  - **Dimension lines** correct for the new 48×28 footprint (48'-0"/28'-0").
+  - **Elevation silhouette distinctness:** each new roof renders its OWN
+    silhouette — shed=monoPitch, hip=hipTrapezoid, gambrel=gambrel, barn=barnHip
+    — none falls back to the gable triangle.
+- **Result:** second consecutive clean fire. Backlog empty; diverse briefs across
+  all 7 roof styles × 1–4 bedrooms produce sound, code-checked, honestly-drawn
+  plans; everything outside the envelope refuses honestly. **CLOSE CONDITION MET**
+  — PROJECT_STATUS + playbook updated, pushed, notified, cron deleted.
+- **Commit:** _(close commit)_
+
 ### Fire 20 — clean (full matrix verification; backlog empty) — 1st consecutive clean
 - **Drove the entire support matrix, no defect:**
   - **7 roof styles × 1–4 bedrooms** (27 buildable combos): every plan has ZERO

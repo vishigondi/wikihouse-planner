@@ -437,3 +437,67 @@ standards · `28d4c49` professional 3D · `9cf3c8a` consistency sweep ·
 pane · `f49a8c2` facade camera fit · `f454db6` real gallery thumbnails ·
 `34f2bbe` lane coherence + labels · `85cfe79` self-explaining chips ·
 `08638ab` close.
+
+---
+
+## 12. The generation-quality era (2026-06-18 → 06-20) — two phases
+
+A later loop turned the same discipline on the **brief → plan → code-check
+generation pipeline** (`gen-sweep.md` is the living log). It ran in two phases,
+each closed by two consecutive clean fires with the full ladder green.
+
+### Phase A — defect/honesty sweep (fires 1–13)
+
+Drove diverse briefs through `/api/generate-plan` and INSPECTED the output for
+plans that were wrong, misleading, or a "pass that should fail." Twelve+ defects,
+each generalized to its class with a failing battery assertion, then root-caused.
+The unifying class was **silent program mismatch** (input honesty, P5): the
+generator silently misrepresenting the brief. Closed across **bedrooms** (refuse
+over-cap), **baths** (surface a downgrade note), **sqft cap**, **orphan
+setbacks/coverage** (parser surfaces them), and **roof style** (refuse, don't
+substitute) — plus **egress operability** (a `fixed` window is not R310 egress →
+emit `egress`, engine rejects fixed), **bathroom lavatory completeness**, and
+**loft fall protection** (R312 — a loft open to below must model a guard rail).
+Then two clean fires.
+
+### Phase B — constructive frontier (fires 14–19)
+
+Pivoted from "find what's wrong" to "build what it refuses." Same rigor: drive
+the refusal, add a FAILING positive test, build with ONE constructive model that
+reuses the shared machinery, verify 0 render offenders + R305 + honest elevation.
+Shipped, in ascending geometric complexity:
+
+- **flat** (one horizontal plane), **shed** (one mono-pitch plane + a mono-pitch
+  elevation), **hip** (4 planes, ridge-inset → pyramid on a square), **gambrel**
+  (two-pitch gable, 5-sided end), **barn** (gambrel hipped = two stacked hips via
+  ONE `hipBand` helper applied twice, 8 planes). All 7 parser roof styles build.
+- **4-bedroom synthesis** — a 48×28 grid-aligned plan; `starterFixtures`, the
+  wall builder, and every code check already generalized from room rectangles, so
+  only room rects + doors + windows were authored. a-frame 4-bed and 5+ refuse
+  honestly.
+
+### What made Phase B clean (the reusable lessons)
+
+1. **One constructive model, degenerating, beats per-case branches.** The hip's
+   ridge-inset becomes a pyramid on a square with no special case; the barn is
+   the hip applied twice; the flat is the gable machinery with ridge == eave. The
+   geometry consumers (`ceilingProfileForRect`, `buildElevationModel`, the clip)
+   take any planar roof — give them correct planes and R305/clip/openings come
+   free.
+2. **Reuse beats author.** The single biggest de-risker was discovering the
+   fixture/wall/check layers were already generic over room rectangles — a new
+   capability only had to add geometry, not re-implement the pipeline.
+3. **Make the new geometry render-legible, then leave the rest alone.** Each new
+   elevation silhouette was a new model field + render branch; the gable/a-frame
+   paths were never touched, so traced plans never regressed.
+4. **Honest refusal is a feature, not a gap.** Where the deterministic model
+   genuinely can't build sound geometry (a-frame 4-bed's eave headroom, 5+
+   bedrooms, sub-cap sqft), refuse with a specific reason — never ship a plan that
+   fails its own code report.
+5. **The gate catches your own feature's defects too.** The 4-bed's first-pass
+   room widths were off the 4 ft grid; WH-GRID-4FT caught it before commit.
+   Defect discipline outranks features even when the defect is in the feature.
+
+Outcome: a one-line brief now compiles to a sound, code-checked, honestly-drawn
+plan across **7 roof styles × 1–4 bedrooms** (with optional loft where headroom
+clears) — or refuses honestly. Hand-to-an-architect quality across the matrix.
