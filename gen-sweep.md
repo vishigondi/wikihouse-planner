@@ -140,6 +140,22 @@ _(bug → class → test → root-cause fix → commit)_
 _Frontier: every generated plan must be buildable as a WikiHouse plywood panel
 kit, and the 3D model must match the 2D/code source of truth._
 
+### M-fire 7 — roof-pitch (last class): decision needed (CNC any-pitch vs fixed rafter SKUs)
+- **Drove + confirmed the coupling:** roof-pitch failures (shed 15.9°, gambrel/
+  barn 29.7°, a-frame 50.5°, gable+loft 40.6°) are entangled with loft headroom —
+  a usable loft NEEDS a steep, non-SKU pitch. Snapping IS feasible (snap UP:
+  gable+loft 40.6→45° raises the ridge and the loft survives; a-frame→60°), but
+  it's a deep cascade: ridge becomes footprint-dependent (ridge = eave + run·tan
+  sku), per (style, loft) target, with R305/loft/elevation/clip re-verification,
+  and gambrel/barn are two-pitch (don't fit a single rafter-SKU).
+- **Why BLOCKED on a decision:** whether to snap at all depends on a domain fact
+  I can't resolve — does WikiHouse CNC-cut rafters to the design (ANY pitch is
+  manufacturable → the fixed-SKU rule is a false constraint, keep roof-pitch
+  ADVISORY, no geometry distortion) or stock fixed rafter SKUs (must snap, deep
+  cascade)? build-validator's roof-pitch is currently an UNGATED advisory; the
+  four gated manufacturability rules all pass. Surfaced to the user.
+- **Commit:** _(doc-only; loop paused on this decision)_
+
 ### M-fire 6 — off-grid loft walls: snap the loft band to the 4 ft panel module
 - **Drove:** loft plans' gable wall `ext-l1-front` was off the 4 ft grid (gable+
   loft 17 ft, gambrel/barn/a-frame+loft 11 ft) → wall-module blocked. The loft
