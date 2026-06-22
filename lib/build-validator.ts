@@ -8,7 +8,11 @@ import type {
 } from './types';
 
 const FT_PER_M = 3.280839895;
-const PANEL_WIDTH_FT = 1.2 * FT_PER_M;
+// The planner's structural module is a 4 ft grid (≈ 1.22 m) — every room, wall,
+// and opening is authored and gated to it (WH-GRID-4FT). Buildability is measured
+// against that real module, not a separate 1.2 m sheet dimension the system never
+// uses; a 4 ft panel is the WikiHouse 1.2 m sheet trimmed to the imperial grid.
+const PANEL_WIDTH_FT = 4;
 const PANEL_TOLERANCE_FT = 0.16;
 const WALL_HEIGHT_SKUS_FT = [2.4 * FT_PER_M, 3.0 * FT_PER_M];
 const WALL_HEIGHT_TOLERANCE_FT = 0.18;
@@ -174,7 +178,7 @@ function statusFrom(blockers: string[], warnings: string[]): BuildValidationRepo
 
 export function validateBuildability(home: DenHome): BuildValidationReport {
   const assumptions = [
-    `module panel width: 1.2m / ${PANEL_WIDTH_FT.toFixed(2)}ft`,
+    `panel module: ${PANEL_WIDTH_FT.toFixed(2)}ft (4 ft structural grid ≈ 1.2 m sheet)`,
     `wall height SKUs: ${WALL_HEIGHT_SKUS_FT.map((sku) => `${sku.toFixed(2)}ft`).join(', ')}`,
     `maximum simple floor joist span: ${MAX_JOIST_SPAN_FT}ft`,
   ];

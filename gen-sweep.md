@@ -140,7 +140,32 @@ _(bug → class → test → root-cause fix → commit)_
 _Frontier: every generated plan must be buildable as a WikiHouse plywood panel
 kit, and the 3D model must match the 2D/code source of truth._
 
-### M-fire 2 — DROVE manufacturability → foundational 4 ft-grid vs 1.2 m-panel tension (BLOCKED on a decision)
+### M-fire 3 — implement the 4 ft-panel-module decision + gate manufacturability + fix flat wall-SKU defect
+- **Decision (from the user, on the M-fire 2 finding):** treat the planner's 4 ft
+  structural grid AS the panel module — build-validity is measured against the
+  system's real module, not a separate 1.2 m sheet dimension nothing uses.
+- **Root change:** `build-validator.ts` `PANEL_WIDTH_FT = 1.2 m → 4 ft` (a 4 ft
+  panel = the 1.2 m sheet trimmed to the imperial grid). Now every 4 ft-grid wall
+  is an exact panel multiple → wall-module / wall-height / openings PASS for the
+  standard plans (was: all blocked).
+- **New gate (gates assert MORE):** `scripts/check-buildable.mjs` (`npm run
+  check:buildable`, added to the `gates` ladder) drives `validateBuildability` on
+  every roof style × 1–4 beds and asserts the PANEL-FIT rules (wall-module,
+  wall-height, openings) pass + a BOM is produced.
+- **DEFECT caught by the new gate (defect discipline):** flat roofs used a 9 ft
+  wall — NOT a manufacturable wall-height SKU (2.4 m=7.87 / 3.0 m=9.84; 9 ft is
+  0.84 off). Root-fixed: `FLAT_ROOF_HEIGHT_FT 9 → 8` (the same ~2.4 m SKU every
+  other roof's eave uses; still clears R305). Flat plans now pass wall-height.
+- **Still-open manufacturability classes (tracked, NOT yet gated — next fires):**
+  (a) **floor-span** — 28 ft depth > 16 ft simple-joist span (all plans; needs an
+  intermediate beam/bearing line). (b) **roof-pitch** — some pitches aren't on
+  the rafter-SKU list (e.g. a-frame 18.4°, barn 29.7°). (c) **loft walls** — a
+  loft's headroom-band wall isn't 4 ft-aligned (e.g. 11 ft). Each gets added to
+  `check:buildable`'s asserted rule set as it's root-fixed.
+- **Verified:** `check:buildable` green; full `gates` + `gates:live` green.
+- **Commit:** _(pending push)_
+
+### M-fire 2 — DROVE manufacturability → foundational 4 ft-grid vs 1.2 m-panel tension (DECIDED: 4 ft = the module)
 - **Drove `validateBuildability` (lib/build-validator.ts) on real plans.** Built a
   minimal DenHome adapter (artifact → sourceWalls/openings/rooms) and ran it.
 - **Finding:** generated plans are `status: blocked` — TWO classes:

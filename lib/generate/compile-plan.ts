@@ -99,9 +99,10 @@ export const MAX_TEMPLATE_BEDROOMS = 4;
  * an a-frame that misrepresents the massing. */
 export const BUILDABLE_ROOF_STYLES = ['a-frame', 'gable', 'flat', 'shed', 'hip', 'gambrel', 'barn'] as const;
 
-/** Interior ceiling height of a flat roof (constant, no slope). Comfortably
- * clears R305's 7 ft minimum and the walls carry to this height. */
-const FLAT_ROOF_HEIGHT_FT = 9;
+/** Interior ceiling height of a flat roof (constant, no slope). 8 ft clears
+ * R305's 7 ft minimum AND is a manufacturable wall-height SKU (the same ~2.4 m
+ * panel every other roof's eave uses) — a 9 ft wall is not a buildable SKU. */
+const FLAT_ROOF_HEIGHT_FT = 8;
 
 /** Shed (mono-pitch) roof: a single plane sloping from a high edge to a low
  * edge. Both heights clear R305's 7 ft minimum, so the whole floor is habitable
