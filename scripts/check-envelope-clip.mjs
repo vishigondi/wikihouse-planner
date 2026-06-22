@@ -15,6 +15,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { ceilingPlanesFromRoofPoints, ceilingHeightAt, clipPrismToCeiling, rectFootprint } = await import(
   join(root, 'lib/bim/envelope-clip.ts')
 );
+const { parseBrief } = await import(join(root, 'lib/brief.ts'));
+const { mockIntentFromBrief, compileIntent } = await import(join(root, 'lib/generate/compile-plan.ts'));
 
 let failures = 0;
 function check(label, ok, detail = '') {
@@ -145,6 +147,27 @@ const kneeDoor = clipWallSegmentWithOpenings(
 check('no header materializes above the low roof', vertsInRegion(kneeDoor, 'z', 10.3, 12.7, 2.9, 99) === 0);
 check('side pieces remain', !kneeDoor.empty);
 check('no envelope violation', vertexViolations(kneeDoor, aFramePlanes, 0) < 1e-6);
+
+// --- The five new roof styles clip honestly in 3D (added with the constructive
+// roof loop; the clipper's min-over-planes model must handle 1, 4, and 8 planes
+// as cleanly as the original 2-plane a-frame/gable). Drive the REAL compiler
+// planes so this gate tracks the actual generator geometry. ----------------
+console.log('case: flat / shed / hip / gambrel / barn clip with no envelope violation');
+for (const style of ['flat', 'shed', 'hip', 'gambrel', 'barn']) {
+  const artifact = compileIntent(mockIntentFromBrief(parseBrief(`2 bed ${style} roof, 40x60 lot, 5 ft setbacks`)), 'clip-test', style).artifact;
+  const W2 = artifact.footprint.widthFt;
+  const D2 = artifact.footprint.depthFt;
+  const planes = ceilingPlanesFromRoofPoints(artifact.roof.planes);
+  check(`${style}: planes fitted (${artifact.roof.planes.length})`, planes.length === artifact.roof.planes.length, `got ${planes.length}`);
+  const solid = clipPrismToCeiling(rectFootprint(0, 0, W2, D2), 0, 99, planes);
+  check(`${style}: clipped wall prism is not empty`, !solid.empty);
+  // No output vertex may pierce the roof envelope (or drop below the floor).
+  check(`${style}: no envelope violation`, vertexViolations(solid, planes, 0) < 1e-6, String(vertexViolations(solid, planes, 0)));
+  // The clipped solid must reach (near) the ridge — the roof is modeled, not
+  // flattened. Tolerance covers the overhang offset on a shed, whose high edge
+  // sits at the overhang line just outside the footprint (peak ~ ridge - slope*ov).
+  check(`${style}: reaches the ridge (not flattened)`, solid.maxY >= artifact.roof.ridgeHeightFt - 0.5, `${solid.maxY} vs ${artifact.roof.ridgeHeightFt}`);
+}
 
 console.log('');
 if (failures) {

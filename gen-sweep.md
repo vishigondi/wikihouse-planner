@@ -136,6 +136,28 @@ would be the FIRST of the two consecutive clean fires.
 ## Findings log
 _(bug → class → test → root-cause fix → commit)_
 
+## NEW LOOP — Manufacturability + 3D (started 2026-06-22)
+_Frontier: every generated plan must be buildable as a WikiHouse plywood panel
+kit, and the 3D model must match the 2D/code source of truth._
+
+### M-fire 1 — close the 3D envelope-clip coverage gap for the 5 new roof styles
+- **Known gap (from the constructive loop):** `check:clip` (check-envelope-clip.mjs)
+  only exercised the original 2-plane a-frame/gable; the 5 new roof styles
+  (flat=1 plane, shed=1, hip=4, gambrel=4, barn=8) added planes that feed the
+  clipper but were never asserted in 3D.
+- **Drove the real 3D clipper:** ran each new style's ACTUAL compiled roof planes
+  through `clipPrismToCeiling` (lib/bim/envelope-clip.ts). Result: the clipper's
+  min-over-planes model handles 1/4/8 planes cleanly — every style clips
+  non-empty with **0 envelope violations** (no vertex pierces the roof). No 3D
+  defect; the surface was simply ungated.
+- **Gate asserts MORE (regression guard):** `check:clip` now drives the real
+  compiler planes for flat/shed/hip/gambrel/barn and asserts: planes fit,
+  clipped wall prism non-empty, no envelope violation (<1e-6), reaches the ridge
+  (not flattened). Tuned the ridge tolerance to 0.5 ft to cover a shed's high
+  edge sitting at the overhang line (peak ≈ ridge − slope·overhang, correct).
+- **Verified:** `npm run check:clip` green; full `gates` + `gates:live` green.
+- **Commit:** _(pending push)_
+
 ### Fire 21 — clean (fresh angles) — 2nd consecutive clean → LOOP CLOSED
 - **Drove fresh angles the gates don't fully cover, no defect:**
   - **4-bed connectivity:** all rooms reachable from the exterior.
