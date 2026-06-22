@@ -67,6 +67,11 @@ for (const style of ['a-frame', 'gable', 'flat', 'shed', 'hip', 'gambrel', 'barn
     BRIEFS.push(`${beds} bed ${style} roof, 80x100 lot, 10 ft setbacks`);
   }
 }
+// Loft plans add a floor-1 gable wall — its length must also be a panel multiple
+// (the loft band is snapped to 4 ft). Cover the loft-capable styles.
+for (const style of ['a-frame', 'gable', 'gambrel', 'barn']) {
+  BRIEFS.push(`2 bed ${style} roof with loft, 40x60 lot, 5 ft setbacks`);
+}
 
 for (const brief of BRIEFS) {
   const res = compileIntent(mockIntentFromBrief(parseBrief(brief)), 'buildable-test', brief);

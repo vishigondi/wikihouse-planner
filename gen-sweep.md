@@ -140,6 +140,26 @@ _(bug → class → test → root-cause fix → commit)_
 _Frontier: every generated plan must be buildable as a WikiHouse plywood panel
 kit, and the 3D model must match the 2D/code source of truth._
 
+### M-fire 6 — off-grid loft walls: snap the loft band to the 4 ft panel module
+- **Drove:** loft plans' gable wall `ext-l1-front` was off the 4 ft grid (gable+
+  loft 17 ft, gambrel/barn/a-frame+loft 11 ft) → wall-module blocked. The loft
+  band width was the raw continuous headroom band, never snapped.
+- **Fix (root cause in `buildLoft`):** snap the loft band width to a 4 ft panel
+  multiple, rounding INWARD (so it stays within the headroom envelope) and
+  recentering; if the snapped band is below `MIN_LOFT_SPAN_FT` the loft honestly
+  degrades to single level. Loft walls are now 4 ft-aligned (gable 16 ft,
+  gambrel/barn/a-frame 8 ft) → wall-module passes.
+- **Re-verified the cascade:** loft R305 still passes (narrower band stays in the
+  headroom-qualified zone), the R312 guard rails still emit on each open edge,
+  the loft window/footprint stay in-bounds.
+- **Gate (gates assert MORE):** added loft plans (a-frame/gable/gambrel/barn) to
+  `check:buildable` — their wall-module/wall-height/openings/floor-span all pass.
+- **Verified:** `check:buildable` green; full `gates` + `gates:live` green.
+- **Remaining open class:** roof-pitch (shed/gambrel/barn/a-frame pitches off the
+  rafter-SKU list) — the last manufacturability class; deep cascade (footprint-
+  dependent ridge, loft-ridge-raise interaction, gambrel/barn two-pitch).
+- **Commit:** _(pending push)_
+
 ### M-fire 5 — scout the two remaining manufacturability classes (roof-pitch, loft walls)
 - **roof-pitch (SKUs {0,12,25,45,60,72}°, tol 2.5°):** gable 23.2°→25 ✓, hip
   23.2°→25 ✓, flat 0° ✓; **FAIL: shed 15.9° (→12, Δ3.9), gambrel/barn 29.7°

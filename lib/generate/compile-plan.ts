@@ -172,9 +172,15 @@ function buildLoft(
   // Solve h = target for the offset where usable headroom begins; round the
   // band inward (low up, high down) so the whole loft clears the target.
   const offset = ((target - eave) / (ridge - eave)) * (mid + overhang) - overhang;
-  const low = Math.max(0, Math.ceil(offset * 2) / 2);
-  const high = Math.min(span, span - low);
-  if (high - low < MIN_LOFT_SPAN_FT) return null; // central band too narrow
+  const rawLow = Math.max(0, Math.ceil(offset * 2) / 2);
+  const rawBand = Math.min(span, span - rawLow) - rawLow;
+  // Snap the loft band to a 4 ft panel multiple (round INWARD, so it stays within
+  // the headroom envelope) and recenter — the loft's gable wall must be a
+  // panel-buildable length, not the raw continuous headroom width.
+  const band = Math.floor(rawBand / 4) * 4;
+  if (band < MIN_LOFT_SPAN_FT) return null; // central band too narrow once snapped
+  const low = rawLow + (rawBand - band) / 2;
+  const high = low + band;
   // The loft runs the full depth in the headroom band so it reaches the gable
   // ends — that's where its window gets daylight at loft height. The long
   // sides of the band stay open to the floor below (mezzanine).
