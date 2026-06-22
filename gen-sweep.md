@@ -140,6 +140,28 @@ _(bug → class → test → root-cause fix → commit)_
 _Frontier: every generated plan must be buildable as a WikiHouse plywood panel
 kit, and the 3D model must match the 2D/code source of truth._
 
+### M-fire 4 — floor-span: credit interior bearing walls (fix the over-conservative simple span)
+- **Drove:** every plan was `floor-span: blocked` — build-validator used
+  `min(footprint)` = 28 ft as the joist span, exceeding the 16 ft limit.
+- **Root cause = the validator, not the plan:** the simple-span model ignored
+  that every plan has FULL-WIDTH interior walls (the hall at z=12 / z=16) that are
+  natural bearing lines. The real floor-joist span is the largest gap between
+  bearing lines = 12 ft (verified: 0→12, 12→16, 16→28). The 28 ft "span" was a
+  modeling artifact.
+- **Fix (one constructive model in build-validator):** `joistSpanFt(home)` =
+  min over the two joist orientations of the max gap between bearing lines
+  (exterior walls + any interior wall line covering ≥70% of the perpendicular
+  dimension). Falls back to the full footprint when there's NO wall graph, so it
+  only ever REDUCES the span when real bearing walls justify it — never inflates
+  buildability. structuralSpan now uses it.
+- **Gate (gates assert MORE):** added `floor-span` to `check:buildable`'s asserted
+  rules — every roof × bed plan now passes (12 ft span between bearing lines).
+- **Verified:** all plans floor-span pass (12 ft); `check:buildable` green; full
+  `gates` + `gates:live` green.
+- **Remaining open classes:** roof-pitch (some pitches off the rafter-SKU list),
+  off-grid loft walls.
+- **Commit:** _(pending push)_
+
 ### M-fire 3 — implement the 4 ft-panel-module decision + gate manufacturability + fix flat wall-SKU defect
 - **Decision (from the user, on the M-fire 2 finding):** treat the planner's 4 ft
   structural grid AS the panel module — build-validity is measured against the

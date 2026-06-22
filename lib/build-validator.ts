@@ -45,6 +45,45 @@ function wallLengthFt(wall: SourceWallSegment): number {
   return Math.hypot((wall.x2 - wall.x1) * 4, (wall.z2 - wall.z1) * 4);
 }
 
+/**
+ * The real floor-joist span: the largest gap between bearing lines, minimized
+ * over the two joist orientations. Bearing lines are the exterior walls plus any
+ * interior wall line that spans most of the perpendicular dimension (a full-width
+ * partition carries the floor and splits the span — door openings are headered).
+ * Falls back to the full footprint dimension when there is no source wall graph
+ * (a genuine simple span), so this only ever REDUCES the span when real bearing
+ * walls justify it — it never inflates a plan's buildability.
+ */
+function joistSpanFt(home: DenHome): number {
+  const W = home.footprint.width;
+  const D = home.footprint.depth;
+  const walls = home.sourceWalls ?? [];
+  const TOL = 0.1;
+  const COVER = 0.7;
+  const maxGap = (constAxis: 'x' | 'z'): number => {
+    const ext = constAxis === 'z' ? D : W; // span direction these lines bear
+    const perp = constAxis === 'z' ? W : D; // dimension a bearing line must cover
+    const coverage = new Map<number, number>();
+    for (const wall of walls) {
+      const horizontal = Math.abs(wall.z1 - wall.z2) < TOL; // constant z
+      const vertical = Math.abs(wall.x1 - wall.x2) < TOL; // constant x
+      if (constAxis === 'z' && horizontal) {
+        const pos = Math.round(wall.z1 * 4 * 2) / 2;
+        coverage.set(pos, (coverage.get(pos) ?? 0) + Math.abs(wall.x2 - wall.x1) * 4);
+      } else if (constAxis === 'x' && vertical) {
+        const pos = Math.round(wall.x1 * 4 * 2) / 2;
+        coverage.set(pos, (coverage.get(pos) ?? 0) + Math.abs(wall.z2 - wall.z1) * 4);
+      }
+    }
+    const lines = [0, ext, ...[...coverage.entries()].filter(([, c]) => c >= COVER * perp).map(([p]) => p)]
+      .sort((a, b) => a - b);
+    let gap = 0;
+    for (let i = 1; i < lines.length; i += 1) gap = Math.max(gap, lines[i] - lines[i - 1]);
+    return gap || ext;
+  };
+  return Math.min(maxGap('z'), maxGap('x'));
+}
+
 function nearestMultipleDelta(value: number, module: number): { count: number; delta: number } {
   const count = Math.max(1, Math.round(value / module));
   return { count, delta: Math.abs(value - count * module) };
@@ -277,11 +316,11 @@ export function validateBuildability(home: DenHome): BuildValidationReport {
   if (openings.length && !rules.openings.blockers.length) rules.openings.passes.push(`${openings.length} openings fit panel/opening constraints.`);
   if (!openings.length) rules.openings.warnings.push('No source openings were available for opening-module validation.');
 
-  const structuralSpan = Math.min(home.footprint.width, home.footprint.depth);
+  const structuralSpan = joistSpanFt(home);
   if (structuralSpan > MAX_JOIST_SPAN_FT) {
-    rules.floorSpan.blockers.push(`Simple floor span ${structuralSpan.toFixed(1)}ft exceeds ${MAX_JOIST_SPAN_FT}ft max joist span; add beams or split the floor system.`);
+    rules.floorSpan.blockers.push(`Floor joist span ${structuralSpan.toFixed(1)}ft (largest gap between bearing lines) exceeds ${MAX_JOIST_SPAN_FT}ft; add a beam or bearing wall to split the floor.`);
   } else {
-    rules.floorSpan.passes.push(`Simple floor span ${structuralSpan.toFixed(1)}ft is within the ${MAX_JOIST_SPAN_FT}ft joist limit.`);
+    rules.floorSpan.passes.push(`Floor joist span ${structuralSpan.toFixed(1)}ft (between bearing lines) is within the ${MAX_JOIST_SPAN_FT}ft joist limit.`);
   }
   addBom(bom, {
     componentId: 'floor-std',

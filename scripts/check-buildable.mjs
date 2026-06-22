@@ -6,14 +6,12 @@
 // (WH-GRID-4FT); build-validator measures buildability against that same module
 // (PANEL_WIDTH_FT = 4), so a 4 ft-grid plan validates as panel-buildable.
 //
-// Scope (one class at a time): wall-module + wall-height + openings. Three
-// further manufacturability classes are tracked in gen-sweep.md and NOT yet
-// asserted here — they are real and separate:
-//   * floor-span  — the 28 ft plan depth exceeds the 16 ft simple-joist span
-//                   (needs an intermediate beam / bearing line).
+// Gated rules grow as each class is root-fixed: wall-module + wall-height +
+// openings (4 ft module, fire 3) + floor-span (bearing-line joist span, fire 4).
+// Still tracked in gen-sweep.md and NOT yet asserted (real, separate):
 //   * roof-pitch  — some generated pitches aren't on the rafter-SKU list.
 //   * loft walls  — a loft's headroom-band wall isn't 4 ft-aligned.
-// As each is fixed at the root, add its rule to PANEL_FIT_RULES below.
+// As each is fixed, add its rule id to PANEL_FIT_RULES below.
 
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -58,7 +56,7 @@ function toHome(a) {
   };
 }
 
-const PANEL_FIT_RULES = ['wall-module', 'wall-height', 'openings'];
+const PANEL_FIT_RULES = ['wall-module', 'wall-height', 'openings', 'floor-span'];
 
 // Every roof style × a representative bedroom span, single level (loft walls are
 // a tracked open class). a-frame caps at 3 beds.
