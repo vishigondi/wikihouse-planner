@@ -140,6 +140,25 @@ _(bug → class → test → root-cause fix → commit)_
 _Frontier: every generated plan must be buildable as a WikiHouse plywood panel
 kit, and the 3D model must match the 2D/code source of truth._
 
+### M-fire 5 — scout the two remaining manufacturability classes (roof-pitch, loft walls)
+- **roof-pitch (SKUs {0,12,25,45,60,72}°, tol 2.5°):** gable 23.2°→25 ✓, hip
+  23.2°→25 ✓, flat 0° ✓; **FAIL: shed 15.9° (→12, Δ3.9), gambrel/barn 29.7°
+  (→25, Δ4.7), a-frame 50.5° (→45, Δ5.5).** The generator chose arbitrary ridge
+  heights (14/16/18) → off-SKU pitches. **Fix (root cause, next fire):** derive
+  each style's ridge from a TARGET rafter SKU — ridge = eave + run·tan(sku):
+  a-frame→60° (steep, keeps headroom), shed→12°, gambrel/barn→25° (the dominant
+  lower pitch). Cascades into R305 / loft headroom / elevations / clip — re-verify
+  all. Not decision-laden (standard pitches are the truth); just careful.
+- **loft walls (off-grid):** every loft gable wall `ext-l1-front` is off the 4 ft
+  grid — gable+loft 17 ft, gambrel/barn+loft 11 ft (the loft band width = the
+  roof headroom band, not snapped). **Fix (next fire):** snap the loft band width
+  (and x-origin) to 4 ft multiples in `buildLoft` (round inward to stay within
+  headroom), then re-verify loft R305 + reposition the loft window/guard. Then add
+  loft plans + `wall-module` for them to check:buildable.
+- No code change this fire (both are substantial cascading geometry changes;
+  scouted for clean execution next, after 4 manufacturability fires landed this
+  session). **Commit:** _(doc-only)_
+
 ### M-fire 4 — floor-span: credit interior bearing walls (fix the over-conservative simple span)
 - **Drove:** every plan was `floor-span: blocked` — build-validator used
   `min(footprint)` = 28 ft as the joist span, exceeding the 16 ft limit.
