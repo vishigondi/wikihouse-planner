@@ -140,6 +140,29 @@ _(bug → class → test → root-cause fix → commit)_
 _Frontier: every generated plan must be buildable as a WikiHouse plywood panel
 kit, and the 3D model must match the 2D/code source of truth._
 
+### M-fire 2 — DROVE manufacturability → foundational 4 ft-grid vs 1.2 m-panel tension (BLOCKED on a decision)
+- **Drove `validateBuildability` (lib/build-validator.ts) on real plans.** Built a
+  minimal DenHome adapter (artifact → sourceWalls/openings/rooms) and ran it.
+- **Finding:** generated plans are `status: blocked` — TWO classes:
+  1. **wall-module:** every wall fails the 1.2 m panel module. The planner uses a
+     4 ft design grid (WH-GRID-4FT gate); 4 ft = 1.219 m ≠ 1.2 m, and the error
+     accumulates (28 ft = 7×1.2 m = 27.56 ft → 0.44 ft short; 12 ft → 0.19 short).
+  2. **floor-span:** the 28 ft plan depth exceeds the 16 ft max simple joist span
+     ("add beams or split the floor system").
+- **System-wide, NOT a generated-plan defect:** the TRACED reference plans fail
+  too (a-frame-22: 52 wall-module blockers; outpost-medium: 18). `build-validator`
+  is an UN-GATED advisory that NO plan in the system currently passes.
+- **Why this is BLOCKED on a product decision (not a loop fix):** every fix
+  collides with a guardrail. Re-gridding to 1.2 m breaks WH-GRID-4FT and would
+  regress the protected traced plans. Redefining build-validator's module to 4 ft
+  diverges from the real WikiHouse 1.2 m sheet. "Never loosen a gate / never
+  fabricate / traced plans must not regress" all apply. No safe default →
+  surfaced to the user for direction; no code change this fire.
+- **(Separable:** the 16 ft floor-span blocker is independent of the grid
+  question — every plan is 28 ft deep; could be addressed with an intermediate
+  beam/joist callout regardless of the grid decision.)
+- **Commit:** _(doc-only; loop paused pending decision)_
+
 ### M-fire 1 — close the 3D envelope-clip coverage gap for the 5 new roof styles
 - **Known gap (from the constructive loop):** `check:clip` (check-envelope-clip.mjs)
   only exercised the original 2-plane a-frame/gable; the 5 new roof styles
