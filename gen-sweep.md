@@ -140,6 +140,19 @@ _(bug → class → test → root-cause fix → commit)_
 _Frontier: every generated plan must be buildable as a WikiHouse plywood panel
 kit, and the 3D model must match the 2D/code source of truth._
 
+### M-fire 9 — clean (full manufacturability matrix verified) — 1st consecutive clean
+- **Drove the full matrix (42 plans):** 7 roof styles × 1–4 beds × {no-loft, loft
+  where capable}, all through `validateBuildability`. Every plan: status not
+  blocked (buildable), wall-module/wall-height/openings/floor-span pass, roof-pitch
+  pass-or-advisory, a sane BOM (wall panels + floor cassettes > 0), and no orphan
+  openings. Zero issues.
+- **3D + panel-fit gated:** check:clip (5 new roofs) + check:buildable (panel-fit
+  + not-blocked + roof-pitch-never-blocks) both green.
+- **Result:** every generated plan is verifiably manufacturable as a WikiHouse
+  panel kit with a correct 3D model. First clean fire after the M1→M8 streak. App
+  byte-identical; gates green by identity.
+- **Commit:** _(doc-only)_
+
 ### M-fire 8 — roof-pitch resolved (CNC advisory) → ALL manufacturability classes done
 - **Decision (user):** WikiHouse rafters/cassettes are CNC-cut to the design →
   any pitch is manufacturable; the fixed-SKU list is an over-constraint.
