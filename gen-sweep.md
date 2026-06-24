@@ -140,6 +140,17 @@ _(bug → class → test → root-cause fix → commit)_
 _Frontier: every generated plan must be buildable as a WikiHouse plywood panel
 kit, and the 3D model must match the 2D/code source of truth._
 
+### M-fire 10 — clean (fresh angles) — 2nd consecutive clean → MANUFACTURABILITY LOOP CLOSED
+- **Drove fresh angles, no defect:** (a) loft-plan 3D envelope-clip — every
+  loft-capable style (a-frame/gable/gambrel/barn + loft) clips with 0 envelope
+  violations (the floor-1 loft geometry doesn't pierce the roof); (b) live API
+  sweep — all 7 roof styles build through `/api/generate-plan` with no error.
+- **Result:** second consecutive clean fire. Every generated plan (7 roof styles
+  × 1–4 beds, ± loft) is verifiably manufacturable as a WikiHouse panel kit with a
+  correct 3D model, or refuses honestly. **CLOSE CONDITION MET** — PROJECT_STATUS
+  + playbook (§13) updated, pushed, notified, cron deleted.
+- **Commit:** _(close commit)_
+
 ### M-fire 9 — clean (full manufacturability matrix verified) — 1st consecutive clean
 - **Drove the full matrix (42 plans):** 7 roof styles × 1–4 beds × {no-loft, loft
   where capable}, all through `validateBuildability`. Every plan: status not

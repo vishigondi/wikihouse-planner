@@ -501,3 +501,53 @@ Shipped, in ascending geometric complexity:
 Outcome: a one-line brief now compiles to a sound, code-checked, honestly-drawn
 plan across **7 roof styles × 1–4 bedrooms** (with optional loft where headroom
 clears) — or refuses honestly. Hand-to-an-architect quality across the matrix.
+
+---
+
+## 13. The manufacturability + 3D era (2026-06-22 → 06-24)
+
+After the generation pipeline produced architecturally-sound, code-checked plans
+(§12), this loop asked the harder product question: can the plan actually be CUT
+AND ASSEMBLED as a WikiHouse plywood panel kit, and does the 3D model match the
+2D/code truth? Same discipline; the validator was `lib/build-validator.ts` and the
+3D clipper `lib/bim/envelope-clip.ts`. Five classes (M-fires 1–10, gen-sweep.md),
+closed by two consecutive clean fires. New gate: `check:buildable`.
+
+### The classes (driven → gated → root-fixed)
+- **3D clip coverage:** the envelope clipper handled the 5 new roof styles
+  correctly (1/4/8 planes, 0 violations) but was ungated — added them to
+  `check:clip`. (Correct-but-ungated is still a gap: gate it.)
+- **4 ft panel module:** the planner's 4 ft grid vs WikiHouse's 1.2 m sheet — a
+  foundational tension that blocked *every* plan including the traced references.
+  Resolved by a user decision (treat 4 ft as the module). Caught + fixed a flat
+  wall that wasn't a height SKU.
+- **floor-span:** the validator was over-conservative (simple span = footprint),
+  ignoring interior bearing walls. Fixed in the validator, not the plan — credit
+  the bearing lines the plan already has. *Making a validator more accurate is not
+  loosening it.*
+- **loft walls:** snapped the loft headroom band to the 4 ft module.
+- **roof-pitch:** generated pitches missed the fixed rafter SKUs, coupled to loft
+  headroom. User decision: CNC-cut rafters → any pitch is buildable → advisory,
+  no geometry distortion.
+
+### Reusable lessons
+1. **Driving a validator surfaces foundational tensions, not just bugs.** Two of
+   five classes (panel module, roof-pitch) were product decisions the loop could
+   not make safely — both surfaced to the user with the options, the finding, and
+   why each resolution collided with a guardrail. When every fix collides with a
+   guardrail and there's no safe default, that is a STOP-and-ask, not a guess.
+2. **The defect is often in the measuring tool.** floor-span and the panel module
+   were the *validator* mismodeling reality (simple span; 1.2 m vs the system's
+   real 4 ft module), not the generated plans. Fix accuracy; never loosen to pass.
+3. **A new gate catches its own feature's defects.** `check:buildable` immediately
+   caught the flat-roof non-SKU wall height the moment it existed.
+4. **Correct-but-ungated is a gap.** The 3D clip already worked for the new roofs;
+   gating it was still the fire — an unasserted invariant silently rots.
+5. **Honest advisory beats forced geometry.** Distorting every roof's pitch to hit
+   6 stock SKUs (breaking the loft/headroom interplay) would have been worse than
+   recognizing the CNC reality and flagging pitch as advisory.
+
+Outcome: a one-line brief produces a plan that is architecturally sound,
+code-checked, AND verifiably panel-buildable (wall module, wall-height SKU,
+opening fit, bearing-line floor span, CNC roof) with a correct 3D model — or
+refuses honestly.

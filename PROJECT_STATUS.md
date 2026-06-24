@@ -1,6 +1,43 @@
 # Project Status
 
-Last updated: 2026-06-20 (Generation-quality sweep — defect/honesty frontier swept + full constructive frontier built; two consecutive clean fires, full ladder green)
+Last updated: 2026-06-24 (Manufacturability + 3D sweep — every generated plan is panel-buildable with a correct 3D model; two consecutive clean fires, full ladder green)
+
+## 2026-06-24 Manufacturability + 3D Sweep — Shipped
+
+Turned the discipline on whether a generated plan can actually be CUT AND
+ASSEMBLED as a WikiHouse plywood panel kit, and whether its 3D model matches the
+2D/code truth. Drove every plan through `lib/build-validator.ts` + the 3D
+envelope clipper, gated MORE, fixed each root cause. Closed by two consecutive
+clean fires (`npm run gates` + `gates:live` green). Log: `gen-sweep.md` (M-fires
+1–10); methodology: playbook §13. New gate: `npm run check:buildable`.
+
+Five classes, each driven → gated → root-fixed:
+1. **3D envelope-clip for the 5 new roof styles** — `check:clip` only covered
+   a-frame/gable; added flat/shed/hip/gambrel/barn (the clipper's min-over-planes
+   model handles 1/4/8 planes with 0 envelope violations).
+2. **4 ft panel module** — the planner's 4 ft grid ≠ the literal 1.2 m sheet, so
+   build-validator blocked every plan (incl. traced references). Decision: treat
+   the 4 ft grid AS the module (`PANEL_WIDTH_FT = 4`). wall-module / wall-height /
+   openings now pass; caught + fixed a flat-roof 9 ft wall (not a SKU → 8 ft).
+3. **floor-span** — the validator used `min(footprint)` = 28 ft (over the 16 ft
+   joist limit), ignoring the full-width interior bearing walls. Added
+   `joistSpanFt` (max gap between bearing lines) → real span 12 ft.
+4. **off-grid loft walls** — the loft band was the raw headroom width (17/11 ft);
+   snapped it to the 4 ft module in `buildLoft` (round inward, R305/guards intact).
+5. **roof-pitch** — generated pitches missed the fixed rafter-SKU list. Decision:
+   WikiHouse rafters are CNC-cut to the design, so pitch is an ADVISORY (no
+   geometry distortion); every plan validates as buildable.
+
+`check:buildable` now asserts, for all 7 roof styles × 1–4 beds (± loft): every
+panel-fit rule passes, the plan is not blocked, and roof pitch never blocks.
+Verification (M-fires 9–10): full 42-plan matrix buildable, sane BOM, no orphan
+openings, loft 3D clip clean, live API builds every style. Two clean fires → closed.
+
+Net: a one-line brief now produces a plan that is architecturally sound,
+code-checked, AND verifiably panel-buildable with a correct 3D model — or refuses
+honestly.
+
+## 2026-06-20 Generation-Quality Sweep — Shipped
 
 ## 2026-06-20 Generation-Quality Sweep — Shipped
 
