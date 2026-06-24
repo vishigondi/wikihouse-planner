@@ -140,7 +140,25 @@ _(bug → class → test → root-cause fix → commit)_
 _Frontier: every generated plan must be buildable as a WikiHouse plywood panel
 kit, and the 3D model must match the 2D/code source of truth._
 
-### M-fire 7 — roof-pitch (last class): decision needed (CNC any-pitch vs fixed rafter SKUs)
+### M-fire 8 — roof-pitch resolved (CNC advisory) → ALL manufacturability classes done
+- **Decision (user):** WikiHouse rafters/cassettes are CNC-cut to the design →
+  any pitch is manufacturable; the fixed-SKU list is an over-constraint.
+- **Fix (no geometry distortion):** build-validator's roof-pitch rule now emits an
+  ADVISORY warning ("Roof pitch X is CNC-cut to the design, not a stock SKU")
+  instead of a blocker when the pitch is off-stock; a matching pitch still passes
+  as a stock rafter. Rule relabeled "Roof pitch is a stock or CNC-cut rafter".
+- **Result:** all 27 plans (7 roof styles × 1–4 beds) now validate as buildable
+  (status not blocked); off-stock pitches are advisory only.
+- **Gate (gates assert MORE):** `check:buildable` now asserts every plan's
+  overall status ≠ blocked AND roof-pitch never blocks — the full STOP-condition
+  ("every generated plan is verifiably manufacturable").
+- **Verified:** `check:buildable` green; full `gates` + `gates:live` green.
+- **Manufacturability frontier COMPLETE:** 3D clip (fire 1), 4 ft panel module +
+  wall-module/height/openings (fire 3, + flat SKU), floor-span (fire 4), loft
+  walls (fire 6), roof-pitch (fire 8). Two clean verification fires → close.
+- **Commit:** _(pending push)_
+
+### M-fire 7 — roof-pitch (last class): decision needed (CNC any-pitch vs fixed rafter SKUs) — DECIDED: CNC advisory
 - **Drove + confirmed the coupling:** roof-pitch failures (shed 15.9°, gambrel/
   barn 29.7°, a-frame 50.5°, gable+loft 40.6°) are entangled with loft headroom —
   a usable loft NEEDS a steep, non-SKU pitch. Snapping IS feasible (snap UP:

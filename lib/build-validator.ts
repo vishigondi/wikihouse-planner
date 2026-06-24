@@ -227,7 +227,7 @@ export function validateBuildability(home: DenHome): BuildValidationReport {
     wallHeight: createRule('wall-height', 'Wall heights use 2.4m or 3.0m SKU'),
     openings: createRule('openings', 'Openings fit panels or align to joints'),
     floorSpan: createRule('floor-span', 'Floor span is within joist limit'),
-    roofPitch: createRule('roof-pitch', 'Roof pitch matches rafter SKU'),
+    roofPitch: createRule('roof-pitch', 'Roof pitch is a stock or CNC-cut rafter'),
     bom: createRule('bom', 'BOM and componentsUsed are generated'),
   };
 
@@ -353,9 +353,12 @@ export function validateBuildability(home: DenHome): BuildValidationReport {
   const pitch = roofPitchDeg(home);
   const pitchSku = nearestSku(pitch, ROOF_PITCH_SKUS_DEG);
   if (pitchSku.delta > ROOF_PITCH_TOLERANCE_DEG) {
-    rules.roofPitch.blockers.push(`Roof pitch ${pitch.toFixed(1)}deg does not match available rafter SKUs (${ROOF_PITCH_SKUS_DEG.join(', ')}deg).`);
+    // WikiHouse rafters/roof cassettes are CNC-cut to the design, so any pitch is
+    // manufacturable — an off-stock pitch is an advisory (custom rafter cut), not
+    // a blocker. Distorting the architecture to a stock SKU would be the bug.
+    rules.roofPitch.warnings.push(`Roof pitch ${pitch.toFixed(1)}deg is CNC-cut to the design (not a stock ${ROOF_PITCH_SKUS_DEG.join('/')}deg rafter SKU).`);
   } else {
-    rules.roofPitch.passes.push(`Roof pitch ${pitch.toFixed(1)}deg matches ${pitchSku.sku}deg rafter SKU.`);
+    rules.roofPitch.passes.push(`Roof pitch ${pitch.toFixed(1)}deg matches the ${pitchSku.sku}deg stock rafter SKU.`);
   }
   const roofComponent = componentForRoof(home, pitch);
   addBom(bom, {

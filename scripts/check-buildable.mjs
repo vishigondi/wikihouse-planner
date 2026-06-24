@@ -84,6 +84,10 @@ for (const brief of BRIEFS) {
   }
   // The validator must produce a real bill of materials (panels counted).
   check(`${brief} — BOM generated`, Array.isArray(report.bom) && report.bom.length > 0);
+  // The whole plan must be buildable — no rule blocks. Roof pitch may be a
+  // warning (CNC-cut to the design), which does not block.
+  check(`${brief} — plan not blocked (buildable)`, report.status !== 'blocked', (report.blockers ?? []).slice(0, 1).join(''));
+  check(`${brief} — roof pitch never blocks (stock or CNC-cut)`, ruleStatus['roof-pitch'] && ruleStatus['roof-pitch'].status !== 'blocked', ruleStatus['roof-pitch'] ? ruleStatus['roof-pitch'].status : 'rule missing');
 }
 
 if (failures) {
